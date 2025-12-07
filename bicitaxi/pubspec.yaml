@@ -1,0 +1,33 @@
+name: bicitaxi
+description: "Bici Taxi - Client app for requesting bicycle taxi rides."
+publish_to: 'none'
+version: 0.1.0
+
+environment:
+  sdk: ^3.10.3
+
+dependencies:
+  flutter:
+    sdk: flutter
+  liquid_glass_renderer: ^0.2.0-dev.4
+  liquid_glass_ui_design: ^1.0.5
+  flutter_map: ^8.2.2
+  latlong2: ^0.9.1
+  geolocator: ^14.0.0
+  permission_handler: ^11.4.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+  flutter_launcher_icons: ^0.14.3
+
+flutter_launcher_icons:
+  android: true
+  ios: true
+  image_path: "icons/Android/Icon-512.png"
+  adaptive_icon_background: "#0B0016"
+  adaptive_icon_foreground: "icons/Android/Icon-512.png"
+
+flutter:
+  uses-material-design: true
