@@ -4,7 +4,7 @@ Mobile application for bicycle taxi service drivers. Receive ride requests, mana
 
 ## 📱 Screenshots
 
-*Coming soon...*
+_Coming soon..._
 
 ## ✨ Features
 
@@ -38,13 +38,13 @@ lib/
 
 ## 🛠️ Tech Stack
 
-| Package | Purpose |
-|---------|-----|
-| `flutter_map` | Interactive maps with OpenStreetMap |
-| `geolocator` | Real-time GPS location services |
-| `latlong2` | Geographic coordinate handling |
-| `permission_handler` | Device permission management |
-| `liquid_glass_ui_design` | Glass effect UI design |
+| Package                  | Purpose                             |
+| ------------------------ | ----------------------------------- |
+| `flutter_map`            | Interactive maps with OpenStreetMap |
+| `geolocator`             | Real-time GPS location services     |
+| `latlong2`               | Geographic coordinate handling      |
+| `permission_handler`     | Device permission management        |
+| `liquid_glass_ui_design` | Glass effect UI design              |
 
 ## 🚀 Installation
 
@@ -57,17 +57,20 @@ lib/
 ### Steps
 
 1. Clone the repository:
+
 ```bash
 git clone https://github.com/jozzer182/bicitaxi.git
 cd bicitaxi/bicitaxi_conductor
 ```
 
 2. Install dependencies:
+
 ```bash
 flutter pub get
 ```
 
 3. Run the application:
+
 ```bash
 flutter run
 ```
@@ -77,6 +80,7 @@ flutter run
 ### Required Permissions
 
 **Android** (`android/app/src/main/AndroidManifest.xml`):
+
 - `ACCESS_FINE_LOCATION` - Precise location (critical for drivers)
 - `ACCESS_COARSE_LOCATION` - Approximate location
 - `ACCESS_BACKGROUND_LOCATION` - Background location
@@ -84,6 +88,7 @@ flutter run
 - `FOREGROUND_SERVICE` - Foreground service
 
 **iOS** (`ios/Runner/Info.plist`):
+
 - `NSLocationWhenInUseUsageDescription`
 - `NSLocationAlwaysAndWhenInUseUsageDescription`
 - `UIBackgroundModes` → `location`
@@ -91,6 +96,7 @@ flutter run
 ### Firebase (Coming Soon)
 
 The app is ready for Firebase integration:
+
 - Authentication (driver verification)
 - Cloud Firestore (ride and earnings data)
 - Cloud Messaging (new ride notifications)
@@ -104,16 +110,16 @@ flutter test
 
 ## 📊 Driver Features Status
 
-| Feature | Status |
-|---------|--------|
-| View map with current location | ✅ |
-| Receive ride requests | 🔄 In progress |
-| Accept/decline rides | 🔄 In progress |
-| Navigation to customer | 🔄 In progress |
-| Customer chat | ✅ |
-| Ride history | ✅ |
-| Earnings dashboard | ✅ |
-| Available/unavailable mode | 🔄 In progress |
+| Feature                        | Status         |
+| ------------------------------ | -------------- |
+| View map with current location | ✅             |
+| Receive ride requests          | 🔄 In progress |
+| Accept/decline rides           | 🔄 In progress |
+| Navigation to customer         | 🔄 In progress |
+| Customer chat                  | ✅             |
+| Ride history                   | ✅             |
+| Earnings dashboard             | ✅             |
+| Available/unavailable mode     | 🔄 In progress |
 
 ## 📄 License
 

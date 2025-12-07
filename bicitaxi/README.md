@@ -4,7 +4,7 @@ Mobile application for bicycle taxi service customers. Request rides, view nearb
 
 ## 📱 Screenshots
 
-*Coming soon...*
+_Coming soon..._
 
 ## ✨ Features
 
@@ -36,13 +36,13 @@ lib/
 
 ## 🛠️ Tech Stack
 
-| Package | Purpose |
-|---------|-----|
-| `flutter_map` | Interactive maps with OpenStreetMap |
-| `geolocator` | GPS location services |
-| `latlong2` | Geographic coordinate handling |
-| `permission_handler` | Device permission management |
-| `liquid_glass_ui_design` | Glass effect UI design |
+| Package                  | Purpose                             |
+| ------------------------ | ----------------------------------- |
+| `flutter_map`            | Interactive maps with OpenStreetMap |
+| `geolocator`             | GPS location services               |
+| `latlong2`               | Geographic coordinate handling      |
+| `permission_handler`     | Device permission management        |
+| `liquid_glass_ui_design` | Glass effect UI design              |
 
 ## 🚀 Installation
 
@@ -55,17 +55,20 @@ lib/
 ### Steps
 
 1. Clone the repository:
+
 ```bash
 git clone https://github.com/jozzer182/bicitaxi.git
 cd bicitaxi/bicitaxi
 ```
 
 2. Install dependencies:
+
 ```bash
 flutter pub get
 ```
 
 3. Run the application:
+
 ```bash
 flutter run
 ```
@@ -75,17 +78,20 @@ flutter run
 ### Required Permissions
 
 **Android** (`android/app/src/main/AndroidManifest.xml`):
+
 - `ACCESS_FINE_LOCATION` - Precise location
 - `ACCESS_COARSE_LOCATION` - Approximate location
 - `INTERNET` - Internet connection
 
 **iOS** (`ios/Runner/Info.plist`):
+
 - `NSLocationWhenInUseUsageDescription`
 - `NSLocationAlwaysUsageDescription`
 
 ### Firebase (Coming Soon)
 
 The app is ready for Firebase integration:
+
 - Authentication
 - Cloud Firestore
 - Cloud Messaging (push notifications)
