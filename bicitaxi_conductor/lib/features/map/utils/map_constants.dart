@@ -14,9 +14,9 @@ abstract final class MapConstants {
   /// Maximum zoom level.
   static const double maxZoom = 18.0;
 
-  /// OpenStreetMap tile URL template.
+  /// CartoDB Voyager tile URL template (colorful with soft blue roads).
   static const String osmTileUrl =
-      'https://tile.openstreetmap.org/{z}/{x}/{y}.png';
+      'https://basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}@2x.png';
 
   /// User agent for OSM tile requests.
   static const String userAgent = 'dev.zarabanda.bicitaxiConductor';
