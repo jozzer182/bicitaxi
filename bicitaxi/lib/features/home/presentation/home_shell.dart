@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:liquid_glass_ui_design/liquid_glass_ui.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/widgets/responsive_layout.dart';
-import 'client_home_screen.dart';
+import 'map_home_screen.dart';
 import '../../rides/presentation/client_active_ride_screen.dart';
 import '../../rides/presentation/client_history_screen.dart';
 import '../../profile/presentation/client_profile_screen.dart';
@@ -45,7 +45,7 @@ class _HomeShellState extends State<HomeShell> {
   Widget _getScreen(int index) {
     switch (index) {
       case 0:
-        return const ClientHomeScreen();
+        return const MapHomeScreen();
       case 1:
         return const ClientActiveRideScreen();
       case 2:
@@ -53,7 +53,7 @@ class _HomeShellState extends State<HomeShell> {
       case 3:
         return const ClientProfileScreen();
       default:
-        return const ClientHomeScreen();
+        return const MapHomeScreen();
     }
   }
 
@@ -74,9 +74,7 @@ class _HomeShellState extends State<HomeShell> {
   Widget _buildNarrowLayout(BuildContext context) {
     return Column(
       children: [
-        Expanded(
-          child: _getScreen(_selectedIndex),
-        ),
+        Expanded(child: _getScreen(_selectedIndex)),
         _buildBottomNavBar(context),
       ],
     );
@@ -86,9 +84,7 @@ class _HomeShellState extends State<HomeShell> {
     return Row(
       children: [
         _buildNavigationRail(context),
-        Expanded(
-          child: _getScreen(_selectedIndex),
-        ),
+        Expanded(child: _getScreen(_selectedIndex)),
       ],
     );
   }
@@ -201,7 +197,9 @@ class _NavBarItem extends StatelessWidget {
           children: [
             Icon(
               icon,
-              color: isSelected ? AppColors.electricBlue : AppColors.textTertiary,
+              color: isSelected
+                  ? AppColors.electricBlue
+                  : AppColors.textTertiary,
               size: 24,
             ),
             const SizedBox(height: 4),
@@ -210,7 +208,9 @@ class _NavBarItem extends StatelessWidget {
               style: TextStyle(
                 fontSize: 12,
                 fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
-                color: isSelected ? AppColors.electricBlue : AppColors.textTertiary,
+                color: isSelected
+                    ? AppColors.electricBlue
+                    : AppColors.textTertiary,
               ),
             ),
           ],
@@ -245,10 +245,7 @@ class _NavRailItem extends StatelessWidget {
             ? BoxDecoration(
                 color: AppColors.electricBlue.withValues(alpha: 0.1),
                 border: Border(
-                  left: BorderSide(
-                    color: AppColors.electricBlue,
-                    width: 3,
-                  ),
+                  left: BorderSide(color: AppColors.electricBlue, width: 3),
                 ),
               )
             : null,
@@ -257,7 +254,9 @@ class _NavRailItem extends StatelessWidget {
           children: [
             Icon(
               icon,
-              color: isSelected ? AppColors.electricBlue : AppColors.textTertiary,
+              color: isSelected
+                  ? AppColors.electricBlue
+                  : AppColors.textTertiary,
               size: 24,
             ),
             const SizedBox(height: 4),
@@ -266,7 +265,9 @@ class _NavRailItem extends StatelessWidget {
               style: TextStyle(
                 fontSize: 10,
                 fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
-                color: isSelected ? AppColors.electricBlue : AppColors.textTertiary,
+                color: isSelected
+                    ? AppColors.electricBlue
+                    : AppColors.textTertiary,
               ),
               textAlign: TextAlign.center,
             ),
@@ -276,4 +277,3 @@ class _NavRailItem extends StatelessWidget {
     );
   }
 }
-

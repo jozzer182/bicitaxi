@@ -94,15 +94,15 @@ class _ClientActiveRideScreenState extends State<ClientActiveRideScreen> {
                 Text(
                   'Sin viaje activo',
                   style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                        fontWeight: FontWeight.bold,
-                      ),
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
                 const SizedBox(height: 8),
                 Text(
                   'Cuando solicites un viaje, podrás ver el estado aquí',
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        color: AppColors.textSecondary,
-                      ),
+                    color: AppColors.textSecondary,
+                  ),
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 24),
@@ -112,7 +112,10 @@ class _ClientActiveRideScreenState extends State<ClientActiveRideScreen> {
                   onTap: () {
                     Navigator.pushNamed(context, AppRoutes.map);
                   },
-                  padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 32),
+                  padding: const EdgeInsets.symmetric(
+                    vertical: 14,
+                    horizontal: 32,
+                  ),
                   child: const Text(
                     'Solicitar viaje',
                     style: TextStyle(
@@ -157,11 +160,27 @@ class _ClientActiveRideScreenState extends State<ClientActiveRideScreen> {
                   onTap: () => Navigator.pop(context),
                   child: LiquidCard(
                     borderRadius: 12,
-                    padding: const EdgeInsets.all(12),
-                    child: const Icon(
-                      Icons.arrow_back_rounded,
-                      color: AppColors.white,
-                      size: 24,
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 12,
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: const [
+                        Icon(
+                          Icons.arrow_back_rounded,
+                          color: AppColors.white,
+                          size: 20,
+                        ),
+                        SizedBox(width: 8),
+                        Text(
+                          'Volver',
+                          style: TextStyle(
+                            color: AppColors.white,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 ),
@@ -175,34 +194,44 @@ class _ClientActiveRideScreenState extends State<ClientActiveRideScreen> {
                 child: Column(
                   children: [
                     // Status icon and title
-                    Container(
-                      width: 72,
-                      height: 72,
-                      decoration: BoxDecoration(
-                        color: _getStatusColor(ride.status).withValues(alpha: 0.2),
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                      child: Icon(
-                        _getStatusIcon(ride.status),
-                        size: 36,
-                        color: _getStatusColor(ride.status),
+                    Center(
+                      child: Container(
+                        width: 72,
+                        height: 72,
+                        decoration: BoxDecoration(
+                          color: _getStatusColor(
+                            ride.status,
+                          ).withValues(alpha: 0.2),
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: Icon(
+                          _getStatusIcon(ride.status),
+                          size: 36,
+                          color: _getStatusColor(ride.status),
+                        ),
                       ),
                     ),
                     const SizedBox(height: 16),
-                    Text(
-                      ride.status.displayName,
-                      style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                            fontWeight: FontWeight.bold,
-                            color: _getStatusColor(ride.status),
-                          ),
+                    Center(
+                      child: Text(
+                        ride.status.displayName,
+                        style: Theme.of(context).textTheme.headlineSmall
+                            ?.copyWith(
+                              fontWeight: FontWeight.bold,
+                              color: _getStatusColor(ride.status),
+                            ),
+                        textAlign: TextAlign.center,
+                      ),
                     ),
                     const SizedBox(height: 8),
-                    Text(
-                      _getStatusDescription(ride.status),
-                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                            color: AppColors.textSecondary,
-                          ),
-                      textAlign: TextAlign.center,
+                    Center(
+                      child: Text(
+                        _getStatusDescription(ride.status),
+                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                          color: AppColors.textSecondary,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
                     ),
                   ],
                 ),
@@ -214,35 +243,39 @@ class _ClientActiveRideScreenState extends State<ClientActiveRideScreen> {
                 borderRadius: 20,
                 padding: const EdgeInsets.all(20),
                 child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      'Detalles del viaje',
-                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                            fontWeight: FontWeight.w600,
-                          ),
+                    Center(
+                      child: Text(
+                        'Detalles del viaje',
+                        style: Theme.of(context).textTheme.titleMedium
+                            ?.copyWith(fontWeight: FontWeight.w600),
+                        textAlign: TextAlign.center,
+                      ),
                     ),
                     const SizedBox(height: 16),
-                    _buildLocationRow(
-                      icon: Icons.trip_origin_rounded,
-                      iconColor: AppColors.success,
-                      label: 'Recogida',
-                      value: ride.pickup.displayText,
+                    Center(
+                      child: _buildLocationRow(
+                        icon: Icons.trip_origin_rounded,
+                        iconColor: AppColors.success,
+                        label: 'Recogida',
+                        value: ride.pickup.displayText,
+                      ),
                     ),
                     if (ride.dropoff != null) ...[
-                      Padding(
-                        padding: const EdgeInsets.only(left: 11),
+                      Center(
                         child: Container(
                           width: 2,
                           height: 24,
                           color: AppColors.surfaceMedium,
                         ),
                       ),
-                      _buildLocationRow(
-                        icon: Icons.location_on_rounded,
-                        iconColor: AppColors.error,
-                        label: 'Destino',
-                        value: ride.dropoff!.displayText,
+                      Center(
+                        child: _buildLocationRow(
+                          icon: Icons.location_on_rounded,
+                          iconColor: AppColors.error,
+                          label: 'Destino',
+                          value: ride.dropoff!.displayText,
+                        ),
                       ),
                     ],
                   ],
@@ -280,9 +313,8 @@ class _ClientActiveRideScreenState extends State<ClientActiveRideScreen> {
                             ),
                             Text(
                               'Juan Conductor',
-                              style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                                    fontWeight: FontWeight.w600,
-                                  ),
+                              style: Theme.of(context).textTheme.titleMedium
+                                  ?.copyWith(fontWeight: FontWeight.w600),
                             ),
                             Row(
                               children: [
@@ -383,12 +415,15 @@ class _ClientActiveRideScreenState extends State<ClientActiveRideScreen> {
                       ? null
                       : () => _showCancelDialog(context, controller),
                   padding: const EdgeInsets.symmetric(vertical: 14),
-                  child: const Text(
-                    'Cancelar viaje',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w500,
-                      color: AppColors.error,
+                  child: const Center(
+                    child: Text(
+                      'Cancelar viaje',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w500,
+                        color: AppColors.error,
+                      ),
                     ),
                   ),
                 ),
@@ -409,9 +444,8 @@ class _ClientActiveRideScreenState extends State<ClientActiveRideScreen> {
                       const SizedBox(height: 12),
                       Text(
                         '¡Viaje completado!',
-                        style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                              fontWeight: FontWeight.bold,
-                            ),
+                        style: Theme.of(context).textTheme.titleMedium
+                            ?.copyWith(fontWeight: FontWeight.bold),
                       ),
                       const SizedBox(height: 16),
                       LiquidButton(
@@ -454,30 +488,24 @@ class _ClientActiveRideScreenState extends State<ClientActiveRideScreen> {
     required String value,
   }) {
     return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
       crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min,
       children: [
         Icon(icon, color: iconColor, size: 24),
         const SizedBox(width: 12),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                label,
-                style: TextStyle(
-                  fontSize: 12,
-                  color: AppColors.textTertiary,
-                ),
-              ),
-              Text(
-                value,
-                style: const TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-            ],
-          ),
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              label,
+              style: TextStyle(fontSize: 12, color: AppColors.textTertiary),
+            ),
+            Text(
+              value,
+              style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
+            ),
+          ],
         ),
       ],
     );
@@ -538,7 +566,10 @@ class _ClientActiveRideScreenState extends State<ClientActiveRideScreen> {
     }
   }
 
-  void _showCancelDialog(BuildContext context, ClientRideController controller) {
+  void _showCancelDialog(
+    BuildContext context,
+    ClientRideController controller,
+  ) {
     final navigator = Navigator.of(context);
     showDialog(
       context: context,

@@ -2,12 +2,28 @@ import 'package:geolocator/geolocator.dart';
 import 'package:latlong2/latlong.dart';
 import 'map_constants.dart';
 
+/// Types of location errors.
+enum LocationErrorType {
+  /// GPS/location services are disabled on the device.
+  serviceDisabled,
+
+  /// Location permission was denied.
+  permissionDenied,
+
+  /// Location permission was permanently denied.
+  permissionDeniedForever,
+
+  /// Other error (timeout, etc).
+  other,
+}
+
 /// Result of a location request.
 class LocationResult {
   const LocationResult({
     required this.position,
     required this.isReal,
     this.errorMessage,
+    this.errorType,
   });
 
   /// The position (real or fallback).
@@ -19,6 +35,9 @@ class LocationResult {
   /// Error message if location couldn't be obtained.
   final String? errorMessage;
 
+  /// Type of error if location couldn't be obtained.
+  final LocationErrorType? errorType;
+
   /// Creates a successful result with real location.
   factory LocationResult.success(Position position) {
     return LocationResult(
@@ -28,11 +47,15 @@ class LocationResult {
   }
 
   /// Creates a fallback result with default location.
-  factory LocationResult.fallback(String errorMessage) {
+  factory LocationResult.fallback(
+    String errorMessage,
+    LocationErrorType errorType,
+  ) {
     return LocationResult(
       position: MapConstants.defaultCenter,
       isReal: false,
       errorMessage: errorMessage,
+      errorType: errorType,
     );
   }
 }
@@ -62,6 +85,16 @@ class LocationService {
     return await Geolocator.checkPermission();
   }
 
+  /// Opens the device location settings.
+  Future<bool> openLocationSettings() async {
+    return await Geolocator.openLocationSettings();
+  }
+
+  /// Opens the app settings (for permission management).
+  Future<bool> openAppSettings() async {
+    return await Geolocator.openAppSettings();
+  }
+
   /// Gets the current position.
   /// Returns a [LocationResult] with either the real position or a fallback.
   Future<LocationResult> getCurrentPosition() async {
@@ -70,15 +103,28 @@ class LocationService {
       final serviceEnabled = await isLocationServiceEnabled();
       if (!serviceEnabled) {
         return LocationResult.fallback(
-          'Los servicios de ubicación están desactivados.',
+          'GPS desactivado. Actívalo para mejor experiencia.',
+          LocationErrorType.serviceDisabled,
         );
       }
 
-      // Check/request permission
-      final hasPermission = await requestPermission();
-      if (!hasPermission) {
+      // Check permission status
+      LocationPermission permission = await Geolocator.checkPermission();
+
+      if (permission == LocationPermission.denied) {
+        permission = await Geolocator.requestPermission();
+        if (permission == LocationPermission.denied) {
+          return LocationResult.fallback(
+            'Permiso de ubicación requerido.',
+            LocationErrorType.permissionDenied,
+          );
+        }
+      }
+
+      if (permission == LocationPermission.deniedForever) {
         return LocationResult.fallback(
-          'Permiso de ubicación denegado.',
+          'Permiso de ubicación denegado. Ve a configuración.',
+          LocationErrorType.permissionDeniedForever,
         );
       }
 
@@ -93,7 +139,8 @@ class LocationService {
       return LocationResult.success(position);
     } catch (e) {
       return LocationResult.fallback(
-        'Error al obtener ubicación: $e',
+        'Error al obtener ubicación.',
+        LocationErrorType.other,
       );
     }
   }
@@ -121,4 +168,3 @@ class LocationService {
     );
   }
 }
-
