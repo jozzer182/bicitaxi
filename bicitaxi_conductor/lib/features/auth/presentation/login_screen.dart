@@ -53,13 +53,9 @@ class LoginScreen extends StatelessWidget {
       mainAxisAlignment: MainAxisAlignment.center,
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
-        Expanded(
-          child: _buildHeader(context),
-        ),
+        Expanded(child: _buildHeader(context)),
         const SizedBox(width: 48),
-        Expanded(
-          child: _buildLoginCard(context),
-        ),
+        Expanded(child: _buildLoginCard(context)),
       ],
     );
   }
@@ -92,23 +88,23 @@ class LoginScreen extends StatelessWidget {
         Text(
           'Bici Taxi',
           style: Theme.of(context).textTheme.headlineLarge?.copyWith(
-                fontWeight: FontWeight.bold,
-                letterSpacing: -0.5,
-              ),
+            fontWeight: FontWeight.bold,
+            letterSpacing: -0.5,
+          ),
         ),
         Text(
           'Conductor',
           style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                fontWeight: FontWeight.w500,
-                color: AppColors.driverAccent,
-              ),
+            fontWeight: FontWeight.w500,
+            color: AppColors.driverAccent,
+          ),
         ),
         const SizedBox(height: 8),
         Text(
           'Conecta con pasajeros y genera ingresos',
-          style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                color: AppColors.textSecondary,
-              ),
+          style: Theme.of(
+            context,
+          ).textTheme.bodyLarge?.copyWith(color: AppColors.textSecondary),
           textAlign: TextAlign.center,
         ),
       ],
@@ -125,17 +121,17 @@ class LoginScreen extends StatelessWidget {
         children: [
           Text(
             'Inicia sesión',
-            style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                  fontWeight: FontWeight.w600,
-                ),
+            style: Theme.of(
+              context,
+            ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w600),
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: 8),
           Text(
             'Elige cómo quieres continuar',
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: AppColors.textSecondary,
-                ),
+            style: Theme.of(
+              context,
+            ).textTheme.bodyMedium?.copyWith(color: AppColors.textSecondary),
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: 32),
@@ -169,19 +165,12 @@ class LoginScreen extends StatelessWidget {
           // Divider with text
           Row(
             children: [
-              const Expanded(
-                child: Divider(color: AppColors.surfaceMedium),
-              ),
+              const Expanded(child: Divider(color: AppColors.surfaceMedium)),
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: Text(
-                  'o',
-                  style: Theme.of(context).textTheme.bodySmall,
-                ),
+                child: Text('o', style: Theme.of(context).textTheme.bodySmall),
               ),
-              const Expanded(
-                child: Divider(color: AppColors.surfaceMedium),
-              ),
+              const Expanded(child: Divider(color: AppColors.surfaceMedium)),
             ],
           ),
           const SizedBox(height: 24),
@@ -212,9 +201,9 @@ class LoginScreen extends StatelessWidget {
           Text(
             'Al continuar, aceptas nuestros Términos de Servicio y Política de Privacidad',
             style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  color: AppColors.textTertiary,
-                  height: 1.4,
-                ),
+              color: AppColors.textTertiary,
+              height: 1.4,
+            ),
             textAlign: TextAlign.center,
           ),
         ],
@@ -269,15 +258,19 @@ class _AuthButton extends StatelessWidget {
         padding: const EdgeInsets.symmetric(vertical: 4),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
+          mainAxisSize: MainAxisSize.min,
           children: [
             icon,
             const SizedBox(width: 12),
-            Text(
-              label,
-              style: const TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.w500,
-                color: AppColors.white,
+            Flexible(
+              child: Text(
+                label,
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w500,
+                  color: AppColors.white,
+                ),
+                overflow: TextOverflow.ellipsis,
               ),
             ),
           ],
