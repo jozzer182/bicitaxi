@@ -104,10 +104,7 @@ class _DriverHomeScreenState extends State<DriverHomeScreen> {
                 children: [
                   const Text(
                     'Viaje en curso',
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 16,
-                    ),
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
                   ),
                   const SizedBox(height: 2),
                   Text(
@@ -181,17 +178,16 @@ class _DriverHomeScreenState extends State<DriverHomeScreen> {
                   children: [
                     Text(
                       isOnline ? 'Conectado' : 'Desconectado',
-                      style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                            fontWeight: FontWeight.bold,
-                          ),
+                      style: Theme.of(context).textTheme.headlineSmall
+                          ?.copyWith(fontWeight: FontWeight.bold),
                     ),
                     Text(
                       isOnline
                           ? 'Recibiendo solicitudes de viaje'
                           : 'No estás recibiendo solicitudes',
                       style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                            color: AppColors.textSecondary,
-                          ),
+                        color: AppColors.textSecondary,
+                      ),
                     ),
                   ],
                 ),
@@ -226,7 +222,9 @@ class _DriverHomeScreenState extends State<DriverHomeScreen> {
                     isOnline
                         ? Icons.pause_circle_outline_rounded
                         : Icons.play_circle_outline_rounded,
-                    color: isOnline ? AppColors.success : AppColors.driverAccent,
+                    color: isOnline
+                        ? AppColors.success
+                        : AppColors.driverAccent,
                     size: 28,
                   ),
                   const SizedBox(width: 12),
@@ -235,7 +233,9 @@ class _DriverHomeScreenState extends State<DriverHomeScreen> {
                     style: TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.w600,
-                      color: isOnline ? AppColors.success : AppColors.driverAccent,
+                      color: isOnline
+                          ? AppColors.success
+                          : AppColors.driverAccent,
                     ),
                   ),
                 ],
@@ -249,6 +249,7 @@ class _DriverHomeScreenState extends State<DriverHomeScreen> {
 
   Widget _buildQuickActions(BuildContext context) {
     return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
       children: [
         Expanded(
           child: LiquidButton(
@@ -257,23 +258,25 @@ class _DriverHomeScreenState extends State<DriverHomeScreen> {
               Navigator.pushNamed(context, AppRoutes.map);
             },
             padding: const EdgeInsets.symmetric(vertical: 16),
-            child: const Column(
-              children: [
-                Icon(
-                  Icons.map_outlined,
-                  color: AppColors.white,
-                  size: 28,
-                ),
-                SizedBox(height: 8),
-                Text(
-                  'Ver mapa',
-                  style: TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w500,
-                    color: AppColors.white,
+            child: Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                mainAxisSize: MainAxisSize.min,
+                children: const [
+                  Icon(Icons.map_outlined, color: AppColors.white, size: 28),
+                  SizedBox(height: 8),
+                  Text(
+                    'Ver mapa',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w500,
+                      color: AppColors.white,
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         ),
@@ -285,23 +288,29 @@ class _DriverHomeScreenState extends State<DriverHomeScreen> {
               Navigator.pushNamed(context, AppRoutes.earnings);
             },
             padding: const EdgeInsets.symmetric(vertical: 16),
-            child: const Column(
-              children: [
-                Icon(
-                  Icons.insights_rounded,
-                  color: AppColors.white,
-                  size: 28,
-                ),
-                SizedBox(height: 8),
-                Text(
-                  'Estadísticas',
-                  style: TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w500,
+            child: Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                mainAxisSize: MainAxisSize.min,
+                children: const [
+                  Icon(
+                    Icons.insights_rounded,
                     color: AppColors.white,
+                    size: 28,
                   ),
-                ),
-              ],
+                  SizedBox(height: 8),
+                  Text(
+                    'Estadísticas',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w500,
+                      color: AppColors.white,
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
         ),
@@ -318,9 +327,9 @@ class _DriverHomeScreenState extends State<DriverHomeScreen> {
         children: [
           Text(
             'Resumen de hoy',
-            style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.w600,
-                ),
+            style: Theme.of(
+              context,
+            ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
           ),
           const SizedBox(height: 16),
           Row(
@@ -333,11 +342,7 @@ class _DriverHomeScreenState extends State<DriverHomeScreen> {
                 label: 'Ganancias',
                 color: AppColors.driverAccent,
               ),
-              Container(
-                width: 1,
-                height: 50,
-                color: AppColors.surfaceMedium,
-              ),
+              Container(width: 1, height: 50, color: AppColors.surfaceMedium),
               _buildSummaryItem(
                 context,
                 icon: Icons.directions_bike_rounded,
@@ -345,11 +350,7 @@ class _DriverHomeScreenState extends State<DriverHomeScreen> {
                 label: 'Viajes',
                 color: AppColors.brightBlue,
               ),
-              Container(
-                width: 1,
-                height: 50,
-                color: AppColors.surfaceMedium,
-              ),
+              Container(width: 1, height: 50, color: AppColors.surfaceMedium),
               _buildSummaryItem(
                 context,
                 icon: Icons.timer_outlined,
@@ -378,16 +379,13 @@ class _DriverHomeScreenState extends State<DriverHomeScreen> {
         Text(
           value,
           style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                fontWeight: FontWeight.bold,
-                color: color,
-              ),
+            fontWeight: FontWeight.bold,
+            color: color,
+          ),
         ),
         Text(
           label,
-          style: TextStyle(
-            fontSize: 12,
-            color: AppColors.textSecondary,
-          ),
+          style: TextStyle(fontSize: 12, color: AppColors.textSecondary),
         ),
       ],
     );
@@ -407,13 +405,16 @@ class _DriverHomeScreenState extends State<DriverHomeScreen> {
             children: [
               Text(
                 'Solicitudes cercanas',
-                style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.w600,
-                    ),
+                style: Theme.of(
+                  context,
+                ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
               ),
               if (isOnline && pendingRides.isNotEmpty)
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 4,
+                  ),
                   decoration: BoxDecoration(
                     color: AppColors.success.withValues(alpha: 0.2),
                     borderRadius: BorderRadius.circular(12),
@@ -445,17 +446,21 @@ class _DriverHomeScreenState extends State<DriverHomeScreen> {
           ),
           const SizedBox(height: 16),
           if (isOnline && pendingRides.isNotEmpty) ...[
-            ...pendingRides.take(2).map((ride) => Padding(
-                  padding: const EdgeInsets.only(bottom: 12),
-                  child: _buildRequestItem(
-                    context,
-                    passengerName: 'Pasajero',
-                    distance: '0.5 km',
-                    pickup: ride.pickup.displayText,
-                    destination: ride.dropoff?.displayText ?? 'Sin destino',
-                    fare: '\$5,000',
+            ...pendingRides
+                .take(2)
+                .map(
+                  (ride) => Padding(
+                    padding: const EdgeInsets.only(bottom: 12),
+                    child: _buildRequestItem(
+                      context,
+                      passengerName: 'Pasajero',
+                      distance: '0.5 km',
+                      pickup: ride.pickup.displayText,
+                      destination: ride.dropoff?.displayText ?? 'Sin destino',
+                      fare: '\$5,000',
+                    ),
                   ),
-                )),
+                ),
             if (pendingRides.length > 2)
               Center(
                 child: TextButton(
@@ -485,9 +490,7 @@ class _DriverHomeScreenState extends State<DriverHomeScreen> {
                       isOnline
                           ? 'Buscando solicitudes cercanas...'
                           : 'Conéctate para recibir solicitudes',
-                      style: TextStyle(
-                        color: AppColors.textSecondary,
-                      ),
+                      style: TextStyle(color: AppColors.textSecondary),
                     ),
                   ],
                 ),
@@ -583,11 +586,7 @@ class _DriverHomeScreenState extends State<DriverHomeScreen> {
                 color: AppColors.textTertiary,
               ),
               const SizedBox(width: 8),
-              Icon(
-                Icons.location_on_rounded,
-                size: 16,
-                color: AppColors.error,
-              ),
+              Icon(Icons.location_on_rounded, size: 16, color: AppColors.error),
               const SizedBox(width: 4),
               Expanded(
                 child: Text(
