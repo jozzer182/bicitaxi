@@ -6,7 +6,7 @@ abstract final class MapConstants {
   static const LatLng defaultCenter = LatLng(4.6097, -74.0817);
 
   /// Default zoom level for urban areas.
-  static const double defaultZoom = 15.0;
+  static const double defaultZoom = 17.0;
 
   /// Minimum zoom level.
   static const double minZoom = 4.0;

@@ -258,7 +258,8 @@ class _ClientActiveRideScreenState extends State<ClientActiveRideScreen> {
                         icon: Icons.trip_origin_rounded,
                         iconColor: AppColors.success,
                         label: 'Recogida',
-                        value: ride.pickup.displayText,
+                        value: ride.pickup.dmsCoords,
+                        address: ride.pickup.address,
                       ),
                     ),
                     if (ride.dropoff != null) ...[
@@ -274,7 +275,8 @@ class _ClientActiveRideScreenState extends State<ClientActiveRideScreen> {
                           icon: Icons.location_on_rounded,
                           iconColor: AppColors.error,
                           label: 'Destino',
-                          value: ride.dropoff!.displayText,
+                          value: ride.dropoff!.dmsCoords,
+                          address: ride.dropoff!.address,
                         ),
                       ),
                     ],
@@ -486,6 +488,7 @@ class _ClientActiveRideScreenState extends State<ClientActiveRideScreen> {
     required Color iconColor,
     required String label,
     required String value,
+    String? address,
   }) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
@@ -505,6 +508,33 @@ class _ClientActiveRideScreenState extends State<ClientActiveRideScreen> {
               value,
               style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
             ),
+            if (address != null && address.isNotEmpty)
+              Padding(
+                padding: const EdgeInsets.only(top: 2),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      Icons.place_outlined,
+                      size: 12,
+                      color: AppColors.textSecondary,
+                    ),
+                    const SizedBox(width: 4),
+                    ConstrainedBox(
+                      constraints: const BoxConstraints(maxWidth: 200),
+                      child: Text(
+                        address,
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: AppColors.textSecondary,
+                        ),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
           ],
         ),
       ],

@@ -92,15 +92,15 @@ class _DriverActiveRideScreenState extends State<DriverActiveRideScreen> {
                 Text(
                   'Sin viaje activo',
                   style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                        fontWeight: FontWeight.bold,
-                      ),
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
                 const SizedBox(height: 8),
                 Text(
                   'Acepta una solicitud para comenzar un viaje',
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        color: AppColors.textSecondary,
-                      ),
+                    color: AppColors.textSecondary,
+                  ),
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 24),
@@ -110,7 +110,10 @@ class _DriverActiveRideScreenState extends State<DriverActiveRideScreen> {
                   onTap: () {
                     Navigator.pushNamed(context, AppRoutes.map);
                   },
-                  padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 32),
+                  padding: const EdgeInsets.symmetric(
+                    vertical: 14,
+                    horizontal: 32,
+                  ),
                   child: const Text(
                     'Ver solicitudes',
                     style: TextStyle(
@@ -177,7 +180,9 @@ class _DriverActiveRideScreenState extends State<DriverActiveRideScreen> {
                       width: 72,
                       height: 72,
                       decoration: BoxDecoration(
-                        color: _getStatusColor(ride.status).withValues(alpha: 0.2),
+                        color: _getStatusColor(
+                          ride.status,
+                        ).withValues(alpha: 0.2),
                         borderRadius: BorderRadius.circular(20),
                       ),
                       child: Icon(
@@ -189,7 +194,8 @@ class _DriverActiveRideScreenState extends State<DriverActiveRideScreen> {
                     const SizedBox(height: 16),
                     Text(
                       ride.status.displayName,
-                      style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                      style: Theme.of(context).textTheme.headlineSmall
+                          ?.copyWith(
                             fontWeight: FontWeight.bold,
                             color: _getStatusColor(ride.status),
                           ),
@@ -198,8 +204,8 @@ class _DriverActiveRideScreenState extends State<DriverActiveRideScreen> {
                     Text(
                       _getStatusDescription(ride.status),
                       style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                            color: AppColors.textSecondary,
-                          ),
+                        color: AppColors.textSecondary,
+                      ),
                       textAlign: TextAlign.center,
                     ),
                   ],
@@ -215,7 +221,9 @@ class _DriverActiveRideScreenState extends State<DriverActiveRideScreen> {
                   children: [
                     CircleAvatar(
                       radius: 28,
-                      backgroundColor: AppColors.brightBlue.withValues(alpha: 0.2),
+                      backgroundColor: AppColors.brightBlue.withValues(
+                        alpha: 0.2,
+                      ),
                       child: const Icon(
                         Icons.person_rounded,
                         size: 28,
@@ -236,9 +244,8 @@ class _DriverActiveRideScreenState extends State<DriverActiveRideScreen> {
                           ),
                           Text(
                             'María Cliente',
-                            style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                                  fontWeight: FontWeight.w600,
-                                ),
+                            style: Theme.of(context).textTheme.titleMedium
+                                ?.copyWith(fontWeight: FontWeight.w600),
                           ),
                           Row(
                             children: [
@@ -300,15 +307,16 @@ class _DriverActiveRideScreenState extends State<DriverActiveRideScreen> {
                     Text(
                       'Ruta del viaje',
                       style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                            fontWeight: FontWeight.w600,
-                          ),
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
                     const SizedBox(height: 16),
                     _buildLocationRow(
                       icon: Icons.trip_origin_rounded,
                       iconColor: AppColors.success,
                       label: 'Recogida',
-                      value: ride.pickup.displayText,
+                      value: ride.pickup.dmsCoords,
+                      address: ride.pickup.address,
                     ),
                     if (ride.dropoff != null) ...[
                       Padding(
@@ -323,7 +331,8 @@ class _DriverActiveRideScreenState extends State<DriverActiveRideScreen> {
                         icon: Icons.location_on_rounded,
                         iconColor: AppColors.error,
                         label: 'Destino',
-                        value: ride.dropoff!.displayText,
+                        value: ride.dropoff!.dmsCoords,
+                        address: ride.dropoff!.address,
                       ),
                     ],
                     const Divider(color: AppColors.surfaceMedium, height: 32),
@@ -332,9 +341,7 @@ class _DriverActiveRideScreenState extends State<DriverActiveRideScreen> {
                       children: [
                         Text(
                           'Tarifa estimada',
-                          style: TextStyle(
-                            color: AppColors.textSecondary,
-                          ),
+                          style: TextStyle(color: AppColors.textSecondary),
                         ),
                         Text(
                           '\$5,000',
@@ -365,6 +372,7 @@ class _DriverActiveRideScreenState extends State<DriverActiveRideScreen> {
     required Color iconColor,
     required String label,
     required String value,
+    String? address,
   }) {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -377,10 +385,7 @@ class _DriverActiveRideScreenState extends State<DriverActiveRideScreen> {
             children: [
               Text(
                 label,
-                style: TextStyle(
-                  fontSize: 12,
-                  color: AppColors.textTertiary,
-                ),
+                style: TextStyle(fontSize: 12, color: AppColors.textTertiary),
               ),
               Text(
                 value,
@@ -389,6 +394,31 @@ class _DriverActiveRideScreenState extends State<DriverActiveRideScreen> {
                   fontWeight: FontWeight.w500,
                 ),
               ),
+              if (address != null && address.isNotEmpty)
+                Padding(
+                  padding: const EdgeInsets.only(top: 2),
+                  child: Row(
+                    children: [
+                      Icon(
+                        Icons.place_outlined,
+                        size: 12,
+                        color: AppColors.textSecondary,
+                      ),
+                      const SizedBox(width: 4),
+                      Expanded(
+                        child: Text(
+                          address,
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: AppColors.textSecondary,
+                          ),
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
             ],
           ),
         ),
@@ -439,10 +469,7 @@ class _DriverActiveRideScreenState extends State<DriverActiveRideScreen> {
                   ),
                 )
               else
-                const Icon(
-                  Icons.navigation_rounded,
-                  color: AppColors.white,
-                ),
+                const Icon(Icons.navigation_rounded, color: AppColors.white),
               const SizedBox(width: 8),
               const Text(
                 'Ir a recoger',
@@ -486,10 +513,7 @@ class _DriverActiveRideScreenState extends State<DriverActiveRideScreen> {
                   ),
                 )
               else
-                const Icon(
-                  Icons.play_arrow_rounded,
-                  color: AppColors.white,
-                ),
+                const Icon(Icons.play_arrow_rounded, color: AppColors.white),
               const SizedBox(width: 8),
               const Text(
                 'Iniciar viaje',
@@ -556,10 +580,7 @@ class _DriverActiveRideScreenState extends State<DriverActiveRideScreen> {
                   ),
                 )
               else
-                const Icon(
-                  Icons.check_circle_rounded,
-                  color: AppColors.white,
-                ),
+                const Icon(Icons.check_circle_rounded, color: AppColors.white),
               const SizedBox(width: 8),
               const Text(
                 'Finalizar viaje',
@@ -648,7 +669,10 @@ class _DriverActiveRideScreenState extends State<DriverActiveRideScreen> {
     }
   }
 
-  void _showCancelDialog(BuildContext context, DriverRideController controller) {
+  void _showCancelDialog(
+    BuildContext context,
+    DriverRideController controller,
+  ) {
     final navigator = Navigator.of(context);
     showDialog(
       context: context,

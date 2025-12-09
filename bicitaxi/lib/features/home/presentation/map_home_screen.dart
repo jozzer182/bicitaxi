@@ -9,6 +9,7 @@ import '../../../core/routes/app_routes.dart';
 import '../../map/utils/map_constants.dart';
 import '../../map/utils/location_service.dart';
 import '../../map/utils/retry_tile_provider.dart';
+import '../../map/utils/geocoding_service.dart';
 import '../../rides/models/ride_location_point.dart';
 import '../../rides/models/ride_status.dart';
 
@@ -24,10 +25,15 @@ class MapHomeScreen extends StatefulWidget {
 class _MapHomeScreenState extends State<MapHomeScreen> {
   final MapController _mapController = MapController();
   final LocationService _locationService = LocationService();
+  final GeocodingService _geocodingService = GeocodingService();
 
   LatLng? _currentPosition;
   LatLng? _pickupPosition;
   LatLng? _dropoffPosition;
+  String? _pickupAddress;
+  String? _dropoffAddress;
+  bool _isLoadingPickupAddress = false;
+  bool _isLoadingDropoffAddress = false;
   bool _isLoading = true;
   bool _isRequesting = false;
   LocationErrorType? _locationError;
@@ -83,18 +89,62 @@ class _MapHomeScreenState extends State<MapHomeScreen> {
     setState(() {
       if (_pickupPosition == null) {
         _pickupPosition = position;
+        _pickupAddress = null;
+        _isLoadingPickupAddress = true;
       } else if (_dropoffPosition == null) {
         _dropoffPosition = position;
+        _dropoffAddress = null;
+        _isLoadingDropoffAddress = true;
       } else {
         _dropoffPosition = position;
+        _dropoffAddress = null;
+        _isLoadingDropoffAddress = true;
       }
     });
+
+    // Geocode the selected position
+    if (_pickupPosition != null &&
+        _pickupAddress == null &&
+        _isLoadingPickupAddress) {
+      _geocodingService.reverseGeocode(
+        position.latitude,
+        position.longitude,
+        onResult: (address) {
+          if (mounted) {
+            setState(() {
+              _pickupAddress = address;
+              _isLoadingPickupAddress = false;
+            });
+          }
+        },
+      );
+    } else if (_dropoffPosition != null &&
+        _dropoffAddress == null &&
+        _isLoadingDropoffAddress) {
+      _geocodingService.reverseGeocode(
+        position.latitude,
+        position.longitude,
+        onResult: (address) {
+          if (mounted) {
+            setState(() {
+              _dropoffAddress = address;
+              _isLoadingDropoffAddress = false;
+            });
+          }
+        },
+      );
+    }
   }
 
   void _clearSelections() {
+    _geocodingService.cancel();
     setState(() {
       _pickupPosition = null;
       _dropoffPosition = null;
+      _pickupAddress = null;
+      _dropoffAddress = null;
+      _isLoadingPickupAddress = false;
+      _isLoadingDropoffAddress = false;
     });
   }
 
@@ -119,12 +169,14 @@ class _MapHomeScreenState extends State<MapHomeScreen> {
       final pickup = RideLocationPoint(
         lat: _pickupPosition!.latitude,
         lng: _pickupPosition!.longitude,
+        address: _pickupAddress,
       );
 
       final dropoff = _dropoffPosition != null
           ? RideLocationPoint(
               lat: _dropoffPosition!.latitude,
               lng: _dropoffPosition!.longitude,
+              address: _dropoffAddress,
             )
           : null;
 
@@ -618,9 +670,12 @@ class _MapHomeScreenState extends State<MapHomeScreen> {
                     iconColor: AppColors.success,
                     label: 'Punto de recogida',
                     value: _pickupPosition != null
-                        ? 'Ubicación seleccionada'
+                        ? (_isLoadingPickupAddress
+                              ? 'Buscando dirección...'
+                              : (_pickupAddress ?? 'Ubicación seleccionada'))
                         : 'Toca el mapa para seleccionar',
                     isSelected: _pickupPosition != null,
+                    isLoading: _isLoadingPickupAddress,
                   ),
                   const SizedBox(height: 12),
                   _buildLocationRow(
@@ -628,11 +683,14 @@ class _MapHomeScreenState extends State<MapHomeScreen> {
                     iconColor: AppColors.error,
                     label: 'Destino',
                     value: _dropoffPosition != null
-                        ? 'Destino seleccionado'
+                        ? (_isLoadingDropoffAddress
+                              ? 'Buscando dirección...'
+                              : (_dropoffAddress ?? 'Destino seleccionado'))
                         : _pickupPosition != null
                         ? 'Toca para seleccionar destino'
                         : 'Primero selecciona recogida',
                     isSelected: _dropoffPosition != null,
+                    isLoading: _isLoadingDropoffAddress,
                   ),
                   const SizedBox(height: 16),
 
@@ -703,6 +761,7 @@ class _MapHomeScreenState extends State<MapHomeScreen> {
     required String label,
     required String value,
     required bool isSelected,
+    bool isLoading = false,
   }) {
     return Row(
       children: [
@@ -731,11 +790,22 @@ class _MapHomeScreenState extends State<MapHomeScreen> {
                   fontWeight: isSelected ? FontWeight.w500 : FontWeight.w400,
                   color: isSelected ? AppColors.white : AppColors.textSecondary,
                 ),
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
               ),
             ],
           ),
         ),
-        if (isSelected)
+        if (isLoading)
+          const SizedBox(
+            width: 20,
+            height: 20,
+            child: CircularProgressIndicator(
+              strokeWidth: 2,
+              color: AppColors.electricBlue,
+            ),
+          )
+        else if (isSelected)
           Icon(Icons.check_circle_rounded, color: iconColor, size: 20),
       ],
     );
