@@ -2,6 +2,7 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:liquid_glass_ui_design/liquid_glass_ui.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../core/widgets/barrel_distortion_filter.dart';
 import '../../../core/widgets/responsive_layout.dart';
 import 'driver_map_home_screen.dart';
 import '../../rides/presentation/driver_active_ride_screen.dart';
@@ -151,59 +152,29 @@ class _HomeShellState extends State<HomeShell> {
   }
 
   Widget _buildBottomNavBar(BuildContext context) {
-    // Create a refraction effect using scale matrix + blur
-    // This simulates the optical distortion of liquid glass
-    final Matrix4 refractionMatrix = Matrix4.identity()
-      ..setEntry(0, 0, 1.07) // Scale X
-      ..setEntry(1, 1, 1.07); // Scale Y
-
     return SafeArea(
       top: false,
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(40),
-          child: BackdropFilter(
-            // Compose: first apply slight distortion, then blur
-            filter: ImageFilter.compose(
-              outer: ImageFilter.blur(sigmaX: 2, sigmaY: 2),
-              inner: ImageFilter.matrix(
-                refractionMatrix.storage,
-                filterQuality: FilterQuality.high,
-              ),
-            ),
-            child: Container(
-              padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 12),
-              decoration: BoxDecoration(
-                // Very subtle gradient for depth
-                gradient: LinearGradient(
-                  begin: Alignment.bottomCenter,
-                  end: Alignment.topCenter,
-                  colors: [
-                    Colors.white.withValues(alpha: 0.08),
-                    Colors.white.withValues(alpha: 0.02),
-                  ],
-                ),
-                borderRadius: BorderRadius.circular(40),
-                border: Border.all(
-                  color: Colors.white.withValues(alpha: 0.1),
-                  width: 1,
-                ),
-              ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: List.generate(_destinations.length, (index) {
-                  final dest = _destinations[index];
-                  final isSelected = _selectedIndex == index;
-                  return _NavBarItem(
-                    icon: isSelected ? dest.selectedIcon : dest.icon,
-                    label: dest.label,
-                    isSelected: isSelected,
-                    onTap: () => _onTabChanged(index),
-                  );
-                }),
-              ),
-            ),
+        padding: const EdgeInsets.only(bottom: 5),
+        child: BarrelDistortionFilter(
+          distortionStrength: 0.7,
+          borderRadius: 40,
+          border: Border.all(
+            color: Colors.white.withValues(alpha: 0.15),
+            width: 1,
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: List.generate(_destinations.length, (index) {
+              final dest = _destinations[index];
+              final isSelected = _selectedIndex == index;
+              return _NavBarItem(
+                icon: isSelected ? dest.selectedIcon : dest.icon,
+                label: dest.label,
+                isSelected: isSelected,
+                onTap: () => _onTabChanged(index),
+              );
+            }),
           ),
         ),
       ),
