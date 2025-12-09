@@ -5,6 +5,7 @@ import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:liquid_glass_ui_design/liquid_glass_ui.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../core/widgets/glass_container.dart';
 import '../../../core/widgets/responsive_layout.dart';
 import '../../../core/providers/app_state.dart';
 import '../../../core/routes/app_routes.dart';
@@ -407,33 +408,6 @@ class _MapHomeScreenState extends State<MapHomeScreen>
           urlTemplate: MapConstants.osmTileUrl,
           userAgentPackageName: MapConstants.userAgent,
           tileProvider: RetryTileProvider(),
-          tileBuilder: (context, widget, tile) {
-            return ColorFiltered(
-              colorFilter: const ColorFilter.matrix([
-                0.7,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0.7,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0.8,
-                0,
-                0,
-                0,
-                0,
-                0,
-                1,
-                0,
-              ]),
-              child: widget,
-            );
-          },
         ),
         // Arc line between pickup and dropoff with breathing animation
         if (_pickupPosition != null && _dropoffPosition != null)
@@ -721,7 +695,7 @@ class _MapHomeScreenState extends State<MapHomeScreen>
               )
             else
               // Welcome card
-              LiquidCard(
+              UltraGlassCard(
                 borderRadius: 16,
                 padding: const EdgeInsets.symmetric(
                   horizontal: 16,
@@ -879,7 +853,7 @@ class _MapHomeScreenState extends State<MapHomeScreen>
             constraints: BoxConstraints(
               maxWidth: isTablet ? 500 : double.infinity,
             ),
-            child: LiquidCard(
+            child: UltraGlassCard(
               borderRadius: 24,
               padding: const EdgeInsets.all(20),
               child: Column(

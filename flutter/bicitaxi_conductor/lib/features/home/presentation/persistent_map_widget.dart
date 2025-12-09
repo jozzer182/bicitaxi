@@ -89,33 +89,6 @@ class PersistentMapWidgetState extends State<PersistentMapWidget> {
           urlTemplate: MapConstants.osmTileUrl,
           userAgentPackageName: MapConstants.userAgent,
           tileProvider: RetryTileProvider(),
-          tileBuilder: (context, widget, tile) {
-            return ColorFiltered(
-              colorFilter: const ColorFilter.matrix([
-                0.7,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0.7,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0.8,
-                0,
-                0,
-                0,
-                0,
-                0,
-                1,
-                0,
-              ]),
-              child: widget,
-            );
-          },
         ),
       ],
     );

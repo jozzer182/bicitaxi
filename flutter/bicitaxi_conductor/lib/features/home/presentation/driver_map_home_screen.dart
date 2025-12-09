@@ -3,6 +3,7 @@ import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:liquid_glass_ui_design/liquid_glass_ui.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../core/widgets/glass_container.dart';
 import '../../../core/widgets/responsive_layout.dart';
 import '../../../core/providers/app_state.dart';
 import '../../../core/routes/app_routes.dart';
@@ -175,33 +176,6 @@ class _DriverMapHomeScreenState extends State<DriverMapHomeScreen> {
           urlTemplate: MapConstants.osmTileUrl,
           userAgentPackageName: MapConstants.userAgent,
           tileProvider: RetryTileProvider(),
-          tileBuilder: (context, widget, tile) {
-            return ColorFiltered(
-              colorFilter: const ColorFilter.matrix([
-                0.7,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0.7,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0.8,
-                0,
-                0,
-                0,
-                0,
-                0,
-                1,
-                0,
-              ]),
-              child: widget,
-            );
-          },
         ),
         MarkerLayer(markers: _buildMarkers(pendingRides)),
       ],
@@ -354,7 +328,7 @@ class _DriverMapHomeScreenState extends State<DriverMapHomeScreen> {
               // Status toggle bar
               GestureDetector(
                 onTap: _toggleOnlineStatus,
-                child: LiquidCard(
+                child: UltraGlassCard(
                   borderRadius: 16,
                   color: isOnline
                       ? AppColors.success.withValues(alpha: 0.15)
@@ -545,7 +519,7 @@ class _DriverMapHomeScreenState extends State<DriverMapHomeScreen> {
             constraints: BoxConstraints(
               maxWidth: isTablet ? 500 : double.infinity,
             ),
-            child: LiquidCard(
+            child: UltraGlassCard(
               borderRadius: 24,
               padding: const EdgeInsets.all(20),
               child: Column(
