@@ -93,47 +93,74 @@ class GeocodingService {
   }
 
   /// Formats the Nominatim response into a readable address.
+  /// Focuses on street-level details only (no city/locality/neighbourhood).
+  /// For Colombia, shows only the road name (Carrera/Calle) and house number if available.
   String? _formatAddress(Map<String, dynamic> data) {
     final address = data['address'] as Map<String, dynamic>?;
-    if (address == null) return data['display_name'] as String?;
+    if (address == null) {
+      return _extractStreetOnly(data['display_name'] as String?);
+    }
 
-    // Build a concise address from components
-    final parts = <String>[];
-
-    // Street + house number
+    // Primary: Street/Road name only
     final road = address['road'] as String?;
     final houseNumber = address['house_number'] as String?;
+
     if (road != null) {
       if (houseNumber != null) {
-        parts.add('$road #$houseNumber');
-      } else {
-        parts.add(road);
+        // Format: "Carrera 100 # 148-78"
+        return '$road # $houseNumber';
+      }
+      return road;
+    }
+
+    // Fallback: Only use amenity or building name, NOT neighbourhood
+    final amenity = address['amenity'] as String?;
+    if (amenity != null) return amenity;
+
+    final building = address['building'] as String?;
+    if (building != null) return building;
+
+    // Last resort: extract only the road from display_name
+    return _extractStreetOnly(data['display_name'] as String?);
+  }
+
+  /// Extracts only the street/road name from the display name.
+  /// Filters out localidad, barrio, city, etc.
+  String? _extractStreetOnly(String? displayName) {
+    if (displayName == null) return null;
+
+    final parts = displayName.split(',').map((p) => p.trim()).toList();
+
+    // Look for parts that start with "Carrera", "Calle", "Avenida", "Diagonal", "Transversal"
+    for (final part in parts) {
+      final lowerPart = part.toLowerCase();
+      if (lowerPart.startsWith('carrera') ||
+          lowerPart.startsWith('calle') ||
+          lowerPart.startsWith('avenida') ||
+          lowerPart.startsWith('diagonal') ||
+          lowerPart.startsWith('transversal') ||
+          lowerPart.startsWith('av.') ||
+          lowerPart.startsWith('av ') ||
+          lowerPart.startsWith('cra') ||
+          lowerPart.startsWith('cl')) {
+        return part;
       }
     }
 
-    // Neighborhood/suburb
-    final suburb =
-        address['suburb'] as String? ??
-        address['neighbourhood'] as String? ??
-        address['quarter'] as String?;
-    if (suburb != null) {
-      parts.add(suburb);
+    // If no street pattern found, try the first non-numeric part
+    for (final part in parts) {
+      // Skip if it looks like a house number, postcode, or locality
+      if (RegExp(r'^\d+$').hasMatch(part)) continue;
+      if (part.toLowerCase().contains('localidad')) continue;
+      if (part.toLowerCase().contains('bogotá')) continue;
+      if (part.toLowerCase().contains('colombia')) continue;
+      if (part.toLowerCase().contains('upz')) continue;
+
+      // Return the first meaningful part
+      return part;
     }
 
-    // City
-    final city =
-        address['city'] as String? ??
-        address['town'] as String? ??
-        address['village'] as String?;
-    if (city != null && parts.length < 3) {
-      parts.add(city);
-    }
-
-    if (parts.isEmpty) {
-      return data['display_name'] as String?;
-    }
-
-    return parts.join(', ');
+    return parts.isNotEmpty ? parts[0] : displayName;
   }
 
   /// Cancels any pending geocoding request.

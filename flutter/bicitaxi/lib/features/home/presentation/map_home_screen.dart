@@ -421,11 +421,11 @@ class _MapHomeScreenState extends State<MapHomeScreen> {
         Container(
           padding: const EdgeInsets.all(8),
           decoration: BoxDecoration(
-            color: AppColors.success,
+            color: AppColors.electricBlue,
             borderRadius: BorderRadius.circular(8),
             boxShadow: [
               BoxShadow(
-                color: AppColors.success.withValues(alpha: 0.4),
+                color: AppColors.electricBlue.withValues(alpha: 0.4),
                 blurRadius: 8,
                 offset: const Offset(0, 2),
               ),
@@ -437,7 +437,7 @@ class _MapHomeScreenState extends State<MapHomeScreen> {
             size: 20,
           ),
         ),
-        Container(width: 3, height: 8, color: AppColors.success),
+        Container(width: 3, height: 8, color: AppColors.electricBlue),
       ],
     );
   }
@@ -449,11 +449,11 @@ class _MapHomeScreenState extends State<MapHomeScreen> {
         Container(
           padding: const EdgeInsets.all(8),
           decoration: BoxDecoration(
-            color: AppColors.error,
+            color: AppColors.deepBlue,
             borderRadius: BorderRadius.circular(8),
             boxShadow: [
               BoxShadow(
-                color: AppColors.error.withValues(alpha: 0.4),
+                color: AppColors.deepBlue.withValues(alpha: 0.4),
                 blurRadius: 8,
                 offset: const Offset(0, 2),
               ),
@@ -465,7 +465,7 @@ class _MapHomeScreenState extends State<MapHomeScreen> {
             size: 20,
           ),
         ),
-        Container(width: 3, height: 8, color: AppColors.error),
+        Container(width: 3, height: 8, color: AppColors.deepBlue),
       ],
     );
   }
@@ -699,7 +699,7 @@ class _MapHomeScreenState extends State<MapHomeScreen> {
                   // Location selection info
                   _buildLocationRow(
                     icon: Icons.trip_origin_rounded,
-                    iconColor: AppColors.success,
+                    iconColor: AppColors.electricBlue,
                     label: 'Punto de recogida',
                     value: _pickupPosition != null
                         ? (_isLoadingPickupAddress
@@ -708,11 +708,12 @@ class _MapHomeScreenState extends State<MapHomeScreen> {
                         : 'Toca el mapa para seleccionar',
                     isSelected: _pickupPosition != null,
                     isLoading: _isLoadingPickupAddress,
+                    coordinates: _pickupPosition,
                   ),
                   const SizedBox(height: 12),
                   _buildLocationRow(
                     icon: Icons.location_on_rounded,
-                    iconColor: AppColors.error,
+                    iconColor: AppColors.deepBlue,
                     label: 'Destino',
                     value: _dropoffPosition != null
                         ? (_isLoadingDropoffAddress
@@ -723,6 +724,7 @@ class _MapHomeScreenState extends State<MapHomeScreen> {
                         : 'Primero selecciona recogida',
                     isSelected: _dropoffPosition != null,
                     isLoading: _isLoadingDropoffAddress,
+                    coordinates: _dropoffPosition,
                   ),
                   const SizedBox(height: 16),
 
@@ -794,6 +796,7 @@ class _MapHomeScreenState extends State<MapHomeScreen> {
     required String value,
     required bool isSelected,
     bool isLoading = false,
+    LatLng? coordinates,
   }) {
     return Row(
       children: [
@@ -825,6 +828,9 @@ class _MapHomeScreenState extends State<MapHomeScreen> {
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
               ),
+              // Show coordinates in DMS format (only minutes and seconds)
+              if (coordinates != null && isSelected)
+                _buildDmsCoordinates(coordinates),
             ],
           ),
         ),
@@ -841,5 +847,62 @@ class _MapHomeScreenState extends State<MapHomeScreen> {
           Icon(Icons.check_circle_rounded, color: iconColor, size: 20),
       ],
     );
+  }
+
+  /// Builds DMS coordinates showing only minutes and seconds.
+  /// Minutes are displayed in a more subtle color than seconds.
+  Widget _buildDmsCoordinates(LatLng coordinates) {
+    final lat = _toDms(coordinates.latitude.abs());
+    final lng = _toDms(coordinates.longitude.abs());
+    final latDir = coordinates.latitude >= 0 ? 'N' : 'S';
+    final lngDir = coordinates.longitude >= 0 ? 'E' : 'W';
+
+    // Colors for different parts
+    const minuteColor = AppColors.textTertiary;
+    final secondColor = AppColors.textSecondary.withValues(alpha: 0.8);
+
+    return RichText(
+      text: TextSpan(
+        style: const TextStyle(fontSize: 10, fontStyle: FontStyle.italic),
+        children: [
+          // Latitude: minutes (subtle) + seconds (visible)
+          TextSpan(
+            text: "${lat['minutes']}'",
+            style: TextStyle(color: minuteColor),
+          ),
+          TextSpan(
+            text: '${lat['seconds']}"$latDir',
+            style: TextStyle(color: secondColor, fontWeight: FontWeight.w500),
+          ),
+          TextSpan(
+            text: ', ',
+            style: TextStyle(color: minuteColor),
+          ),
+          // Longitude: minutes (subtle) + seconds (visible)
+          TextSpan(
+            text: "${lng['minutes']}'",
+            style: TextStyle(color: minuteColor),
+          ),
+          TextSpan(
+            text: '${lng['seconds']}"$lngDir',
+            style: TextStyle(color: secondColor, fontWeight: FontWeight.w500),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// Converts decimal degrees to DMS components.
+  Map<String, String> _toDms(double decimal) {
+    final degrees = decimal.floor();
+    final minutesDecimal = (decimal - degrees) * 60;
+    final minutes = minutesDecimal.floor();
+    final seconds = ((minutesDecimal - minutes) * 60);
+
+    return {
+      'degrees': degrees.toString(),
+      'minutes': minutes.toString().padLeft(2, '0'),
+      'seconds': seconds.toStringAsFixed(1),
+    };
   }
 }
