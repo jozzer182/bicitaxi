@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
@@ -22,7 +24,8 @@ class MapHomeScreen extends StatefulWidget {
   State<MapHomeScreen> createState() => _MapHomeScreenState();
 }
 
-class _MapHomeScreenState extends State<MapHomeScreen> {
+class _MapHomeScreenState extends State<MapHomeScreen>
+    with TickerProviderStateMixin {
   final MapController _mapController = MapController();
   final LocationService _locationService = LocationService();
   final GeocodingService _geocodingService = GeocodingService();
@@ -38,9 +41,24 @@ class _MapHomeScreenState extends State<MapHomeScreen> {
   bool _isRequesting = false;
   LocationErrorType? _locationError;
 
+  // Breathing animation controller
+  late AnimationController _breathingController;
+  late Animation<double> _breathingAnimation;
+
   @override
   void initState() {
     super.initState();
+
+    // Initialize breathing animation
+    _breathingController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1500),
+    );
+    _breathingAnimation = Tween<double>(begin: 0.4, end: 1.0).animate(
+      CurvedAnimation(parent: _breathingController, curve: Curves.easeInOut),
+    );
+    _breathingController.repeat(reverse: true);
+
     _initializeLocation();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.rideController.addListener(_onControllerChange);
@@ -49,6 +67,7 @@ class _MapHomeScreenState extends State<MapHomeScreen> {
 
   @override
   void dispose() {
+    _breathingController.dispose();
     try {
       context.rideController.removeListener(_onControllerChange);
     } catch (_) {}
@@ -353,9 +372,113 @@ class _MapHomeScreenState extends State<MapHomeScreen> {
             );
           },
         ),
+        // Arc line between pickup and dropoff with breathing animation
+        if (_pickupPosition != null && _dropoffPosition != null)
+          AnimatedBuilder(
+            animation: _breathingAnimation,
+            builder: (context, child) {
+              return PolylineLayer(
+                polylines: _buildArcPolylines(_breathingAnimation.value),
+              );
+            },
+          ),
         MarkerLayer(markers: _buildMarkers()),
       ],
     );
+  }
+
+  /// Builds arc polylines with gradient effect between pickup and dropoff.
+  /// [opacity] controls the breathing animation effect (0.0 to 1.0).
+  List<Polyline> _buildArcPolylines(double opacity) {
+    if (_pickupPosition == null || _dropoffPosition == null) {
+      return [];
+    }
+
+    final arcPoints = _generateArcPoints(
+      _pickupPosition!,
+      _dropoffPosition!,
+      segments: 30,
+      arcHeight: 0.3, // Height of arc as fraction of distance
+    );
+
+    // Create multiple polyline segments to simulate gradient
+    final polylines = <Polyline>[];
+    final segmentCount = arcPoints.length - 1;
+
+    for (int i = 0; i < segmentCount; i++) {
+      final t = i / segmentCount;
+      final baseColor = Color.lerp(
+        AppColors.electricBlue,
+        AppColors.deepBlue,
+        t,
+      )!;
+      // Apply breathing opacity to the color
+      final color = baseColor.withValues(alpha: opacity);
+
+      polylines.add(
+        Polyline(
+          points: [arcPoints[i], arcPoints[i + 1]],
+          color: color,
+          strokeWidth: 4.0,
+          strokeCap: StrokeCap.round,
+        ),
+      );
+    }
+
+    return polylines;
+  }
+
+  /// Generates points along a quadratic Bézier curve (arc) between two points.
+  /// The arc curves to the side (perpendicular to the line), like a thrown ball trajectory.
+  List<LatLng> _generateArcPoints(
+    LatLng start,
+    LatLng end, {
+    int segments = 30,
+    double arcHeight = 0.3,
+  }) {
+    final points = <LatLng>[];
+
+    // Calculate the midpoint
+    final midLat = (start.latitude + end.latitude) / 2;
+    final midLng = (start.longitude + end.longitude) / 2;
+
+    // Calculate the direction vector from start to end
+    final deltaLat = end.latitude - start.latitude;
+    final deltaLng = end.longitude - start.longitude;
+
+    // Calculate the distance between points
+    final distance = sqrt(deltaLat * deltaLat + deltaLng * deltaLng);
+
+    // Calculate perpendicular vector (rotate 90 degrees to the left)
+    // This creates the bulge to the side
+    final perpLat = -deltaLng;
+    final perpLng = deltaLat;
+
+    // Normalize and scale by arc height
+    final arcOffset = distance * arcHeight;
+    final controlLat = midLat + (perpLat / distance) * arcOffset;
+    final controlLng = midLng + (perpLng / distance) * arcOffset;
+
+    // Generate points along the quadratic Bézier curve
+    for (int i = 0; i <= segments; i++) {
+      final t = i / segments;
+      final lat = _quadraticBezier(start.latitude, controlLat, end.latitude, t);
+      final lng = _quadraticBezier(
+        start.longitude,
+        controlLng,
+        end.longitude,
+        t,
+      );
+      points.add(LatLng(lat, lng));
+    }
+
+    return points;
+  }
+
+  /// Quadratic Bézier curve interpolation.
+  double _quadraticBezier(double p0, double p1, double p2, double t) {
+    final mt = 1 - t;
+    return mt * mt * p0 + 2 * mt * t * p1 + t * t * p2;
   }
 
   List<Marker> _buildMarkers() {

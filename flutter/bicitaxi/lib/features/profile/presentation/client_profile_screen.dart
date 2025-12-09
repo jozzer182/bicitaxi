@@ -28,6 +28,8 @@ class ClientProfileScreen extends StatelessWidget {
               _buildSettingsSection(context),
               const SizedBox(height: 24),
               _buildLogoutButton(context),
+              const SizedBox(height: 12),
+              _buildDeleteAccountButton(context),
               const SizedBox(height: 40),
             ],
           ),
@@ -62,10 +64,7 @@ class ClientProfileScreen extends StatelessWidget {
                   decoration: BoxDecoration(
                     color: AppColors.brightBlue,
                     borderRadius: BorderRadius.circular(10),
-                    border: Border.all(
-                      color: AppColors.primary,
-                      width: 3,
-                    ),
+                    border: Border.all(color: AppColors.primary, width: 3),
                   ),
                   child: const Icon(
                     Icons.camera_alt_rounded,
@@ -79,16 +78,16 @@ class ClientProfileScreen extends StatelessWidget {
           const SizedBox(height: 16),
           Text(
             'Usuario Invitado',
-            style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                  fontWeight: FontWeight.bold,
-                ),
+            style: Theme.of(
+              context,
+            ).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 4),
           Text(
             '+52 000 000 0000',
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: AppColors.textSecondary,
-                ),
+            style: Theme.of(
+              context,
+            ).textTheme.bodyMedium?.copyWith(color: AppColors.textSecondary),
           ),
           const SizedBox(height: 16),
           LiquidButton(
@@ -119,17 +118,9 @@ class ClientProfileScreen extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: [
           _buildStatItem(context, '12', 'Viajes'),
-          Container(
-            width: 1,
-            height: 40,
-            color: AppColors.surfaceMedium,
-          ),
+          Container(width: 1, height: 40, color: AppColors.surfaceMedium),
           _buildStatItem(context, '4.8', 'Calificación'),
-          Container(
-            width: 1,
-            height: 40,
-            color: AppColors.surfaceMedium,
-          ),
+          Container(width: 1, height: 40, color: AppColors.surfaceMedium),
           _buildStatItem(context, '\$450', 'Gastado'),
         ],
       ),
@@ -142,17 +133,14 @@ class ClientProfileScreen extends StatelessWidget {
         Text(
           value,
           style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                fontWeight: FontWeight.bold,
-                color: AppColors.electricBlue,
-              ),
+            fontWeight: FontWeight.bold,
+            color: AppColors.electricBlue,
+          ),
         ),
         const SizedBox(height: 4),
         Text(
           label,
-          style: TextStyle(
-            fontSize: 13,
-            color: AppColors.textSecondary,
-          ),
+          style: TextStyle(fontSize: 13, color: AppColors.textSecondary),
         ),
       ],
     );
@@ -221,10 +209,7 @@ class ClientProfileScreen extends StatelessWidget {
       ),
       title: Text(
         label,
-        style: const TextStyle(
-          fontWeight: FontWeight.w500,
-          fontSize: 15,
-        ),
+        style: const TextStyle(fontWeight: FontWeight.w500, fontSize: 15),
       ),
       trailing: Icon(
         Icons.chevron_right_rounded,
@@ -237,10 +222,7 @@ class ClientProfileScreen extends StatelessWidget {
   Widget _buildDivider() {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
-      child: Divider(
-        color: AppColors.surfaceMedium,
-        height: 1,
-      ),
+      child: Divider(color: AppColors.surfaceMedium, height: 1),
     );
   }
 
@@ -254,14 +236,36 @@ class ClientProfileScreen extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(
-            Icons.logout_rounded,
-            color: AppColors.error,
-            size: 20,
-          ),
+          Icon(Icons.logout_rounded, color: AppColors.error, size: 20),
           const SizedBox(width: 8),
           Text(
             'Cerrar sesión',
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.w500,
+              color: AppColors.error,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildDeleteAccountButton(BuildContext context) {
+    return LiquidButton(
+      borderRadius: 16,
+      color: AppColors.error.withValues(alpha: 0.1),
+      onTap: () {
+        _showDeleteAccountDialog(context);
+      },
+      padding: const EdgeInsets.symmetric(vertical: 14),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(Icons.delete_forever_rounded, color: AppColors.error, size: 20),
+          const SizedBox(width: 8),
+          Text(
+            'Eliminar cuenta',
             style: TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.w500,
@@ -310,5 +314,139 @@ class ClientProfileScreen extends StatelessWidget {
       ),
     );
   }
+
+  void _showDeleteAccountDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => const _DeleteAccountDialog(),
+    );
+  }
 }
 
+/// Dialog with countdown timer for delete account confirmation.
+class _DeleteAccountDialog extends StatefulWidget {
+  const _DeleteAccountDialog();
+
+  @override
+  State<_DeleteAccountDialog> createState() => _DeleteAccountDialogState();
+}
+
+class _DeleteAccountDialogState extends State<_DeleteAccountDialog> {
+  int _countdown = 8;
+  bool _canConfirm = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _startCountdown();
+  }
+
+  void _startCountdown() {
+    Future.doWhile(() async {
+      await Future.delayed(const Duration(seconds: 1));
+      if (!mounted) return false;
+
+      setState(() {
+        _countdown--;
+        if (_countdown <= 0) {
+          _canConfirm = true;
+        }
+      });
+
+      return _countdown > 0;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      backgroundColor: AppColors.primary,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+      title: Row(
+        children: [
+          Icon(Icons.warning_amber_rounded, color: AppColors.error, size: 28),
+          const SizedBox(width: 8),
+          const Text('¿Eliminar cuenta?'),
+        ],
+      ),
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            '⚠️ Esta acción es IRREVERSIBLE.\n\n'
+            '• Se eliminarán todos tus datos\n'
+            '• Tu historial de viajes se perderá\n'
+            '• No podrás recuperar tu cuenta\n',
+            style: TextStyle(fontSize: 14),
+          ),
+          const SizedBox(height: 16),
+          if (!_canConfirm)
+            Center(
+              child: Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 20,
+                  vertical: 10,
+                ),
+                decoration: BoxDecoration(
+                  color: AppColors.error.withValues(alpha: 0.15),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Text(
+                  'Espera $_countdown segundos...',
+                  style: TextStyle(
+                    color: AppColors.error,
+                    fontWeight: FontWeight.w600,
+                    fontSize: 16,
+                  ),
+                ),
+              ),
+            ),
+        ],
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: Text(
+            'Cancelar',
+            style: TextStyle(color: AppColors.textSecondary),
+          ),
+        ),
+        TextButton(
+          onPressed: _canConfirm
+              ? () {
+                  Navigator.pop(context);
+                  // TODO: Implement actual account deletion
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: const Text('Cuenta eliminada'),
+                      backgroundColor: AppColors.error,
+                      behavior: SnackBarBehavior.floating,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                  );
+                  // Navigate back to login
+                  Navigator.pushNamedAndRemoveUntil(
+                    context,
+                    AppRoutes.login,
+                    (route) => false,
+                  );
+                }
+              : null,
+          child: Text(
+            'Eliminar cuenta',
+            style: TextStyle(
+              color: _canConfirm
+                  ? AppColors.error
+                  : AppColors.error.withValues(alpha: 0.3),
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
