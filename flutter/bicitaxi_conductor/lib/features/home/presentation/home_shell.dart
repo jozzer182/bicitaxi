@@ -153,24 +153,38 @@ class _HomeShellState extends State<HomeShell> {
   Widget _buildBottomNavBar(BuildContext context) {
     return SafeArea(
       top: false,
-      child: LiquidCard(
-        borderRadius: 0,
-        margin: EdgeInsets.zero,
-        padding: EdgeInsets.zero,
-        child: Container(
-          padding: const EdgeInsets.symmetric(vertical: 8),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: List.generate(_destinations.length, (index) {
-              final dest = _destinations[index];
-              final isSelected = _selectedIndex == index;
-              return _NavBarItem(
-                icon: isSelected ? dest.selectedIcon : dest.icon,
-                label: dest.label,
-                isSelected: isSelected,
-                onTap: () => _onTabChanged(index),
-              );
-            }),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(40), // Ultra rounded pill
+          child: BackdropFilter(
+            filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
+            child: Container(
+              padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 12),
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(
+                  alpha: 0.05,
+                ), // Ultra transparent
+                borderRadius: BorderRadius.circular(40),
+                border: Border.all(
+                  color: Colors.white.withValues(alpha: 0.2),
+                  width: 1,
+                ),
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: List.generate(_destinations.length, (index) {
+                  final dest = _destinations[index];
+                  final isSelected = _selectedIndex == index;
+                  return _NavBarItem(
+                    icon: isSelected ? dest.selectedIcon : dest.icon,
+                    label: dest.label,
+                    isSelected: isSelected,
+                    onTap: () => _onTabChanged(index),
+                  );
+                }),
+              ),
+            ),
           ),
         ),
       ),

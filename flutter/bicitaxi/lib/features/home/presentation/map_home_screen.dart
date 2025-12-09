@@ -15,6 +15,9 @@ import '../../map/utils/geocoding_service.dart';
 import '../../rides/models/ride_location_point.dart';
 import '../../rides/models/ride_status.dart';
 
+/// Enum to track which point is being edited
+enum EditingPoint { none, pickup, dropoff }
+
 /// Map-first home screen for the Bici Taxi client app.
 /// Shows the map as the primary view with overlay controls.
 class MapHomeScreen extends StatefulWidget {
@@ -40,6 +43,9 @@ class _MapHomeScreenState extends State<MapHomeScreen>
   bool _isLoading = true;
   bool _isRequesting = false;
   LocationErrorType? _locationError;
+
+  // Edit mode state - when not none, next tap updates that specific point
+  EditingPoint _editingPoint = EditingPoint.none;
 
   // Breathing animation controller
   late AnimationController _breathingController;
@@ -137,54 +143,111 @@ class _MapHomeScreenState extends State<MapHomeScreen>
   }
 
   void _handleMapTap(TapPosition tapPosition, LatLng position) {
+    // Check if we're in edit mode for a specific point
+    if (_editingPoint == EditingPoint.pickup) {
+      _updatePickupPosition(position);
+      setState(() => _editingPoint = EditingPoint.none);
+      return;
+    } else if (_editingPoint == EditingPoint.dropoff) {
+      _updateDropoffPosition(position);
+      setState(() => _editingPoint = EditingPoint.none);
+      return;
+    }
+
+    // Normal flow: first tap = pickup, subsequent taps = dropoff
     setState(() {
       if (_pickupPosition == null) {
         _pickupPosition = position;
         _pickupAddress = null;
         _isLoadingPickupAddress = true;
-      } else if (_dropoffPosition == null) {
-        _dropoffPosition = position;
-        _dropoffAddress = null;
-        _isLoadingDropoffAddress = true;
+        _geocodePickup(position);
       } else {
         _dropoffPosition = position;
         _dropoffAddress = null;
         _isLoadingDropoffAddress = true;
+        _geocodeDropoff(position);
       }
     });
+  }
 
-    // Geocode the selected position
-    if (_pickupPosition != null &&
-        _pickupAddress == null &&
-        _isLoadingPickupAddress) {
-      _geocodingService.reverseGeocode(
-        position.latitude,
-        position.longitude,
-        onResult: (address) {
-          if (mounted) {
-            setState(() {
-              _pickupAddress = address;
-              _isLoadingPickupAddress = false;
-            });
-          }
-        },
-      );
-    } else if (_dropoffPosition != null &&
-        _dropoffAddress == null &&
-        _isLoadingDropoffAddress) {
-      _geocodingService.reverseGeocode(
-        position.latitude,
-        position.longitude,
-        onResult: (address) {
-          if (mounted) {
-            setState(() {
-              _dropoffAddress = address;
-              _isLoadingDropoffAddress = false;
-            });
-          }
-        },
-      );
-    }
+  /// Update pickup position and geocode
+  void _updatePickupPosition(LatLng position) {
+    setState(() {
+      _pickupPosition = position;
+      _pickupAddress = null;
+      _isLoadingPickupAddress = true;
+    });
+    _geocodePickup(position);
+  }
+
+  /// Update dropoff position and geocode
+  void _updateDropoffPosition(LatLng position) {
+    setState(() {
+      _dropoffPosition = position;
+      _dropoffAddress = null;
+      _isLoadingDropoffAddress = true;
+    });
+    _geocodeDropoff(position);
+  }
+
+  /// Geocode pickup position
+  void _geocodePickup(LatLng position) {
+    _geocodingService.reverseGeocode(
+      position.latitude,
+      position.longitude,
+      onResult: (address) {
+        if (mounted) {
+          setState(() {
+            _pickupAddress = address;
+            _isLoadingPickupAddress = false;
+          });
+        }
+      },
+    );
+  }
+
+  /// Geocode dropoff position
+  void _geocodeDropoff(LatLng position) {
+    _geocodingService.reverseGeocode(
+      position.latitude,
+      position.longitude,
+      onResult: (address) {
+        if (mounted) {
+          setState(() {
+            _dropoffAddress = address;
+            _isLoadingDropoffAddress = false;
+          });
+        }
+      },
+    );
+  }
+
+  /// Start editing pickup point
+  void _editPickup() {
+    setState(() => _editingPoint = EditingPoint.pickup);
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: const Text('Toca el mapa para mover el punto de recogida'),
+        backgroundColor: AppColors.electricBlue,
+        behavior: SnackBarBehavior.floating,
+        duration: const Duration(seconds: 2),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      ),
+    );
+  }
+
+  /// Start editing dropoff point
+  void _editDropoff() {
+    setState(() => _editingPoint = EditingPoint.dropoff);
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: const Text('Toca el mapa para mover el destino'),
+        backgroundColor: AppColors.deepBlue,
+        behavior: SnackBarBehavior.floating,
+        duration: const Duration(seconds: 2),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      ),
+    );
   }
 
   void _clearSelections() {
@@ -836,6 +899,7 @@ class _MapHomeScreenState extends State<MapHomeScreen>
                     isSelected: _pickupPosition != null,
                     isLoading: _isLoadingPickupAddress,
                     coordinates: _pickupPosition,
+                    onEdit: _pickupPosition != null ? _editPickup : null,
                   ),
                   const SizedBox(height: 12),
                   _buildLocationRow(
@@ -852,6 +916,7 @@ class _MapHomeScreenState extends State<MapHomeScreen>
                     isSelected: _dropoffPosition != null,
                     isLoading: _isLoadingDropoffAddress,
                     coordinates: _dropoffPosition,
+                    onEdit: _dropoffPosition != null ? _editDropoff : null,
                   ),
                   const SizedBox(height: 16),
 
@@ -924,6 +989,7 @@ class _MapHomeScreenState extends State<MapHomeScreen>
     required bool isSelected,
     bool isLoading = false,
     LatLng? coordinates,
+    VoidCallback? onEdit,
   }) {
     return Row(
       children: [
@@ -970,8 +1036,26 @@ class _MapHomeScreenState extends State<MapHomeScreen>
               color: AppColors.electricBlue,
             ),
           )
-        else if (isSelected)
+        else if (isSelected) ...[
+          // Edit button
+          GestureDetector(
+            onTap: onEdit,
+            child: Container(
+              padding: const EdgeInsets.all(6),
+              decoration: BoxDecoration(
+                color: iconColor.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Icon(
+                Icons.edit_location_alt_rounded,
+                color: iconColor,
+                size: 18,
+              ),
+            ),
+          ),
+          const SizedBox(width: 8),
           Icon(Icons.check_circle_rounded, color: iconColor, size: 20),
+        ],
       ],
     );
   }
