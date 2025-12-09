@@ -72,7 +72,39 @@ class _MapHomeScreenState extends State<MapHomeScreen> {
 
     if (_currentPosition != null) {
       _mapController.move(_currentPosition!, MapConstants.defaultZoom);
+
+      // Automatically set pickup location to current GPS position after a short delay
+      await Future.delayed(const Duration(milliseconds: 1500));
+
+      if (mounted && _pickupPosition == null && _currentPosition != null) {
+        _setPickupToCurrentLocation();
+      }
     }
+  }
+
+  /// Sets the pickup location to the current GPS position and geocodes the address.
+  void _setPickupToCurrentLocation() {
+    if (_currentPosition == null) return;
+
+    setState(() {
+      _pickupPosition = _currentPosition;
+      _pickupAddress = null;
+      _isLoadingPickupAddress = true;
+    });
+
+    // Geocode the current position to get the address
+    _geocodingService.reverseGeocode(
+      _currentPosition!.latitude,
+      _currentPosition!.longitude,
+      onResult: (address) {
+        if (mounted) {
+          setState(() {
+            _pickupAddress = address;
+            _isLoadingPickupAddress = false;
+          });
+        }
+      },
+    );
   }
 
   Future<void> _openSettings() async {
