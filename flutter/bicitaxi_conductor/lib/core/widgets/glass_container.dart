@@ -13,7 +13,7 @@ class UltraGlassCard extends StatelessWidget {
     this.borderRadius = 24.0,
     this.blurSigma = 5.0,
     this.opacity = 0.05,
-    this.borderOpacity = 0.15,
+    this.borderOpacity = 0.4,
     this.color, // Optional tint color
   });
 

@@ -372,7 +372,7 @@ class _DriverMapHomeScreenState extends State<DriverMapHomeScreen> {
                                 fontSize: 14,
                                 color: isOnline
                                     ? AppColors.success
-                                    : AppColors.white,
+                                    : AppColors.textDark,
                               ),
                             ),
                             Text(
@@ -381,7 +381,7 @@ class _DriverMapHomeScreenState extends State<DriverMapHomeScreen> {
                                   : 'Toca para conectarte',
                               style: TextStyle(
                                 fontSize: 12,
-                                color: AppColors.textSecondary,
+                                color: AppColors.textDarkSecondary,
                               ),
                             ),
                           ],
@@ -568,6 +568,7 @@ class _DriverMapHomeScreenState extends State<DriverMapHomeScreen> {
                           style: TextStyle(
                             fontWeight: FontWeight.w600,
                             fontSize: 14,
+                            color: AppColors.textDark,
                           ),
                         ),
                         Container(
@@ -599,14 +600,14 @@ class _DriverMapHomeScreenState extends State<DriverMapHomeScreen> {
                           children: [
                             Icon(
                               Icons.search_rounded,
-                              color: AppColors.textTertiary,
+                              color: AppColors.textDarkTertiary,
                               size: 20,
                             ),
                             const SizedBox(width: 8),
                             Text(
                               'Buscando solicitudes...',
                               style: TextStyle(
-                                color: AppColors.textSecondary,
+                                color: AppColors.textDarkSecondary,
                                 fontSize: 14,
                               ),
                             ),
@@ -673,7 +674,7 @@ class _DriverMapHomeScreenState extends State<DriverMapHomeScreen> {
         ),
         Text(
           label,
-          style: TextStyle(fontSize: 11, color: AppColors.textSecondary),
+          style: TextStyle(fontSize: 11, color: AppColors.textDarkSecondary),
         ),
       ],
     );

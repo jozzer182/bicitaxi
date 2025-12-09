@@ -724,13 +724,16 @@ class _MapHomeScreenState extends State<MapHomeScreen>
                           Text(
                             '¡Hola!',
                             style: Theme.of(context).textTheme.titleMedium
-                                ?.copyWith(fontWeight: FontWeight.bold),
+                                ?.copyWith(
+                                  fontWeight: FontWeight.bold,
+                                  color: AppColors.textDark,
+                                ),
                           ),
                           Text(
                             '¿A dónde quieres ir hoy?',
                             style: TextStyle(
                               fontSize: 13,
-                              color: AppColors.textSecondary,
+                              color: AppColors.textDarkSecondary,
                             ),
                           ),
                         ],
@@ -910,7 +913,7 @@ class _MapHomeScreenState extends State<MapHomeScreen>
                                 style: TextStyle(
                                   fontSize: 14,
                                   fontWeight: FontWeight.w500,
-                                  color: AppColors.textSecondary,
+                                  color: AppColors.textDarkSecondary,
                                 ),
                               ),
                             ),
@@ -983,14 +986,19 @@ class _MapHomeScreenState extends State<MapHomeScreen>
             children: [
               Text(
                 label,
-                style: TextStyle(fontSize: 11, color: AppColors.textTertiary),
+                style: TextStyle(
+                  fontSize: 11,
+                  color: AppColors.textDarkTertiary,
+                ),
               ),
               Text(
                 value,
                 style: TextStyle(
                   fontSize: 13,
                   fontWeight: isSelected ? FontWeight.w500 : FontWeight.w400,
-                  color: isSelected ? AppColors.white : AppColors.textSecondary,
+                  color: isSelected
+                      ? AppColors.textDark
+                      : AppColors.textDarkSecondary,
                 ),
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,

@@ -23,14 +23,18 @@ abstract final class AppColors {
   static const Color surfaceMedium = Color(0x33FFFFFF);
   static const Color surfaceDark = Color(0x0DFFFFFF);
 
-  // Text colors
+  // Text colors (for dark backgrounds)
   static const Color textPrimary = Color(0xFFFFFFFF);
   static const Color textSecondary = Color(0xB3FFFFFF);
   static const Color textTertiary = Color(0x80FFFFFF);
+
+  // Text colors (for light/glass backgrounds)
+  static const Color textDark = Color(0xFF1A1A2E);
+  static const Color textDarkSecondary = Color(0xFF4A4A5A);
+  static const Color textDarkTertiary = Color(0xFF7A7A8A);
 
   // Status colors
   static const Color success = Color(0xFF4CAF50);
   static const Color warning = Color(0xFFFF9800);
   static const Color error = Color(0xFFE53935);
 }
-

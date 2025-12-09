@@ -151,23 +151,42 @@ class _HomeShellState extends State<HomeShell> {
   }
 
   Widget _buildBottomNavBar(BuildContext context) {
+    // Create a refraction effect using scale matrix + blur
+    // This simulates the optical distortion of liquid glass
+    final Matrix4 refractionMatrix = Matrix4.identity()
+      ..setEntry(0, 0, 1.07) // Scale X
+      ..setEntry(1, 1, 1.07); // Scale Y
+
     return SafeArea(
       top: false,
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
         child: ClipRRect(
-          borderRadius: BorderRadius.circular(40), // Ultra rounded pill
+          borderRadius: BorderRadius.circular(40),
           child: BackdropFilter(
-            filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
+            // Compose: first apply slight distortion, then blur
+            filter: ImageFilter.compose(
+              outer: ImageFilter.blur(sigmaX: 2, sigmaY: 2),
+              inner: ImageFilter.matrix(
+                refractionMatrix.storage,
+                filterQuality: FilterQuality.high,
+              ),
+            ),
             child: Container(
               padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 12),
               decoration: BoxDecoration(
-                color: Colors.white.withValues(
-                  alpha: 0.05,
-                ), // Ultra transparent
+                // Very subtle gradient for depth
+                gradient: LinearGradient(
+                  begin: Alignment.bottomCenter,
+                  end: Alignment.topCenter,
+                  colors: [
+                    Colors.white.withValues(alpha: 0.08),
+                    Colors.white.withValues(alpha: 0.02),
+                  ],
+                ),
                 borderRadius: BorderRadius.circular(40),
                 border: Border.all(
-                  color: Colors.white.withValues(alpha: 0.2),
+                  color: Colors.white.withValues(alpha: 0.1),
                   width: 1,
                 ),
               ),
@@ -277,7 +296,7 @@ class _NavBarItem extends StatelessWidget {
               icon,
               color: isSelected
                   ? AppColors.driverAccent
-                  : AppColors.textTertiary,
+                  : AppColors.textDarkSecondary,
               size: 24,
             ),
             const SizedBox(height: 4),
@@ -288,7 +307,7 @@ class _NavBarItem extends StatelessWidget {
                 fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
                 color: isSelected
                     ? AppColors.driverAccent
-                    : AppColors.textTertiary,
+                    : AppColors.textDarkSecondary,
               ),
             ),
           ],
@@ -334,7 +353,7 @@ class _NavRailItem extends StatelessWidget {
               icon,
               color: isSelected
                   ? AppColors.driverAccent
-                  : AppColors.textTertiary,
+                  : AppColors.textDarkSecondary,
               size: 24,
             ),
             const SizedBox(height: 4),
@@ -345,7 +364,7 @@ class _NavRailItem extends StatelessWidget {
                 fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
                 color: isSelected
                     ? AppColors.driverAccent
-                    : AppColors.textTertiary,
+                    : AppColors.textDarkSecondary,
               ),
               textAlign: TextAlign.center,
             ),

@@ -23,10 +23,15 @@ abstract final class AppColors {
   static const Color surfaceMedium = Color(0x33FFFFFF);
   static const Color surfaceDark = Color(0x0DFFFFFF);
 
-  // Text colors
+  // Text colors (for dark backgrounds)
   static const Color textPrimary = Color(0xFFFFFFFF);
   static const Color textSecondary = Color(0xB3FFFFFF);
   static const Color textTertiary = Color(0x80FFFFFF);
+
+  // Text colors (for light/glass backgrounds)
+  static const Color textDark = Color(0xFF1A1A2E);
+  static const Color textDarkSecondary = Color(0xFF4A4A5A);
+  static const Color textDarkTertiary = Color(0xFF7A7A8A);
 
   // Status colors
   static const Color success = Color(0xFF4CAF50);
@@ -36,4 +41,3 @@ abstract final class AppColors {
   // Driver-specific accent color (slightly different shade for differentiation)
   static const Color driverAccent = Color(0xFF00BFA5);
 }
-
