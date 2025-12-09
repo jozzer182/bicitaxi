@@ -800,12 +800,16 @@ class _MapHomeScreenState extends State<MapHomeScreen>
 
   Widget _buildBottomPanel(BuildContext context, bool hasActiveRide) {
     final isTablet = ResponsiveUtils.isTabletOrLarger(context);
+    // Extra bottom padding to account for the transparent navigation bar
+    const navBarHeight = 80.0;
 
     return SafeArea(
       child: Padding(
-        padding: EdgeInsets.symmetric(
-          horizontal: isTablet ? 48 : 16,
-          vertical: 8,
+        padding: EdgeInsets.only(
+          left: isTablet ? 48 : 16,
+          right: isTablet ? 48 : 16,
+          top: 8,
+          bottom: navBarHeight + 8, // Add space for nav bar
         ),
         child: Center(
           child: ConstrainedBox(

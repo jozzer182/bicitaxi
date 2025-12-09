@@ -1,3 +1,4 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:liquid_glass_ui_design/liquid_glass_ui.dart';
 import '../../../core/theme/app_colors.dart';
@@ -6,9 +7,12 @@ import 'driver_map_home_screen.dart';
 import '../../rides/presentation/driver_active_ride_screen.dart';
 import '../../rides/presentation/driver_earnings_screen.dart';
 import '../../profile/presentation/driver_profile_screen.dart';
+import 'persistent_map_widget.dart';
 
 /// Main shell for the Bici Taxi Conductor app.
 /// Contains navigation (bottom nav on phones, side rail on tablets).
+/// The map is rendered persistently in the background with blur effect
+/// when navigating to other tabs for a liquid glass experience.
 class HomeShell extends StatefulWidget {
   const HomeShell({super.key});
 
@@ -18,6 +22,9 @@ class HomeShell extends StatefulWidget {
 
 class _HomeShellState extends State<HomeShell> {
   int _selectedIndex = 0;
+
+  // Key for persistent map widget
+  final GlobalKey<PersistentMapWidgetState> _mapKey = GlobalKey();
 
   final List<_NavDestination> _destinations = const [
     _NavDestination(
@@ -42,10 +49,13 @@ class _HomeShellState extends State<HomeShell> {
     ),
   ];
 
-  Widget _getScreen(int index) {
+  void _onTabChanged(int index) {
+    setState(() => _selectedIndex = index);
+  }
+
+  Widget _getOverlayScreen(int index) {
+    // Return the screen content for non-map tabs
     switch (index) {
-      case 0:
-        return const DriverMapHomeScreen();
       case 1:
         return const DriverActiveRideScreen();
       case 2:
@@ -53,7 +63,7 @@ class _HomeShellState extends State<HomeShell> {
       case 3:
         return const DriverProfileScreen();
       default:
-        return const DriverMapHomeScreen();
+        return const SizedBox.shrink();
     }
   }
 
@@ -63,7 +73,9 @@ class _HomeShellState extends State<HomeShell> {
 
     return Scaffold(
       backgroundColor: Colors.transparent,
+      extendBody: true, // Allow body to extend behind bottom nav
       body: SafeArea(
+        bottom: false, // Don't add padding for bottom nav
         child: isWideScreen
             ? _buildWideLayout(context)
             : _buildNarrowLayout(context),
@@ -72,10 +84,35 @@ class _HomeShellState extends State<HomeShell> {
   }
 
   Widget _buildNarrowLayout(BuildContext context) {
-    return Column(
+    return Stack(
       children: [
-        Expanded(child: _getScreen(_selectedIndex)),
-        _buildBottomNavBar(context),
+        // When on home tab (0), use DriverMapHomeScreen with its own map
+        // When on other tabs, show the persistent map with blur
+        if (_selectedIndex == 0)
+          const Positioned.fill(child: DriverMapHomeScreen())
+        else ...[
+          // Persistent map in background for blur effect
+          Positioned.fill(child: PersistentMapWidget(key: _mapKey)),
+
+          // Blur overlay (no dark tint, just blur)
+          Positioned.fill(
+            child: BackdropFilter(
+              filter: ImageFilter.blur(sigmaX: 8, sigmaY: 8),
+              child: Container(color: Colors.transparent),
+            ),
+          ),
+
+          // The actual screen content
+          Positioned.fill(child: _getOverlayScreen(_selectedIndex)),
+        ],
+
+        // Bottom nav bar overlays with transparency
+        Positioned(
+          left: 0,
+          right: 0,
+          bottom: 0,
+          child: _buildBottomNavBar(context),
+        ),
       ],
     );
   }
@@ -84,30 +121,57 @@ class _HomeShellState extends State<HomeShell> {
     return Row(
       children: [
         _buildNavigationRail(context),
-        Expanded(child: _getScreen(_selectedIndex)),
+        Expanded(
+          child: Stack(
+            children: [
+              // When on home tab (0), use DriverMapHomeScreen with its own map
+              // When on other tabs, show the persistent map with blur
+              if (_selectedIndex == 0)
+                const Positioned.fill(child: DriverMapHomeScreen())
+              else ...[
+                // Persistent map in background for blur effect
+                Positioned.fill(child: PersistentMapWidget(key: _mapKey)),
+
+                // Blur overlay (no dark tint, just blur)
+                Positioned.fill(
+                  child: BackdropFilter(
+                    filter: ImageFilter.blur(sigmaX: 8, sigmaY: 8),
+                    child: Container(color: Colors.transparent),
+                  ),
+                ),
+
+                // The actual screen content
+                Positioned.fill(child: _getOverlayScreen(_selectedIndex)),
+              ],
+            ],
+          ),
+        ),
       ],
     );
   }
 
   Widget _buildBottomNavBar(BuildContext context) {
-    return LiquidCard(
-      borderRadius: 0,
-      margin: EdgeInsets.zero,
-      padding: EdgeInsets.zero,
-      child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 8),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
-          children: List.generate(_destinations.length, (index) {
-            final dest = _destinations[index];
-            final isSelected = _selectedIndex == index;
-            return _NavBarItem(
-              icon: isSelected ? dest.selectedIcon : dest.icon,
-              label: dest.label,
-              isSelected: isSelected,
-              onTap: () => setState(() => _selectedIndex = index),
-            );
-          }),
+    return SafeArea(
+      top: false,
+      child: LiquidCard(
+        borderRadius: 0,
+        margin: EdgeInsets.zero,
+        padding: EdgeInsets.zero,
+        child: Container(
+          padding: const EdgeInsets.symmetric(vertical: 8),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: List.generate(_destinations.length, (index) {
+              final dest = _destinations[index];
+              final isSelected = _selectedIndex == index;
+              return _NavBarItem(
+                icon: isSelected ? dest.selectedIcon : dest.icon,
+                label: dest.label,
+                isSelected: isSelected,
+                onTap: () => _onTabChanged(index),
+              );
+            }),
+          ),
         ),
       ),
     );
@@ -148,7 +212,7 @@ class _HomeShellState extends State<HomeShell> {
                     icon: isSelected ? dest.selectedIcon : dest.icon,
                     label: dest.label,
                     isSelected: isSelected,
-                    onTap: () => setState(() => _selectedIndex = index),
+                    onTap: () => _onTabChanged(index),
                   );
                 }),
               ),

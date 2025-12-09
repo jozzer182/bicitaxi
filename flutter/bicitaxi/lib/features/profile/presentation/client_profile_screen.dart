@@ -156,7 +156,7 @@ class ClientProfileScreen extends StatelessWidget {
             context,
             icon: Icons.payment_rounded,
             label: 'Métodos de pago',
-            onTap: () {},
+            onTap: () => Navigator.pushNamed(context, '/paymentMethods'),
           ),
           _buildDivider(),
           _buildSettingsItem(

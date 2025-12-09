@@ -281,7 +281,7 @@ class DriverProfileScreen extends StatelessWidget {
             context,
             icon: Icons.account_balance_wallet_outlined,
             label: 'Métodos de pago',
-            onTap: () {},
+            onTap: () => Navigator.pushNamed(context, '/paymentMethods'),
           ),
           _buildDivider(),
           _buildSettingsItem(
