@@ -61,30 +61,9 @@ class LoginScreen extends StatelessWidget {
   }
 
   Widget _buildHeader(BuildContext context) {
-    final isTablet = ResponsiveUtils.isTabletOrLarger(context);
-
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        // App icon/logo placeholder
-        Container(
-          width: isTablet ? 120 : 100,
-          height: isTablet ? 120 : 100,
-          decoration: BoxDecoration(
-            color: AppColors.surfaceMedium,
-            borderRadius: BorderRadius.circular(28),
-            border: Border.all(
-              color: AppColors.driverAccent.withValues(alpha: 0.3),
-              width: 2,
-            ),
-          ),
-          child: Icon(
-            Icons.pedal_bike_rounded,
-            size: isTablet ? 60 : 50,
-            color: AppColors.driverAccent,
-          ),
-        ),
-        const SizedBox(height: 24),
         Text(
           'Bici Taxi',
           style: Theme.of(context).textTheme.headlineLarge?.copyWith(

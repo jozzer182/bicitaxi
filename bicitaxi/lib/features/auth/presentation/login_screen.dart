@@ -53,55 +53,30 @@ class LoginScreen extends StatelessWidget {
       mainAxisAlignment: MainAxisAlignment.center,
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
-        Expanded(
-          child: _buildHeader(context),
-        ),
+        Expanded(child: _buildHeader(context)),
         const SizedBox(width: 48),
-        Expanded(
-          child: _buildLoginCard(context),
-        ),
+        Expanded(child: _buildLoginCard(context)),
       ],
     );
   }
 
   Widget _buildHeader(BuildContext context) {
-    final isTablet = ResponsiveUtils.isTabletOrLarger(context);
-
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        // App icon/logo placeholder
-        Container(
-          width: isTablet ? 120 : 100,
-          height: isTablet ? 120 : 100,
-          decoration: BoxDecoration(
-            color: AppColors.surfaceMedium,
-            borderRadius: BorderRadius.circular(28),
-            border: Border.all(
-              color: AppColors.electricBlue.withValues(alpha: 0.3),
-              width: 2,
-            ),
-          ),
-          child: Icon(
-            Icons.directions_bike_rounded,
-            size: isTablet ? 60 : 50,
-            color: AppColors.electricBlue,
-          ),
-        ),
-        const SizedBox(height: 24),
         Text(
           'Bici Taxi',
           style: Theme.of(context).textTheme.headlineLarge?.copyWith(
-                fontWeight: FontWeight.bold,
-                letterSpacing: -0.5,
-              ),
+            fontWeight: FontWeight.bold,
+            letterSpacing: -0.5,
+          ),
         ),
         const SizedBox(height: 8),
         Text(
           'Tu viaje rápido y ecológico',
-          style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                color: AppColors.textSecondary,
-              ),
+          style: Theme.of(
+            context,
+          ).textTheme.bodyLarge?.copyWith(color: AppColors.textSecondary),
           textAlign: TextAlign.center,
         ),
       ],
@@ -118,17 +93,17 @@ class LoginScreen extends StatelessWidget {
         children: [
           Text(
             'Inicia sesión',
-            style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                  fontWeight: FontWeight.w600,
-                ),
+            style: Theme.of(
+              context,
+            ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w600),
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: 8),
           Text(
             'Elige cómo quieres continuar',
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: AppColors.textSecondary,
-                ),
+            style: Theme.of(
+              context,
+            ).textTheme.bodyMedium?.copyWith(color: AppColors.textSecondary),
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: 32),
@@ -162,19 +137,12 @@ class LoginScreen extends StatelessWidget {
           // Divider with text
           Row(
             children: [
-              const Expanded(
-                child: Divider(color: AppColors.surfaceMedium),
-              ),
+              const Expanded(child: Divider(color: AppColors.surfaceMedium)),
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: Text(
-                  'o',
-                  style: Theme.of(context).textTheme.bodySmall,
-                ),
+                child: Text('o', style: Theme.of(context).textTheme.bodySmall),
               ),
-              const Expanded(
-                child: Divider(color: AppColors.surfaceMedium),
-              ),
+              const Expanded(child: Divider(color: AppColors.surfaceMedium)),
             ],
           ),
           const SizedBox(height: 24),
@@ -205,9 +173,9 @@ class LoginScreen extends StatelessWidget {
           Text(
             'Al continuar, aceptas nuestros Términos de Servicio y Política de Privacidad',
             style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  color: AppColors.textTertiary,
-                  height: 1.4,
-                ),
+              color: AppColors.textTertiary,
+              height: 1.4,
+            ),
             textAlign: TextAlign.center,
           ),
         ],
