@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
@@ -30,6 +32,10 @@ class _DriverMapHomeScreenState extends State<DriverMapHomeScreen> {
   bool _isLoading = true;
   LocationErrorType? _locationError;
 
+  // Status bar collapse state
+  bool _isStatusCollapsed = false;
+  Timer? _collapseTimer;
+
   @override
   void initState() {
     super.initState();
@@ -41,6 +47,7 @@ class _DriverMapHomeScreenState extends State<DriverMapHomeScreen> {
 
   @override
   void dispose() {
+    _collapseTimer?.cancel();
     try {
       context.rideController.removeListener(_onControllerChange);
     } catch (_) {}
@@ -85,6 +92,23 @@ class _DriverMapHomeScreenState extends State<DriverMapHomeScreen> {
   void _toggleOnlineStatus() {
     context.rideController.toggleOnlineStatus();
     final isOnline = context.rideController.isOnline;
+
+    // Handle collapse timer
+    if (isOnline) {
+      // Reset collapse state and start timer
+      setState(() => _isStatusCollapsed = false);
+      _collapseTimer?.cancel();
+      _collapseTimer = Timer(const Duration(seconds: 5), () {
+        if (mounted && context.rideController.isOnline) {
+          setState(() => _isStatusCollapsed = true);
+        }
+      });
+    } else {
+      // Cancel timer and reset when going offline
+      _collapseTimer?.cancel();
+      setState(() => _isStatusCollapsed = false);
+    }
+
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(isOnline ? 'Estás en línea' : 'Estás desconectado'),
@@ -324,8 +348,35 @@ class _DriverMapHomeScreenState extends State<DriverMapHomeScreen> {
                   ),
                 ),
               )
+            else if (isOnline && _isStatusCollapsed)
+              // Collapsed WiFi button (shown after 5 seconds when online)
+              Align(
+                alignment: Alignment.topRight,
+                child: GestureDetector(
+                  onTap: _toggleOnlineStatus,
+                  child: Container(
+                    width: 48,
+                    height: 48,
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: 0.05),
+                      shape: BoxShape.circle,
+                      border: Border.all(
+                        color: Colors.white.withValues(alpha: 0.1),
+                        width: 1,
+                      ),
+                    ),
+                    child: const Center(
+                      child: Icon(
+                        Icons.wifi_rounded,
+                        color: AppColors.success,
+                        size: 24,
+                      ),
+                    ),
+                  ),
+                ),
+              )
             else
-              // Status toggle bar
+              // Status toggle bar (expanded view)
               GestureDetector(
                 onTap: _toggleOnlineStatus,
                 child: UltraGlassCard(
@@ -526,11 +577,6 @@ class _DriverMapHomeScreenState extends State<DriverMapHomeScreen> {
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  // Today's summary
-                  _buildTodaySummary(context),
-
-                  const SizedBox(height: 16),
-
                   // Connection button or ride requests
                   if (!isOnline)
                     LiquidButton(
@@ -626,60 +672,6 @@ class _DriverMapHomeScreenState extends State<DriverMapHomeScreen> {
     );
   }
 
-  Widget _buildTodaySummary(BuildContext context) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceAround,
-      children: [
-        _buildSummaryItem(
-          icon: Icons.attach_money_rounded,
-          value: '\$0',
-          label: 'Ganancias',
-          color: AppColors.driverAccent,
-        ),
-        Container(width: 1, height: 40, color: AppColors.surfaceMedium),
-        _buildSummaryItem(
-          icon: Icons.directions_bike_rounded,
-          value: '0',
-          label: 'Viajes',
-          color: AppColors.brightBlue,
-        ),
-        Container(width: 1, height: 40, color: AppColors.surfaceMedium),
-        _buildSummaryItem(
-          icon: Icons.timer_outlined,
-          value: '0h',
-          label: 'Tiempo',
-          color: AppColors.electricBlue,
-        ),
-      ],
-    );
-  }
-
-  Widget _buildSummaryItem({
-    required IconData icon,
-    required String value,
-    required String label,
-    required Color color,
-  }) {
-    return Column(
-      children: [
-        Icon(icon, color: color, size: 20),
-        const SizedBox(height: 4),
-        Text(
-          value,
-          style: TextStyle(
-            fontWeight: FontWeight.bold,
-            fontSize: 16,
-            color: color,
-          ),
-        ),
-        Text(
-          label,
-          style: TextStyle(fontSize: 11, color: AppColors.textDarkSecondary),
-        ),
-      ],
-    );
-  }
-
   Widget _buildRideRequestCard(BuildContext context, Ride ride) {
     double? distance;
     if (_currentPosition != null) {
@@ -723,14 +715,15 @@ class _DriverMapHomeScreenState extends State<DriverMapHomeScreen> {
                       style: TextStyle(
                         fontWeight: FontWeight.w600,
                         fontSize: 14,
+                        color: Colors.black87,
                       ),
                     ),
                     if (distance != null)
                       Text(
                         '${(distance / 1000).toStringAsFixed(1)} km',
-                        style: TextStyle(
+                        style: const TextStyle(
                           fontSize: 12,
-                          color: AppColors.textSecondary,
+                          color: Colors.black54,
                         ),
                       ),
                   ],
@@ -752,16 +745,13 @@ class _DriverMapHomeScreenState extends State<DriverMapHomeScreen> {
               Icon(
                 Icons.trip_origin_rounded,
                 size: 14,
-                color: AppColors.success,
+                color: AppColors.electricBlue,
               ),
               const SizedBox(width: 6),
               Expanded(
                 child: Text(
                   ride.pickup.displayText,
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: AppColors.textSecondary,
-                  ),
+                  style: const TextStyle(fontSize: 12, color: Colors.black87),
                   overflow: TextOverflow.ellipsis,
                 ),
               ),
@@ -773,12 +763,14 @@ class _DriverMapHomeScreenState extends State<DriverMapHomeScreen> {
             color: AppColors.driverAccent,
             onTap: () => _acceptRide(ride),
             padding: const EdgeInsets.symmetric(vertical: 10),
-            child: const Text(
-              'Aceptar viaje',
-              style: TextStyle(
-                fontWeight: FontWeight.w600,
-                color: AppColors.white,
-                fontSize: 14,
+            child: const Center(
+              child: Text(
+                'Aceptar viaje',
+                style: TextStyle(
+                  fontWeight: FontWeight.w600,
+                  color: Colors.black,
+                  fontSize: 14,
+                ),
               ),
             ),
           ),

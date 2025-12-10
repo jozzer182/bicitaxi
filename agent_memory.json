@@ -12,6 +12,15 @@
                 "Modified: flutter/bicitaxi/pubspec.yaml - removed shaders section",
                 "Modified: flutter/bicitaxi_conductor/pubspec.yaml - removed shaders section"
             ]
+        },
+        {
+            "date": "2025-12-10T17:41:00-05:00",
+            "prompt": "UI improvements for both apps: arc curve direction, status collapse to WiFi button after 5 seconds, remove earnings card, fix text readability, button centering.",
+            "summary": "Made comprehensive UI fixes: Client app - arc between pickup/dropoff now curves upward/right, coordinate DMS text changed to dark colors. Conductor app - 'Conectado' status collapses to round WiFi button (soft white 5% + green icon) after 5 seconds when online, removed Ganancias/Viajes/Tiempo card, ride request card text now black for readability, pickup icon uses palette color (electricBlue), 'Aceptar viaje' button text centered and black.",
+            "changes": [
+                "Modified: flutter/bicitaxi/lib/features/home/presentation/map_home_screen.dart - arc curve direction fix, DMS coordinate colors",
+                "Modified: flutter/bicitaxi_conductor/lib/features/home/presentation/driver_map_home_screen.dart - status collapse timer, WiFi button, earnings removal, text colors, button centering"
+            ]
         }
     ]
 }

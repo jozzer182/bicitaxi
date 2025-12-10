@@ -486,10 +486,17 @@ class _MapHomeScreenState extends State<MapHomeScreen>
     // Calculate the distance between points
     final distance = sqrt(deltaLat * deltaLat + deltaLng * deltaLng);
 
-    // Calculate perpendicular vector (rotate 90 degrees to the left)
-    // This creates the bulge to the side
-    final perpLat = -deltaLng;
-    final perpLng = deltaLat;
+    // Calculate perpendicular vector (rotate 90 degrees to the right)
+    // This creates the bulge to the right/upward side
+    double perpLat = deltaLng;
+    double perpLng = -deltaLat;
+
+    // Ensure arc always curves upward when going primarily horizontal
+    // If the perpendicular would point downward, flip it
+    if (perpLat < 0) {
+      perpLat = -perpLat;
+      perpLng = -perpLng;
+    }
 
     // Normalize and scale by arc height
     final arcOffset = distance * arcHeight;
@@ -1050,9 +1057,9 @@ class _MapHomeScreenState extends State<MapHomeScreen>
     final latDir = coordinates.latitude >= 0 ? 'N' : 'S';
     final lngDir = coordinates.longitude >= 0 ? 'E' : 'W';
 
-    // Colors for different parts
-    const minuteColor = AppColors.textTertiary;
-    final secondColor = AppColors.textSecondary.withValues(alpha: 0.8);
+    // Colors for different parts - use dark colors for readability on glass
+    const minuteColor = Color(0x99000000); // Black 60%
+    const secondColor = Color(0xCC000000); // Black 80%
 
     return RichText(
       text: TextSpan(
