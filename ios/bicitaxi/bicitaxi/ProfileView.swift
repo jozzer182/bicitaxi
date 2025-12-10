@@ -90,7 +90,7 @@ struct ProfileView: View {
                 .background(Color.secondary.opacity(0.3))
             
             statItem(
-                value: String(format: "$%.2f", totalSpent),
+                value: BiciTaxiTheme.formatCOP(totalSpent),
                 label: "Total Gastado"
             )
         }
@@ -111,7 +111,7 @@ struct ProfileView: View {
         .frame(maxWidth: .infinity)
     }
     
-    private var totalSpent: Double {
+    private var totalSpent: Int {
         rideViewModel.history.reduce(0) { $0 + $1.estimatedFare }
     }
     
@@ -161,7 +161,7 @@ struct ProfileView: View {
             
             Spacer()
             
-            Text(String(format: "$%.2f", ride.estimatedFare))
+            Text(BiciTaxiTheme.formatCOP(ride.estimatedFare))
                 .font(.subheadline.weight(.semibold))
                 .foregroundColor(.primary)
         }

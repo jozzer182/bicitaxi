@@ -2,12 +2,12 @@
 //  RegisterView.swift
 //  bicitaxi-conductor
 //
-//  Registration screen for conductors with white theme
+//  Registration screen with white theme and Liquid Glass elements for conductors
 //
 
 import SwiftUI
 
-/// Registration view for conductors with clean white design
+/// Registration view with Liquid Glass design for conductors
 struct RegisterView: View {
     @ObservedObject var authManager: AuthManager
     @Binding var showRegister: Bool
@@ -22,7 +22,7 @@ struct RegisterView: View {
     
     @State private var validationError: String?
     
-    // MARK: - Color Palette
+    // MARK: - Unified Color Palette (same as client app)
     
     private let primaryDark = Color(red: 0.043, green: 0, blue: 0.086)    // #0B0016
     private let accentBlue = Color(red: 0.294, green: 0.702, blue: 0.992) // #4BB3FD
@@ -35,7 +35,7 @@ struct RegisterView: View {
             // Header with back button
             headerSection
             
-            // Form Fields
+            // Form Fields with Liquid Glass
             formSection
             
             // Error Messages
@@ -74,22 +74,20 @@ struct RegisterView: View {
                         .font(.title2)
                         .foregroundColor(primaryDark)
                         .padding(12)
-                        .background(
-                            Circle()
-                                .fill(accentBlue.opacity(0.15))
-                        )
                 }
+                .glassEffect(.clear.interactive().tint(accentBlue.opacity(0.2)), in: Circle())
                 
                 Spacer()
             }
             
-            // App Logo
+            // App Logo with Liquid Glass frame
             Image("Logo")
                 .resizable()
                 .aspectRatio(contentMode: .fit)
                 .frame(width: 70, height: 70)
                 .clipShape(RoundedRectangle(cornerRadius: 16))
-                .shadow(color: deepBlue.opacity(0.3), radius: 8, x: 0, y: 4)
+                .glassEffect(.clear.interactive(), in: RoundedRectangle(cornerRadius: 20))
+                .shadow(color: deepBlue.opacity(0.2), radius: 12, x: 0, y: 4)
             
             Text("Registro Conductor")
                 .font(.title2)
@@ -98,7 +96,7 @@ struct RegisterView: View {
         }
     }
     
-    // MARK: - Form Section
+    // MARK: - Form Section with Liquid Glass
     
     private var formSection: some View {
         VStack(spacing: 12) {
@@ -150,7 +148,7 @@ struct RegisterView: View {
         }
     }
     
-    // MARK: - Field Container
+    // MARK: - Field Container with Liquid Glass
     
     private func fieldContainer<Content: View>(
         label: String,
@@ -169,8 +167,7 @@ struct RegisterView: View {
                 content()
             }
             .padding()
-            .background(accentBlue.opacity(0.08))
-            .cornerRadius(12)
+            .glassEffect(.clear.interactive().tint(accentBlue.opacity(0.15)), in: RoundedRectangle(cornerRadius: 12))
         }
     }
     
@@ -189,7 +186,7 @@ struct RegisterView: View {
         }
     }
     
-    // MARK: - Register Button
+    // MARK: - Register Button (same color as client)
     
     private var registerButton: some View {
         Button(action: {
@@ -206,14 +203,14 @@ struct RegisterView: View {
             }
             .frame(maxWidth: .infinity)
             .frame(height: 50)
-            .background(canRegister ? deepBlue : grayBlue.opacity(0.3))
+            .background(canRegister ? brightBlue : grayBlue.opacity(0.3))
             .foregroundColor(.white)
             .cornerRadius(12)
         }
         .disabled(!canRegister || authManager.isLoading)
     }
     
-    // MARK: - Login Link
+    // MARK: - Login Link (same colors as client)
     
     private var loginLink: some View {
         HStack {
@@ -223,7 +220,7 @@ struct RegisterView: View {
             Button(action: { showRegister = false }) {
                 Text("Inicia sesión")
                     .fontWeight(.semibold)
-                    .foregroundColor(brightBlue)
+                    .foregroundColor(deepBlue)
             }
         }
         .font(.subheadline)

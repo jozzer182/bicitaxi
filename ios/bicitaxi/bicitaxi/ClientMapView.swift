@@ -47,6 +47,9 @@ struct ClientMapView: View {
     /// Whether the welcome greeting is collapsed to a button
     @State private var isWelcomeCollapsed = false
     
+    /// Route breathing animation phase (0-1)
+    @State private var routeBreathingPhase: CGFloat = 0
+    
     @Environment(\.horizontalSizeClass) var horizontalSizeClass
     
     var body: some View {
@@ -79,6 +82,11 @@ struct ClientMapView: View {
                 withAnimation(.spring(response: 0.5, dampingFraction: 0.8)) {
                     isWelcomeCollapsed = true
                 }
+            }
+            
+            // Start breathing animation for route line
+            withAnimation(.easeInOut(duration: 1.2).repeatForever(autoreverses: true)) {
+                routeBreathingPhase = 1.0
             }
         }
         .onReceive(locationManager.$currentCoordinate) { newCoordinate in
@@ -119,13 +127,10 @@ struct ClientMapView: View {
                 
                 // Route polyline (from MKDirections - FREE!)
                 if let route = calculatedRoute {
+                    // Breathing effect: opacity pulses from 30% to 100%
                     MapPolyline(route.polyline)
                         .stroke(
-                            LinearGradient(
-                                colors: [.green, .yellow, .orange, .red],
-                                startPoint: .leading,
-                                endPoint: .trailing
-                            ),
+                            BiciTaxiTheme.breathingRouteGradient(phase: routeBreathingPhase),
                             lineWidth: 6
                         )
                 }
@@ -136,11 +141,7 @@ struct ClientMapView: View {
                    let dropoff = dropoffLocation {
                     MapPolyline(coordinates: [pickup, dropoff])
                         .stroke(
-                            LinearGradient(
-                                colors: [.green, .yellow, .orange, .red],
-                                startPoint: .leading,
-                                endPoint: .trailing
-                            ),
+                            BiciTaxiTheme.breathingRouteGradient(phase: routeBreathingPhase),
                             style: StrokeStyle(lineWidth: 5, lineCap: .round, dash: [10, 5])
                         )
                 }
@@ -289,18 +290,18 @@ struct ClientMapView: View {
             instructionText("Toca el mapa para elegir tu punto de recogida")
         } else if dropoffLocation == nil {
             VStack(spacing: 8) {
-                locationRow(title: "Recogida", coordinate: pickupLocation, address: pickupAddress, color: .green)
+                locationRow(title: "Recogida", coordinate: pickupLocation, address: pickupAddress, color: BiciTaxiTheme.pickupColor)
                 instructionText("Toca de nuevo para elegir tu destino")
             }
         } else {
             VStack(spacing: 8) {
-                locationRow(title: "Recogida", coordinate: pickupLocation, address: pickupAddress, color: .green)
+                locationRow(title: "Recogida", coordinate: pickupLocation, address: pickupAddress, color: BiciTaxiTheme.pickupColor)
                 
                 Image(systemName: "arrow.down")
                     .foregroundColor(.secondary)
                     .font(.caption)
                 
-                locationRow(title: "Destino", coordinate: dropoffLocation, address: dropoffAddress, color: .red)
+                locationRow(title: "Destino", coordinate: dropoffLocation, address: dropoffAddress, color: BiciTaxiTheme.destinationColor)
             }
         }
     }
@@ -508,9 +509,9 @@ struct ClientMapView: View {
                             calculatedRoute = route
                             useStraightLineFallback = false
                             
-                            // Adjust camera to show full route
+                            // Adjust camera to show full route with more padding
                             let routeRect = route.polyline.boundingMapRect
-                            let paddedRect = routeRect.insetBy(dx: -routeRect.size.width * 0.2, dy: -routeRect.size.height * 0.2)
+                            let paddedRect = routeRect.insetBy(dx: -routeRect.size.width * 0.5, dy: -routeRect.size.height * 0.5)
                             cameraPosition = .rect(paddedRect)
                         }
                     }
@@ -551,9 +552,9 @@ struct PickupAnnotationView: View {
     var body: some View {
         ZStack {
             Circle()
-                .fill(.green)
+                .fill(BiciTaxiTheme.pickupColor)
                 .frame(width: 32, height: 32)
-                .shadow(color: .green.opacity(0.5), radius: 8)
+                .shadow(color: BiciTaxiTheme.pickupColor.opacity(0.5), radius: 8)
             
             Image(systemName: "figure.wave")
                 .foregroundColor(.white)
@@ -566,9 +567,9 @@ struct DropoffAnnotationView: View {
     var body: some View {
         ZStack {
             Circle()
-                .fill(.red)
+                .fill(BiciTaxiTheme.destinationColor)
                 .frame(width: 32, height: 32)
-                .shadow(color: .red.opacity(0.5), radius: 8)
+                .shadow(color: BiciTaxiTheme.destinationColor.opacity(0.5), radius: 8)
             
             Image(systemName: "flag.fill")
                 .foregroundColor(.white)

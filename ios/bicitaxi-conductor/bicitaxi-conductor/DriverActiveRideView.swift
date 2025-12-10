@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import CoreLocation
 
 struct DriverActiveRideView: View {
     @ObservedObject var rideViewModel: DriverRideViewModel
@@ -76,49 +77,81 @@ struct DriverActiveRideView: View {
                 .foregroundColor(.primary)
                 .frame(maxWidth: .infinity, alignment: .leading)
             
-            HStack(spacing: 12) {
-                Circle()
-                    .fill(.green)
-                    .frame(width: 12, height: 12)
-                
-                VStack(alignment: .leading, spacing: 2) {
-                    Text("Recogida")
-                        .font(.caption)
-                        .foregroundColor(.secondary)
-                    Text(ride.pickup.shortDescription)
-                        .font(.subheadline)
-                        .foregroundColor(.primary)
-                }
-                
-                Spacer()
-            }
+            // Pickup location row
+            locationRow(
+                title: "Recogida",
+                address: ride.pickup.shortDescription,
+                coordinate: ride.pickup.coordinate,
+                color: BiciTaxiTheme.pickupColor
+            )
             
+            // Connector line
+            Rectangle()
+                .fill(Color.secondary.opacity(0.3))
+                .frame(width: 2, height: 20)
+                .padding(.leading, 5)
+            
+            // Dropoff location row
             if let dropoff = ride.dropoff {
-                Rectangle()
-                    .fill(Color.secondary.opacity(0.3))
-                    .frame(width: 2, height: 20)
-                    .padding(.leading, 5)
-                
-                HStack(spacing: 12) {
-                    Circle()
-                        .fill(.red)
-                        .frame(width: 12, height: 12)
-                    
-                    VStack(alignment: .leading, spacing: 2) {
-                        Text("Destino")
-                            .font(.caption)
-                            .foregroundColor(.secondary)
-                        Text(dropoff.shortDescription)
-                            .font(.subheadline)
-                            .foregroundColor(.primary)
-                    }
-                    
-                    Spacer()
-                }
+                locationRow(
+                    title: "Destino",
+                    address: dropoff.shortDescription,
+                    coordinate: dropoff.coordinate,
+                    color: BiciTaxiTheme.destinationColor
+                )
             }
         }
         .padding(20)
         .glassCard(cornerRadius: 20)
+    }
+    
+    /// Location row matching ClientMapView format with coordinate display
+    private func locationRow(title: String, address: String, coordinate: CLLocationCoordinate2D, color: Color) -> some View {
+        HStack(spacing: 12) {
+            Circle()
+                .fill(color)
+                .frame(width: 12, height: 12)
+            
+            VStack(alignment: .leading, spacing: 2) {
+                Text(title)
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+                Text(address)
+                    .font(.subheadline)
+                    .foregroundColor(.primary)
+                    .lineLimit(1)
+            }
+            
+            Spacer()
+            
+            // Coordinate display with gradient (matching client app)
+            HStack(spacing: 2) {
+                let (latMin, latSec) = minutesAndSeconds(from: coordinate.latitude)
+                Text("\(latMin)'")
+                    .foregroundColor(.secondary.opacity(0.6))
+                Text(String(format: "%.1f\"", latSec))
+                    .foregroundColor(.secondary)
+                
+                Text(" ")
+                
+                let (lonMin, lonSec) = minutesAndSeconds(from: coordinate.longitude)
+                Text("\(lonMin)'")
+                    .foregroundColor(.secondary.opacity(0.6))
+                Text(String(format: "%.1f\"", lonSec))
+                    .foregroundColor(.secondary)
+            }
+            .font(.caption2)
+        }
+    }
+    
+    /// Extract minutes and seconds from a decimal degree coordinate
+    private func minutesAndSeconds(from decimalDegrees: Double) -> (Int, Double) {
+        let absolute = abs(decimalDegrees)
+        let degrees = Int(absolute)
+        let minutesDecimal = (absolute - Double(degrees)) * 60
+        let minutes = Int(minutesDecimal)
+        let seconds = (minutesDecimal - Double(minutes)) * 60
+        return (minutes, seconds)
     }
     
     // MARK: - Fare Card
@@ -131,7 +164,7 @@ struct DriverActiveRideView: View {
             
             Spacer()
             
-            Text(String(format: "$%.2f", ride.estimatedFare))
+            Text(BiciTaxiTheme.formatCOP(ride.estimatedFare))
                 .font(.title.weight(.bold))
                 .foregroundStyle(BiciTaxiTheme.accentGradient)
         }

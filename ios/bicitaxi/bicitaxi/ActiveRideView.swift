@@ -66,7 +66,7 @@ struct ActiveRideView: View {
                 .foregroundColor(.primary)
             
             // Estimated fare
-            Text(String(format: "Tarifa estimada: $%.2f", ride.estimatedFare))
+            Text("Tarifa estimada: \(BiciTaxiTheme.formatCOP(ride.estimatedFare))")
                 .font(.subheadline)
                 .foregroundColor(.secondary)
         }
@@ -87,7 +87,7 @@ struct ActiveRideView: View {
             // Pickup
             HStack(spacing: 12) {
                 Circle()
-                    .fill(.green)
+                    .fill(BiciTaxiTheme.pickupColor)
                     .frame(width: 12, height: 12)
                 
                 VStack(alignment: .leading, spacing: 2) {
@@ -112,7 +112,7 @@ struct ActiveRideView: View {
             if let dropoff = ride.dropoff {
                 HStack(spacing: 12) {
                     Circle()
-                        .fill(.red)
+                        .fill(BiciTaxiTheme.destinationColor)
                         .frame(width: 12, height: 12)
                     
                     VStack(alignment: .leading, spacing: 2) {

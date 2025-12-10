@@ -41,8 +41,8 @@ class DriverRideViewModel: ObservableObject {
     
     // MARK: - Computed Properties
     
-    /// Total earnings from completed rides
-    var totalEarnings: Double {
+    /// Total earnings from completed rides (Colombian Pesos)
+    var totalEarnings: Int {
         completedRides.reduce(0) { total, ride in
             total + ride.estimatedFare
         }

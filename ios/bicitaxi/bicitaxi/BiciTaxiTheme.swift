@@ -27,12 +27,49 @@ struct BiciTaxiTheme {
     /// Quaternary accent (#027BCE)
     static let accentQuaternary = Color(red: 0.008, green: 0.482, blue: 0.808)
     
+    // MARK: - Map Marker Colors
+    
+    /// Pickup point color - uses light blue for visibility
+    static let pickupColor = accentPrimary
+    
+    /// Destination point color - uses deeper blue for contrast
+    static let destinationColor = accentQuaternary
+    
+    /// Route gradient from pickup to destination
+    static let routeGradient = LinearGradient(
+        colors: [pickupColor, destinationColor],
+        startPoint: .leading,
+        endPoint: .trailing
+    )
+    
+    /// Route gradient with breathing opacity (0.0-1.0 produces opacity 0.3-1.0)
+    static func breathingRouteGradient(phase: CGFloat) -> LinearGradient {
+        let opacity = 0.3 + (phase * 0.7)  // Ranges from 0.3 to 1.0
+        return LinearGradient(
+            colors: [pickupColor.opacity(opacity), destinationColor.opacity(opacity)],
+            startPoint: .leading,
+            endPoint: .trailing
+        )
+    }
+    
     /// Gradient for accent elements
     static let accentGradient = LinearGradient(
         colors: [accentPrimary, accentTertiary],
         startPoint: .topLeading,
         endPoint: .bottomTrailing
     )
+    
+    // MARK: - Currency Formatting
+    
+    /// Format amount as Colombian Pesos (no cents, dot as thousands separator)
+    /// Example: 15000 -> "$15.000"
+    static func formatCOP(_ amount: Int) -> String {
+        let formatter = NumberFormatter()
+        formatter.numberStyle = .decimal
+        formatter.groupingSeparator = "."
+        formatter.maximumFractionDigits = 0
+        return "$" + (formatter.string(from: NSNumber(value: amount)) ?? "\(amount)")
+    }
     
     // MARK: - Dimensions
     

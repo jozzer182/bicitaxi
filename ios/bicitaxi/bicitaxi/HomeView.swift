@@ -87,7 +87,7 @@ struct HomeView: View {
                 
                 Spacer()
                 
-                Text(String(format: "$%.2f", ride.estimatedFare))
+                Text(BiciTaxiTheme.formatCOP(ride.estimatedFare))
                     .font(.title3.weight(.bold))
                     .foregroundStyle(BiciTaxiTheme.accentGradient)
             }
@@ -140,7 +140,7 @@ struct HomeView: View {
                     
                     Spacer()
                     
-                    Text(String(format: "$%.2f", ride.estimatedFare))
+                    Text(BiciTaxiTheme.formatCOP(ride.estimatedFare))
                         .font(.subheadline.weight(.medium))
                         .foregroundColor(.white.opacity(0.8))
                 }

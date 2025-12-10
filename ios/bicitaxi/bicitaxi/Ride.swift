@@ -88,16 +88,17 @@ struct Ride: Identifiable, Codable, Equatable {
         return dict
     }
     
-    /// Estimated fare (demo calculation)
-    var estimatedFare: Double {
-        guard let dropoff = dropoff else { return 5.0 }
+    /// Estimated fare in Colombian Pesos (demo calculation)
+    /// No cents used in Colombia, values typically range from $5,000 to $50,000 COP
+    var estimatedFare: Int {
+        guard let dropoff = dropoff else { return 5000 }
         
         // Simple distance-based calculation (demo)
         let latDiff = abs(dropoff.latitude - pickup.latitude)
         let lonDiff = abs(dropoff.longitude - pickup.longitude)
         let distance = sqrt(latDiff * latDiff + lonDiff * lonDiff) * 111 // ~km
         
-        return max(5.0, distance * 10.0) // $5 minimum, $10/km
+        return max(5000, Int(distance * 4000)) // $5,000 minimum, ~$4,000/km
     }
 }
 

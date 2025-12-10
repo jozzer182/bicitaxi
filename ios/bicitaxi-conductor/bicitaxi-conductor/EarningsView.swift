@@ -42,7 +42,7 @@ struct EarningsView: View {
                 .font(.headline)
                 .foregroundColor(.secondary)
             
-            Text(String(format: "$%.2f", rideViewModel.totalEarnings))
+            Text(BiciTaxiTheme.formatCOP(rideViewModel.totalEarnings))
                 .font(.system(size: 48, weight: .bold))
                 .foregroundStyle(BiciTaxiTheme.accentGradient)
         }
@@ -65,7 +65,7 @@ struct EarningsView: View {
                 .background(Color.secondary.opacity(0.3))
             
             statItem(
-                value: String(format: "$%.2f", averageFare),
+                value: BiciTaxiTheme.formatCOP(averageFare),
                 label: "Tarifa Prom."
             )
             
@@ -95,9 +95,9 @@ struct EarningsView: View {
         .frame(maxWidth: .infinity)
     }
     
-    private var averageFare: Double {
+    private var averageFare: Int {
         guard !rideViewModel.completedRides.isEmpty else { return 0 }
-        return rideViewModel.totalEarnings / Double(rideViewModel.completedRides.count)
+        return rideViewModel.totalEarnings / rideViewModel.completedRides.count
     }
     
     // MARK: - Completed Rides
@@ -156,7 +156,7 @@ struct EarningsView: View {
             
             Spacer()
             
-            Text(String(format: "+$%.2f", ride.estimatedFare))
+            Text("+\(BiciTaxiTheme.formatCOP(ride.estimatedFare))")
                 .font(.subheadline.weight(.bold))
                 .foregroundColor(.green)
         }

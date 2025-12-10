@@ -2,13 +2,13 @@
 //  LoginView.swift
 //  bicitaxi-conductor
 //
-//  Login screen with white theme for conductors
+//  Login screen with white theme and Liquid Glass elements for conductors
 //
 
 import SwiftUI
 import AuthenticationServices
 
-/// Login view with clean white design for conductors
+/// Login view with Liquid Glass design for conductors
 struct LoginView: View {
     @ObservedObject var authManager: AuthManager
     @Binding var showRegister: Bool
@@ -19,7 +19,7 @@ struct LoginView: View {
     
     @Environment(\.colorScheme) var colorScheme
     
-    // MARK: - Color Palette
+    // MARK: - Unified Color Palette (same as client app)
     // #0B0016, #4BB3FD, #3E6680, #0496FF, #027BCE
     
     private let primaryDark = Color(red: 0.043, green: 0, blue: 0.086)    // #0B0016
@@ -42,7 +42,7 @@ struct LoginView: View {
             // Divider
             dividerSection
             
-            // Email/Password Form
+            // Email/Password Form with Liquid Glass
             emailPasswordSection
             
             // Error Message
@@ -77,13 +77,14 @@ struct LoginView: View {
     
     private var logoSection: some View {
         VStack(spacing: 8) {
-            // App Logo from Assets
+            // App Logo from Assets with Liquid Glass frame
             Image("Logo")
                 .resizable()
                 .aspectRatio(contentMode: .fit)
                 .frame(width: 90, height: 90)
                 .clipShape(RoundedRectangle(cornerRadius: 20))
-                .shadow(color: deepBlue.opacity(0.3), radius: 12, x: 0, y: 6)
+                .glassEffect(.clear.interactive(), in: RoundedRectangle(cornerRadius: 24))
+                .shadow(color: deepBlue.opacity(0.2), radius: 16, x: 0, y: 8)
             
             Text("Empieza a generar ingresos")
                 .font(.subheadline)
@@ -105,7 +106,7 @@ struct LoginView: View {
             .frame(height: 50)
             .cornerRadius(12)
             
-            // Sign in with Google
+            // Sign in with Google with Liquid Glass
             Button(action: {
                 authManager.signInWithGoogle()
             }) {
@@ -117,14 +118,9 @@ struct LoginView: View {
                 }
                 .frame(maxWidth: .infinity)
                 .frame(height: 50)
-                .background(Color.white)
                 .foregroundColor(primaryDark)
-                .overlay(
-                    RoundedRectangle(cornerRadius: 12)
-                        .stroke(grayBlue.opacity(0.3), lineWidth: 1)
-                )
-                .cornerRadius(12)
             }
+            .glassEffect(.clear.interactive().tint(accentBlue.opacity(0.3)), in: RoundedRectangle(cornerRadius: 12))
         }
     }
     
@@ -147,7 +143,7 @@ struct LoginView: View {
         }
     }
     
-    // MARK: - Email/Password Section
+    // MARK: - Email/Password Section with Liquid Glass
     
     private var emailPasswordSection: some View {
         VStack(spacing: 14) {
@@ -168,8 +164,7 @@ struct LoginView: View {
                         .foregroundColor(primaryDark)
                 }
                 .padding()
-                .background(accentBlue.opacity(0.08))
-                .cornerRadius(12)
+                .glassEffect(.clear.interactive().tint(accentBlue.opacity(0.15)), in: RoundedRectangle(cornerRadius: 12))
             }
             
             // Password Field
@@ -196,13 +191,12 @@ struct LoginView: View {
                     }
                 }
                 .padding()
-                .background(accentBlue.opacity(0.08))
-                .cornerRadius(12)
+                .glassEffect(.clear.interactive().tint(accentBlue.opacity(0.15)), in: RoundedRectangle(cornerRadius: 12))
             }
         }
     }
     
-    // MARK: - Login Button
+    // MARK: - Login Button (same color as client)
     
     private var loginButton: some View {
         Button(action: {
@@ -219,14 +213,14 @@ struct LoginView: View {
             }
             .frame(maxWidth: .infinity)
             .frame(height: 50)
-            .background(deepBlue)
+            .background(brightBlue)
             .foregroundColor(.white)
             .cornerRadius(12)
         }
         .disabled(authManager.isLoading)
     }
     
-    // MARK: - Register Link
+    // MARK: - Register Link (same colors as client)
     
     private var registerLink: some View {
         HStack {
@@ -236,7 +230,7 @@ struct LoginView: View {
             Button(action: { showRegister = true }) {
                 Text("Regístrate como conductor")
                     .fontWeight(.semibold)
-                    .foregroundColor(brightBlue)
+                    .foregroundColor(deepBlue)
             }
         }
         .font(.subheadline)

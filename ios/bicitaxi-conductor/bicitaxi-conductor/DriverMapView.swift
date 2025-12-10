@@ -13,7 +13,7 @@ struct RideRequest: Identifiable {
     let id = UUID()
     let coordinate: CLLocationCoordinate2D
     let title: String
-    let estimatedFare: Double
+    let estimatedFare: Int  // Colombian Pesos
 }
 
 /// Driver map view with nearby ride requests
@@ -193,7 +193,7 @@ struct DriverMapView: View {
                         .font(.subheadline.weight(.semibold))
                         .foregroundColor(.white)
                     Spacer()
-                    Text(String(format: "$%.2f", selected.estimatedFare))
+                    Text(BiciTaxiTheme.formatCOP(selected.estimatedFare))
                         .font(.subheadline.weight(.bold))
                         .foregroundStyle(BiciTaxiTheme.accentGradient)
                 }
@@ -302,11 +302,11 @@ struct DriverMapView: View {
     private func generateDummyRequests(around center: CLLocationCoordinate2D) {
         guard nearbyRequests.isEmpty else { return }
         
-        let offsets: [(Double, Double, String, Double)] = [
-            (0.003, 0.002, "Pickup Request #1", 25.50),
-            (-0.002, 0.004, "Pickup Request #2", 18.00),
-            (0.004, -0.003, "Pickup Request #3", 32.75),
-            (-0.001, -0.002, "Pickup Request #4", 15.25),
+        let offsets: [(Double, Double, String, Int)] = [
+            (0.003, 0.002, "Solicitud de Viaje #1", 12500),
+            (-0.002, 0.004, "Solicitud de Viaje #2", 8000),
+            (0.004, -0.003, "Solicitud de Viaje #3", 18000),
+            (-0.001, -0.002, "Solicitud de Viaje #4", 6500),
         ]
         
         nearbyRequests = offsets.map { offset in

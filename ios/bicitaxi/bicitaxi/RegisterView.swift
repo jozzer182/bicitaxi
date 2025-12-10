@@ -2,12 +2,12 @@
 //  RegisterView.swift
 //  bicitaxi
 //
-//  Registration screen with white theme
+//  Registration screen with white theme and Liquid Glass elements
 //
 
 import SwiftUI
 
-/// Registration view with clean white design
+/// Registration view with Liquid Glass design
 struct RegisterView: View {
     @ObservedObject var authManager: AuthManager
     @Binding var showRegister: Bool
@@ -21,7 +21,7 @@ struct RegisterView: View {
     
     @State private var validationError: String?
     
-    // MARK: - Color Palette
+    // MARK: - Unified Color Palette
     
     private let primaryDark = Color(red: 0.043, green: 0, blue: 0.086)    // #0B0016
     private let accentBlue = Color(red: 0.294, green: 0.702, blue: 0.992) // #4BB3FD
@@ -34,7 +34,7 @@ struct RegisterView: View {
             // Header with back button
             headerSection
             
-            // Form Fields
+            // Form Fields with Liquid Glass
             formSection
             
             // Error Messages
@@ -73,22 +73,20 @@ struct RegisterView: View {
                         .font(.title2)
                         .foregroundColor(primaryDark)
                         .padding(12)
-                        .background(
-                            Circle()
-                                .fill(accentBlue.opacity(0.15))
-                        )
                 }
+                .glassEffect(.clear.interactive().tint(accentBlue.opacity(0.2)), in: Circle())
                 
                 Spacer()
             }
             
-            // App Logo
+            // App Logo with Liquid Glass frame
             Image("Logo")
                 .resizable()
                 .aspectRatio(contentMode: .fit)
                 .frame(width: 70, height: 70)
                 .clipShape(RoundedRectangle(cornerRadius: 16))
-                .shadow(color: deepBlue.opacity(0.3), radius: 8, x: 0, y: 4)
+                .glassEffect(.clear.interactive(), in: RoundedRectangle(cornerRadius: 20))
+                .shadow(color: deepBlue.opacity(0.2), radius: 12, x: 0, y: 4)
             
             Text("Crear Cuenta")
                 .font(.title2)
@@ -97,7 +95,7 @@ struct RegisterView: View {
         }
     }
     
-    // MARK: - Form Section
+    // MARK: - Form Section with Liquid Glass
     
     private var formSection: some View {
         VStack(spacing: 12) {
@@ -143,7 +141,7 @@ struct RegisterView: View {
         }
     }
     
-    // MARK: - Field Container
+    // MARK: - Field Container with Liquid Glass
     
     private func fieldContainer<Content: View>(
         label: String,
@@ -157,13 +155,12 @@ struct RegisterView: View {
             
             HStack {
                 Image(systemName: icon)
-                    .foregroundColor(brightBlue)
+                    .foregroundColor(accentBlue)
                 
                 content()
             }
             .padding()
-            .background(accentBlue.opacity(0.08))
-            .cornerRadius(12)
+            .glassEffect(.clear.interactive().tint(accentBlue.opacity(0.15)), in: RoundedRectangle(cornerRadius: 12))
         }
     }
     

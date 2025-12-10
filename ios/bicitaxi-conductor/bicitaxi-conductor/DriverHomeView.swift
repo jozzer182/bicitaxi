@@ -235,10 +235,15 @@ struct DriverHomeView: View {
             }
             
             if !rideViewModel.pendingRides.isEmpty {
-                // Show first pending ride
-                if let firstRide = rideViewModel.pendingRides.first {
-                    pendingRideCard(firstRide)
+                // Compact scrollable list of all pending requests
+                ScrollView(.vertical, showsIndicators: false) {
+                    VStack(spacing: 8) {
+                        ForEach(rideViewModel.pendingRides) { ride in
+                            compactRideRequest(ride)
+                        }
+                    }
                 }
+                .frame(maxHeight: 200) // Limit height for compact view
             } else {
                 Text("No hay solicitudes pendientes cerca")
                     .font(.caption.weight(.medium))
@@ -247,42 +252,88 @@ struct DriverHomeView: View {
         }
     }
     
-    private func pendingRideCard(_ ride: Ride) -> some View {
-        VStack(spacing: 12) {
-            HStack {
-                VStack(alignment: .leading, spacing: 4) {
-                    Text("Recogida")
-                        .font(.caption)
-                        .foregroundColor(.white.opacity(0.6))
-                    Text(ride.pickup.shortDescription)
-                        .font(.subheadline)
-                        .foregroundColor(.white)
-                }
-                
-                Spacer()
-                
-                Text(String(format: "$%.2f", ride.estimatedFare))
-                    .font(.headline.weight(.bold))
+    /// Compact ride request row showing: Distance, Destination, Client, Fare, Accept
+    private func compactRideRequest(_ ride: Ride) -> some View {
+        HStack(spacing: 10) {
+            // Distance indicator
+            VStack(spacing: 2) {
+                Image(systemName: "arrow.triangle.swap")
+                    .font(.caption2)
                     .foregroundStyle(BiciTaxiTheme.accentGradient)
+                Text(formatDistance(ride))
+                    .font(.caption2.weight(.bold))
+                    .foregroundColor(.primary)
+            }
+            .frame(width: 40)
+            
+            // Route info: pickup → destination
+            VStack(alignment: .leading, spacing: 2) {
+                // Client name
+                Text(clientDisplayName(ride.clientId))
+                    .font(.caption.weight(.semibold))
+                    .foregroundColor(.primary)
+                    .lineLimit(1)
+                
+                // Destination
+                if let dropoff = ride.dropoff {
+                    HStack(spacing: 4) {
+                        Circle()
+                            .fill(BiciTaxiTheme.destinationColor)
+                            .frame(width: 6, height: 6)
+                        Text(dropoff.shortDescription)
+                            .font(.caption2)
+                            .foregroundColor(.secondary)
+                            .lineLimit(1)
+                    }
+                }
             }
             
+            Spacer()
+            
+            // Fare
+            Text(BiciTaxiTheme.formatCOP(ride.estimatedFare))
+                .font(.caption.weight(.bold))
+                .foregroundStyle(BiciTaxiTheme.accentGradient)
+            
+            // Accept button
             Button {
                 Task {
                     await rideViewModel.acceptRide(ride)
                 }
             } label: {
-                Text("Aceptar Viaje")
-                    .font(.subheadline.weight(.semibold))
-                    .foregroundColor(.white)
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, 12)
-                    .background(BiciTaxiTheme.accentGradient)
-                    .clipShape(Capsule())
+                Image(systemName: "checkmark.circle.fill")
+                    .font(.title3)
+                    .foregroundStyle(BiciTaxiTheme.accentGradient)
             }
         }
-        .padding(12)
-        .background(Color.white.opacity(0.05))
-        .clipShape(RoundedRectangle(cornerRadius: 12))
+        .padding(.horizontal, 10)
+        .padding(.vertical, 8)
+        .glassCard(cornerRadius: 12)
+    }
+    
+    /// Calculate and format distance in km between pickup and dropoff
+    private func formatDistance(_ ride: Ride) -> String {
+        guard let dropoff = ride.dropoff else { return "---" }
+        
+        let latDiff = abs(dropoff.latitude - ride.pickup.latitude)
+        let lonDiff = abs(dropoff.longitude - ride.pickup.longitude)
+        let distance = sqrt(latDiff * latDiff + lonDiff * lonDiff) * 111 // ~km
+        
+        if distance < 1 {
+            return String(format: "%.0fm", distance * 1000)
+        }
+        return String(format: "%.1fkm", distance)
+    }
+    
+    /// Get display name for client (demo names based on clientId)
+    private func clientDisplayName(_ clientId: String) -> String {
+        switch clientId {
+        case "client-001": return "Carlos García"
+        case "client-002": return "María López"
+        case "client-003": return "Juan Martínez"
+        case "client-004": return "Ana Rodríguez"
+        default: return "Cliente \(clientId.suffix(3))"
+        }
     }
     
     // MARK: - Offline View

@@ -88,23 +88,26 @@ final class InMemoryRideRepository: RideRepository, @unchecked Sendable {
     
     // MARK: - Demo Data Generation
     
-    /// Generate dummy pending rides near a location
+    /// Generate dummy pending rides near a location with addresses and names
     func generateDummyRides(around center: RideLocationPoint) async {
-        let dummyRides: [(String, Double, Double, Double)] = [
-            ("client-001", 0.003, 0.002, 25.50),
-            ("client-002", -0.002, 0.004, 18.00),
-            ("client-003", 0.004, -0.003, 32.75),
-            ("client-004", -0.001, -0.002, 15.25),
+        // Sample data: (clientId, latOffset, lonOffset, pickupAddr, dropoffAddr, clientName)
+        let dummyRides: [(String, Double, Double, String, String, String)] = [
+            ("client-001", 0.003, 0.002, "Calle 85 #15-25, Bogotá", "Centro Comercial Andino", "Carlos García"),
+            ("client-002", -0.002, 0.004, "Carrera 7 #72-41, Bogotá", "Parque de la 93", "María López"),
+            ("client-003", 0.004, -0.003, "Av. El Dorado #68-51, Bogotá", "Terminal de Transporte", "Juan Martínez"),
+            ("client-004", -0.001, -0.002, "Calle 26 #13-51, Bogotá", "Centro Internacional", "Ana Rodríguez"),
         ]
         
-        for (clientId, latOffset, lonOffset, _) in dummyRides {
+        for (clientId, latOffset, lonOffset, pickupAddr, dropoffAddr, _) in dummyRides {
             let pickup = RideLocationPoint(
                 latitude: center.latitude + latOffset,
-                longitude: center.longitude + lonOffset
+                longitude: center.longitude + lonOffset,
+                address: pickupAddr
             )
             let dropoff = RideLocationPoint(
                 latitude: center.latitude + latOffset + 0.005,
-                longitude: center.longitude + lonOffset + 0.005
+                longitude: center.longitude + lonOffset + 0.005,
+                address: dropoffAddr
             )
             
             let ride = Ride.demoPending(
