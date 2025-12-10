@@ -3,33 +3,20 @@ import 'package:flutter/material.dart';
 
 /// A widget that applies a barrel distortion shader effect to its backdrop.
 /// Creates a liquid glass refraction effect where edges distort more than center.
-///
-/// Note: The shader effect only works with Flutter's Impeller backend.
-/// Falls back to matrix-based distortion on other backends.
 class BarrelDistortionFilter extends StatefulWidget {
   const BarrelDistortionFilter({
     super.key,
     required this.child,
-    this.distortionStrength = 0.5,
+    this.distortionStrength = 1.0,
     this.borderRadius = 40.0,
     this.backgroundColor,
     this.border,
   });
 
-  /// The widget to display on top of the distorted backdrop.
   final Widget child;
-
-  /// Strength of the barrel distortion (0.0 to 1.0).
-  /// Higher values = more distortion at edges.
   final double distortionStrength;
-
-  /// Border radius for clipping.
   final double borderRadius;
-
-  /// Optional background color overlay.
   final Color? backgroundColor;
-
-  /// Optional border decoration.
   final Border? border;
 
   @override
@@ -54,44 +41,16 @@ class _BarrelDistortionFilterState extends State<BarrelDistortionFilter> {
         'shaders/barrel_distortion.frag',
       );
       _shader = _program!.fragmentShader();
+
       if (mounted) {
         setState(() => _shaderLoaded = true);
+        debugPrint('🔮 [BarrelDistortion] Shader cargado correctamente');
       }
     } catch (e) {
-      debugPrint('Barrel distortion shader not available: $e');
-      debugPrint('Using matrix-based fallback instead.');
       if (mounted) {
         setState(() => _loadFailed = true);
+        debugPrint('⚠️ [BarrelDistortion] Shader error: $e');
       }
-    }
-  }
-
-  ui.ImageFilter? _buildShaderFilter(Size size) {
-    if (_shader == null) return null;
-
-    try {
-      // Set uniforms for the shader
-      // Note: For ImageFilter.shader, the input image is automatically provided
-      // We just need to set our custom uniforms
-      _shader!.setFloat(0, size.width); // uSize.x
-      _shader!.setFloat(1, size.height); // uSize.y
-      _shader!.setFloat(2, widget.distortionStrength); // uDistortion
-
-      // Create ImageFilter from shader
-      // This only works with Impeller backend
-      return ui.ImageFilter.compose(
-        outer: ui.ImageFilter.blur(sigmaX: 1, sigmaY: 1),
-        inner: ui.ImageFilter.matrix(
-          (Matrix4.identity()
-                ..setEntry(0, 0, 1.0 + widget.distortionStrength * 0.08)
-                ..setEntry(1, 1, 1.0 + widget.distortionStrength * 0.08))
-              .storage,
-          filterQuality: FilterQuality.high,
-        ),
-      );
-    } catch (e) {
-      debugPrint('Failed to create shader filter: $e');
-      return null;
     }
   }
 
@@ -100,14 +59,46 @@ class _BarrelDistortionFilterState extends State<BarrelDistortionFilter> {
     return LayoutBuilder(
       builder: (context, constraints) {
         final size = Size(constraints.maxWidth, constraints.maxHeight);
+        final devicePixelRatio = MediaQuery.of(context).devicePixelRatio;
 
-        // Try to use shader filter, fall back to matrix if not available
+        // Debug output
+        debugPrint(
+          '📐 Widget size: ${size.width.toStringAsFixed(0)}x${size.height.toStringAsFixed(0)}',
+        );
+        debugPrint(
+          '📐 Physical: ${(size.width * devicePixelRatio).toStringAsFixed(0)}x${(size.height * devicePixelRatio).toStringAsFixed(0)}',
+        );
+        debugPrint('📐 Shader loaded: $_shaderLoaded, failed: $_loadFailed');
+
         ui.ImageFilter filter;
 
-        if (_shaderLoaded && !_loadFailed) {
-          final shaderFilter = _buildShaderFilter(size);
-          filter = shaderFilter ?? _buildFallbackFilter();
+        if (_shaderLoaded && !_loadFailed && _shader != null) {
+          // Configure shader uniforms - índices corresponden al orden en .frag:
+          // vec2 uWidgetSize = índices 0, 1
+          // float uDistortionStrength = índice 2
+          // vec2 uWidgetOffset = índices 3, 4
+          _shader!.setFloat(0, size.width * devicePixelRatio); // uWidgetSize.x
+          _shader!.setFloat(1, size.height * devicePixelRatio); // uWidgetSize.y
+          _shader!.setFloat(
+            2,
+            widget.distortionStrength,
+          ); // uDistortionStrength
+          _shader!.setFloat(3, 0); // uWidgetOffset.x
+          _shader!.setFloat(4, 0); // uWidgetOffset.y
+
+          debugPrint(
+            '📐 Shader uniforms: size=(${(size.width * devicePixelRatio).toStringAsFixed(0)}, ${(size.height * devicePixelRatio).toStringAsFixed(0)}), distortion=${widget.distortionStrength}',
+          );
+
+          try {
+            filter = ui.ImageFilter.shader(_shader!);
+            debugPrint('✅ ImageFilter.shader created');
+          } catch (e) {
+            debugPrint('❌ ImageFilter.shader failed: $e');
+            filter = _buildFallbackFilter();
+          }
         } else {
+          debugPrint('⚠️ Using fallback filter');
           filter = _buildFallbackFilter();
         }
 
@@ -122,7 +113,7 @@ class _BarrelDistortionFilterState extends State<BarrelDistortionFilter> {
                   end: Alignment.bottomCenter,
                   colors: [
                     widget.backgroundColor ??
-                        Colors.white.withValues(alpha: 0.08),
+                        Colors.white.withValues(alpha: 0.06),
                     (widget.backgroundColor ?? Colors.white).withValues(
                       alpha: 0.02,
                     ),
@@ -140,17 +131,6 @@ class _BarrelDistortionFilterState extends State<BarrelDistortionFilter> {
   }
 
   ui.ImageFilter _buildFallbackFilter() {
-    // Matrix-based distortion as fallback
-    final Matrix4 refractionMatrix = Matrix4.identity()
-      ..setEntry(0, 0, 1.0 + widget.distortionStrength * 0.1)
-      ..setEntry(1, 1, 1.0 + widget.distortionStrength * 0.1);
-
-    return ui.ImageFilter.compose(
-      outer: ui.ImageFilter.blur(sigmaX: 2, sigmaY: 2),
-      inner: ui.ImageFilter.matrix(
-        refractionMatrix.storage,
-        filterQuality: FilterQuality.high,
-      ),
-    );
+    return ui.ImageFilter.blur(sigmaX: 0.5, sigmaY: 0.5);
   }
 }

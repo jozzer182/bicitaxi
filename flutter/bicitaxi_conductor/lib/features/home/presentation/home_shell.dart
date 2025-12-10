@@ -2,7 +2,6 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:liquid_glass_ui_design/liquid_glass_ui.dart';
 import '../../../core/theme/app_colors.dart';
-import '../../../core/widgets/barrel_distortion_filter.dart';
 import '../../../core/widgets/responsive_layout.dart';
 import 'driver_map_home_screen.dart';
 import '../../rides/presentation/driver_active_ride_screen.dart';
@@ -155,26 +154,39 @@ class _HomeShellState extends State<HomeShell> {
     return SafeArea(
       top: false,
       child: Padding(
-        padding: const EdgeInsets.only(bottom: 5),
-        child: BarrelDistortionFilter(
-          distortionStrength: 0.7,
-          borderRadius: 40,
-          border: Border.all(
-            color: Colors.white.withValues(alpha: 0.15),
-            width: 1,
-          ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: List.generate(_destinations.length, (index) {
-              final dest = _destinations[index];
-              final isSelected = _selectedIndex == index;
-              return _NavBarItem(
-                icon: isSelected ? dest.selectedIcon : dest.icon,
-                label: dest.label,
-                isSelected: isSelected,
-                onTap: () => _onTabChanged(index),
-              );
-            }),
+        padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 5),
+        child: SizedBox(
+          height: 75, // Fixed height for nav bar
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(40),
+            child: BackdropFilter(
+              // Blur 5% = sigma ~2.5 para un efecto sutil
+              filter: ImageFilter.blur(sigmaX: 2.5, sigmaY: 2.5),
+              child: Container(
+                decoration: BoxDecoration(
+                  // Tinte blanco 5% de opacidad
+                  color: Colors.white.withValues(alpha: 0.05),
+                  borderRadius: BorderRadius.circular(40),
+                  border: Border.all(
+                    color: Colors.white.withValues(alpha: 0.15),
+                    width: 1,
+                  ),
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: List.generate(_destinations.length, (index) {
+                    final dest = _destinations[index];
+                    final isSelected = _selectedIndex == index;
+                    return _NavBarItem(
+                      icon: isSelected ? dest.selectedIcon : dest.icon,
+                      label: dest.label,
+                      isSelected: isSelected,
+                      onTap: () => _onTabChanged(index),
+                    );
+                  }),
+                ),
+              ),
+            ),
           ),
         ),
       ),

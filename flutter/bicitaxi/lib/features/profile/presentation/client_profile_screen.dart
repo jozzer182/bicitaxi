@@ -30,7 +30,9 @@ class ClientProfileScreen extends StatelessWidget {
               _buildLogoutButton(context),
               const SizedBox(height: 12),
               _buildDeleteAccountButton(context),
-              const SizedBox(height: 40),
+              const SizedBox(
+                height: 120,
+              ), // Espacio extra para la barra de navegación
             ],
           ),
         ),
@@ -78,16 +80,17 @@ class ClientProfileScreen extends StatelessWidget {
           const SizedBox(height: 16),
           Text(
             'Usuario Invitado',
-            style: Theme.of(
-              context,
-            ).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold),
+            style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+              fontWeight: FontWeight.bold,
+              color: Colors.black87,
+            ),
           ),
           const SizedBox(height: 4),
           Text(
             '+52 000 000 0000',
             style: Theme.of(
               context,
-            ).textTheme.bodyMedium?.copyWith(color: AppColors.textSecondary),
+            ).textTheme.bodyMedium?.copyWith(color: Colors.black54),
           ),
           const SizedBox(height: 16),
           LiquidButton(
@@ -101,7 +104,7 @@ class ClientProfileScreen extends StatelessWidget {
               style: TextStyle(
                 fontSize: 14,
                 fontWeight: FontWeight.w500,
-                color: AppColors.white,
+                color: Colors.black87,
               ),
             ),
           ),
@@ -138,10 +141,7 @@ class ClientProfileScreen extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 4),
-        Text(
-          label,
-          style: TextStyle(fontSize: 13, color: AppColors.textSecondary),
-        ),
+        Text(label, style: TextStyle(fontSize: 13, color: Colors.black54)),
       ],
     );
   }
@@ -209,12 +209,13 @@ class ClientProfileScreen extends StatelessWidget {
       ),
       title: Text(
         label,
-        style: const TextStyle(fontWeight: FontWeight.w500, fontSize: 15),
+        style: const TextStyle(
+          fontWeight: FontWeight.w500,
+          fontSize: 15,
+          color: Colors.black87,
+        ),
       ),
-      trailing: Icon(
-        Icons.chevron_right_rounded,
-        color: AppColors.textTertiary,
-      ),
+      trailing: Icon(Icons.chevron_right_rounded, color: Colors.black38),
       onTap: onTap,
     );
   }

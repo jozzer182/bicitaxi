@@ -44,8 +44,7 @@ class _DriverEarningsScreenState extends State<DriverEarningsScreen> {
     }
   }
 
-  int get _totalEarnings =>
-      (_completedRides?.length ?? 0) * _farePerRide;
+  int get _totalEarnings => (_completedRides?.length ?? 0) * _farePerRide;
 
   @override
   Widget build(BuildContext context) {
@@ -75,17 +74,18 @@ class _DriverEarningsScreenState extends State<DriverEarningsScreen> {
                 Text(
                   'Viajes completados',
                   style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.w600,
-                      ),
+                    fontWeight: FontWeight.w600,
+                    color: Colors.black87,
+                  ),
                 ),
                 const SizedBox(height: 8),
                 Text(
                   _isLoading
                       ? 'Cargando...'
                       : '${_completedRides?.length ?? 0} viajes',
-                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        color: AppColors.textSecondary,
-                      ),
+                  style: Theme.of(
+                    context,
+                  ).textTheme.bodyMedium?.copyWith(color: Colors.black54),
                 ),
                 const SizedBox(height: 16),
 
@@ -98,10 +98,12 @@ class _DriverEarningsScreenState extends State<DriverEarningsScreen> {
                 else if (_completedRides == null || _completedRides!.isEmpty)
                   _buildEmptyState(context)
                 else
-                  ..._completedRides!.map((ride) => Padding(
-                        padding: const EdgeInsets.only(bottom: 16),
-                        child: _buildRideCard(context, ride),
-                      )),
+                  ..._completedRides!.map(
+                    (ride) => Padding(
+                      padding: const EdgeInsets.only(bottom: 16),
+                      child: _buildRideCard(context, ride),
+                    ),
+                  ),
 
                 const SizedBox(height: 24),
               ],
@@ -134,20 +136,15 @@ class _DriverEarningsScreenState extends State<DriverEarningsScreen> {
             ),
           ),
           const SizedBox(height: 16),
-          Text(
-            'Ganancias totales',
-            style: TextStyle(
-              color: AppColors.textSecondary,
-            ),
-          ),
+          Text('Ganancias totales', style: TextStyle(color: Colors.black54)),
           const SizedBox(height: 8),
           Text(
             '\$${_formatCurrency(_totalEarnings)}',
             style: Theme.of(context).textTheme.headlineLarge?.copyWith(
-                  fontWeight: FontWeight.bold,
-                  color: AppColors.driverAccent,
-                  fontSize: isTablet ? 48 : 40,
-                ),
+              fontWeight: FontWeight.bold,
+              color: AppColors.driverAccent,
+              fontSize: isTablet ? 48 : 40,
+            ),
           ),
           const SizedBox(height: 16),
           // Stats row
@@ -182,28 +179,19 @@ class _DriverEarningsScreenState extends State<DriverEarningsScreen> {
         Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(
-              icon,
-              size: 20,
-              color: AppColors.textSecondary,
-            ),
+            Icon(icon, size: 20, color: Colors.black54),
             const SizedBox(width: 4),
             Text(
               value,
               style: const TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.w600,
+                color: Colors.black87,
               ),
             ),
           ],
         ),
-        Text(
-          label,
-          style: TextStyle(
-            fontSize: 12,
-            color: AppColors.textTertiary,
-          ),
-        ),
+        Text(label, style: TextStyle(fontSize: 12, color: Colors.black54)),
       ],
     );
   }
@@ -231,15 +219,14 @@ class _DriverEarningsScreenState extends State<DriverEarningsScreen> {
           Text(
             'Sin viajes completados',
             style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.w600,
-                ),
+              fontWeight: FontWeight.w600,
+              color: Colors.black87,
+            ),
           ),
           const SizedBox(height: 8),
           Text(
             'Completa tu primer viaje para ver tus ganancias aquí',
-            style: TextStyle(
-              color: AppColors.textSecondary,
-            ),
+            style: TextStyle(color: Colors.black54),
             textAlign: TextAlign.center,
           ),
         ],
@@ -268,10 +255,7 @@ class _DriverEarningsScreenState extends State<DriverEarningsScreen> {
               ),
               Text(
                 _formatDate(ride.createdAt),
-                style: TextStyle(
-                  fontSize: 13,
-                  color: AppColors.textTertiary,
-                ),
+                style: TextStyle(fontSize: 13, color: AppColors.textTertiary),
               ),
             ],
           ),
@@ -338,14 +322,14 @@ class _DriverEarningsScreenState extends State<DriverEarningsScreen> {
               const SizedBox(width: 4),
               Text(
                 _formatTime(ride.createdAt),
-                style: TextStyle(
-                  color: AppColors.textSecondary,
-                  fontSize: 13,
-                ),
+                style: TextStyle(color: AppColors.textSecondary, fontSize: 13),
               ),
               const Spacer(),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 4,
+                ),
                 decoration: BoxDecoration(
                   color: AppColors.success.withValues(alpha: 0.15),
                   borderRadius: BorderRadius.circular(8),
@@ -379,9 +363,9 @@ class _DriverEarningsScreenState extends State<DriverEarningsScreen> {
 
   String _formatCurrency(int amount) {
     return amount.toString().replaceAllMapped(
-          RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
-          (m) => '${m[1]},',
-        );
+      RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
+      (m) => '${m[1]},',
+    );
   }
 
   String _formatDate(DateTime date) {
@@ -405,4 +389,3 @@ class _DriverEarningsScreenState extends State<DriverEarningsScreen> {
     return '$hour:$minute';
   }
 }
-

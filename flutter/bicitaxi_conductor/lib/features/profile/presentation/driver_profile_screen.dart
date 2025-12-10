@@ -32,7 +32,9 @@ class DriverProfileScreen extends StatelessWidget {
               _buildLogoutButton(context),
               const SizedBox(height: 12),
               _buildDeleteAccountButton(context),
-              const SizedBox(height: 40),
+              const SizedBox(
+                height: 120,
+              ), // Espacio extra para la barra de navegación
             ],
           ),
         ),
@@ -80,16 +82,17 @@ class DriverProfileScreen extends StatelessWidget {
           const SizedBox(height: 16),
           Text(
             'Conductor Demo',
-            style: Theme.of(
-              context,
-            ).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold),
+            style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+              fontWeight: FontWeight.bold,
+              color: Colors.black87,
+            ),
           ),
           const SizedBox(height: 4),
           Text(
             '+52 000 000 0000',
             style: Theme.of(
               context,
-            ).textTheme.bodyMedium?.copyWith(color: AppColors.textSecondary),
+            ).textTheme.bodyMedium?.copyWith(color: Colors.black54),
           ),
           const SizedBox(height: 8),
           // Verification badge
@@ -131,7 +134,7 @@ class DriverProfileScreen extends StatelessWidget {
               style: TextStyle(
                 fontSize: 14,
                 fontWeight: FontWeight.w500,
-                color: AppColors.white,
+                color: Colors.black87,
               ),
             ),
           ),
@@ -149,9 +152,10 @@ class DriverProfileScreen extends StatelessWidget {
         children: [
           Text(
             'Estadísticas de conductor',
-            style: Theme.of(
-              context,
-            ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
+            style: Theme.of(context).textTheme.titleMedium?.copyWith(
+              fontWeight: FontWeight.w600,
+              color: Colors.black87,
+            ),
           ),
           const SizedBox(height: 16),
           Row(
@@ -180,10 +184,7 @@ class DriverProfileScreen extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 4),
-        Text(
-          label,
-          style: TextStyle(fontSize: 13, color: AppColors.textSecondary),
-        ),
+        Text(label, style: TextStyle(fontSize: 13, color: Colors.black54)),
       ],
     );
   }
@@ -200,9 +201,10 @@ class DriverProfileScreen extends StatelessWidget {
             children: [
               Text(
                 'Mi bicicleta',
-                style: Theme.of(
-                  context,
-                ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
+                style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                  fontWeight: FontWeight.w600,
+                  color: Colors.black87,
+                ),
               ),
               TextButton(
                 onPressed: () {
@@ -244,22 +246,17 @@ class DriverProfileScreen extends StatelessWidget {
                       style: TextStyle(
                         fontWeight: FontWeight.w600,
                         fontSize: 16,
+                        color: Colors.black87,
                       ),
                     ),
                     const SizedBox(height: 4),
                     Text(
                       'Capacidad: 2 pasajeros',
-                      style: TextStyle(
-                        color: AppColors.textSecondary,
-                        fontSize: 14,
-                      ),
+                      style: TextStyle(color: Colors.black54, fontSize: 14),
                     ),
                     Text(
                       'Color: Verde',
-                      style: TextStyle(
-                        color: AppColors.textTertiary,
-                        fontSize: 13,
-                      ),
+                      style: TextStyle(color: Colors.black45, fontSize: 13),
                     ),
                   ],
                 ),
@@ -341,12 +338,13 @@ class DriverProfileScreen extends StatelessWidget {
       ),
       title: Text(
         label,
-        style: const TextStyle(fontWeight: FontWeight.w500, fontSize: 15),
+        style: const TextStyle(
+          fontWeight: FontWeight.w500,
+          fontSize: 15,
+          color: Colors.black87,
+        ),
       ),
-      trailing: Icon(
-        Icons.chevron_right_rounded,
-        color: AppColors.textTertiary,
-      ),
+      trailing: Icon(Icons.chevron_right_rounded, color: Colors.black38),
       onTap: onTap,
     );
   }

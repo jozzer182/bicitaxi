@@ -93,14 +93,15 @@ class _DriverActiveRideScreenState extends State<DriverActiveRideScreen> {
                   'Sin viaje activo',
                   style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                     fontWeight: FontWeight.bold,
+                    color: Colors.black87,
                   ),
                 ),
                 const SizedBox(height: 8),
                 Text(
                   'Acepta una solicitud para comenzar un viaje',
-                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: AppColors.textSecondary,
-                  ),
+                  style: Theme.of(
+                    context,
+                  ).textTheme.bodyMedium?.copyWith(color: Colors.black54),
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 24),
@@ -119,7 +120,7 @@ class _DriverActiveRideScreenState extends State<DriverActiveRideScreen> {
                     style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w600,
-                      color: AppColors.white,
+                      color: Colors.black87,
                     ),
                   ),
                 ),

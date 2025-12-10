@@ -63,17 +63,18 @@ class _ClientHistoryScreenState extends State<ClientHistoryScreen> {
                 Text(
                   'Historial de viajes',
                   style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                        fontWeight: FontWeight.bold,
-                      ),
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black87,
+                  ),
                 ),
                 const SizedBox(height: 8),
                 Text(
                   _isLoading
                       ? 'Cargando...'
                       : '${_rides?.length ?? 0} viajes realizados',
-                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        color: AppColors.textSecondary,
-                      ),
+                  style: Theme.of(
+                    context,
+                  ).textTheme.bodyMedium?.copyWith(color: Colors.black54),
                 ),
                 const SizedBox(height: 24),
                 if (_isLoading)
@@ -85,10 +86,12 @@ class _ClientHistoryScreenState extends State<ClientHistoryScreen> {
                 else if (_rides == null || _rides!.isEmpty)
                   _buildEmptyState(context)
                 else
-                  ..._rides!.map((ride) => Padding(
-                        padding: const EdgeInsets.only(bottom: 16),
-                        child: _buildRideCard(context, ride),
-                      )),
+                  ..._rides!.map(
+                    (ride) => Padding(
+                      padding: const EdgeInsets.only(bottom: 16),
+                      child: _buildRideCard(context, ride),
+                    ),
+                  ),
                 const SizedBox(height: 24),
               ],
             ),
@@ -121,15 +124,14 @@ class _ClientHistoryScreenState extends State<ClientHistoryScreen> {
           Text(
             'Sin viajes aún',
             style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.w600,
-                ),
+              fontWeight: FontWeight.w600,
+              color: Colors.black87,
+            ),
           ),
           const SizedBox(height: 8),
           Text(
             'Cuando realices tu primer viaje, aparecerá aquí',
-            style: TextStyle(
-              color: AppColors.textSecondary,
-            ),
+            style: TextStyle(color: Colors.black54),
             textAlign: TextAlign.center,
           ),
         ],
@@ -151,7 +153,10 @@ class _ClientHistoryScreenState extends State<ClientHistoryScreen> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 4,
+                ),
                 decoration: BoxDecoration(
                   color: (isCompleted ? AppColors.success : AppColors.error)
                       .withValues(alpha: 0.15),
@@ -168,10 +173,7 @@ class _ClientHistoryScreenState extends State<ClientHistoryScreen> {
               ),
               Text(
                 _formatDate(ride.createdAt),
-                style: TextStyle(
-                  fontSize: 13,
-                  color: AppColors.textTertiary,
-                ),
+                style: TextStyle(fontSize: 13, color: AppColors.textTertiary),
               ),
             ],
           ),

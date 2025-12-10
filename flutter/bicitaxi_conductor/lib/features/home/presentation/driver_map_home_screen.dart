@@ -535,7 +535,7 @@ class _DriverMapHomeScreenState extends State<DriverMapHomeScreen> {
                   if (!isOnline)
                     LiquidButton(
                       borderRadius: 14,
-                      color: AppColors.driverAccent,
+                      color: Colors.white.withValues(alpha: 0.3),
                       onTap: _toggleOnlineStatus,
                       padding: const EdgeInsets.symmetric(vertical: 14),
                       child: Row(
@@ -543,7 +543,7 @@ class _DriverMapHomeScreenState extends State<DriverMapHomeScreen> {
                         children: const [
                           Icon(
                             Icons.play_circle_outline_rounded,
-                            color: AppColors.white,
+                            color: AppColors.textDark,
                             size: 22,
                           ),
                           SizedBox(width: 8),
@@ -552,7 +552,7 @@ class _DriverMapHomeScreenState extends State<DriverMapHomeScreen> {
                             style: TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.w600,
-                              color: AppColors.white,
+                              color: AppColors.textDark,
                             ),
                           ),
                         ],

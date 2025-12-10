@@ -926,8 +926,8 @@ class _MapHomeScreenState extends State<MapHomeScreen>
                         child: LiquidButton(
                           borderRadius: 12,
                           color: _pickupPosition != null
-                              ? AppColors.brightBlue
-                              : AppColors.surfaceMedium,
+                              ? Colors.white.withValues(alpha: 0.3)
+                              : Colors.white.withValues(alpha: 0.15),
                           onTap: _pickupPosition != null
                               ? _confirmLocations
                               : null,
@@ -940,8 +940,8 @@ class _MapHomeScreenState extends State<MapHomeScreen>
                                 fontSize: 14,
                                 fontWeight: FontWeight.w600,
                                 color: _pickupPosition != null
-                                    ? AppColors.white
-                                    : AppColors.textTertiary,
+                                    ? AppColors.textDark
+                                    : AppColors.textDarkTertiary,
                               ),
                             ),
                           ),

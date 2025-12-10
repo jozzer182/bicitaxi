@@ -95,14 +95,15 @@ class _ClientActiveRideScreenState extends State<ClientActiveRideScreen> {
                   'Sin viaje activo',
                   style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                     fontWeight: FontWeight.bold,
+                    color: Colors.black87,
                   ),
                 ),
                 const SizedBox(height: 8),
                 Text(
                   'Cuando solicites un viaje, podrás ver el estado aquí',
-                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: AppColors.textSecondary,
-                  ),
+                  style: Theme.of(
+                    context,
+                  ).textTheme.bodyMedium?.copyWith(color: Colors.black54),
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 24),
@@ -121,7 +122,7 @@ class _ClientActiveRideScreenState extends State<ClientActiveRideScreen> {
                     style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w600,
-                      color: AppColors.white,
+                      color: Colors.black87,
                     ),
                   ),
                 ),
