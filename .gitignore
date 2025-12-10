@@ -224,3 +224,10 @@ temp/
 .svn/
 .swiftpm/
 migrate_working_dir/
+
+# ===========================
+# Agent Memory (Local Only)
+# ===========================
+# Persistent agent memory files - keep local, don't share
+agent_ios_memory.json
+agent_*_memory.json
