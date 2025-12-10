@@ -32,6 +32,28 @@
                 "Modified: flutter/bicitaxi_conductor/lib/features/profile/presentation/payment_methods_screen.dart - LiquidCard glass theme",
                 "Modified: flutter/bicitaxi_conductor/lib/features/profile/presentation/driver_profile_screen.dart - removed photo, +57"
             ]
+        },
+        {
+            "date": "2025-12-10T18:15:00-05:00",
+            "prompt": "Fix dark theme on payment and login screens - they don't match the light theme of profile screens. Apply light theme to payment, login screens and dialogs.",
+            "summary": "Applied consistent light theme across payment screens, login screens, and alert dialogs (logout/delete account) in both apps. Changed backgrounds from dark AppColors.primary to light white with 95% opacity. Updated all text colors to dark (black87/black54/black45) for proper contrast on light backgrounds. Updated AppBar foregroundColor and icon colors for light theme.",
+            "changes": [
+                "Modified: flutter/bicitaxi/lib/features/profile/presentation/payment_methods_screen.dart - light background, dark AppBar",
+                "Modified: flutter/bicitaxi/lib/features/auth/presentation/login_screen.dart - light background, dark text colors",
+                "Modified: flutter/bicitaxi/lib/features/profile/presentation/client_profile_screen.dart - light dialogs with dark text",
+                "Modified: flutter/bicitaxi_conductor/lib/features/profile/presentation/payment_methods_screen.dart - light background, dark AppBar",
+                "Modified: flutter/bicitaxi_conductor/lib/features/auth/presentation/login_screen.dart - light background, dark text colors",
+                "Modified: flutter/bicitaxi_conductor/lib/features/profile/presentation/driver_profile_screen.dart - light dialogs with dark text"
+            ]
+        },
+        {
+            "date": "2025-12-10T18:25:00-05:00",
+            "prompt": "Remove stats from both profile screens, simplify settings menu to only Métodos de pago and Acerca de, remove Mi bicicleta card from conductor.",
+            "summary": "Simplified both profile screens: removed stats sections (client: 12 Viajes / 4.8 Calificación / $450.000 Gastado; conductor: 156 Viajes / 4.9 Calificación / 98% Aceptación). Removed Mi bicicleta card from conductor profile. Reduced settings menus to only two options: Métodos de pago and Acerca de. Removed Notificaciones, Privacidad y seguridad, Ayuda y soporte from client. Removed Historial de ganancias, Notificaciones, Documentos, Ayuda y soporte from conductor.",
+            "changes": [
+                "Modified: flutter/bicitaxi/lib/features/profile/presentation/client_profile_screen.dart - removed stats, simplified menu",
+                "Modified: flutter/bicitaxi_conductor/lib/features/profile/presentation/driver_profile_screen.dart - removed stats, bike card, simplified menu"
+            ]
         }
     ]
 }

@@ -23,8 +23,6 @@ class ClientProfileScreen extends StatelessWidget {
               const SizedBox(height: 24),
               _buildProfileHeader(context),
               const SizedBox(height: 24),
-              _buildStatsSection(context),
-              const SizedBox(height: 24),
               _buildSettingsSection(context),
               const SizedBox(height: 24),
               _buildLogoutButton(context),
@@ -53,13 +51,6 @@ class ClientProfileScreen extends StatelessWidget {
               color: Colors.black87,
             ),
           ),
-          const SizedBox(height: 4),
-          Text(
-            '+57 000 000 0000',
-            style: Theme.of(
-              context,
-            ).textTheme.bodyMedium?.copyWith(color: Colors.black54),
-          ),
           const SizedBox(height: 16),
           LiquidButton(
             borderRadius: 12,
@@ -81,39 +72,6 @@ class ClientProfileScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildStatsSection(BuildContext context) {
-    return LiquidCard(
-      borderRadius: 20,
-      padding: const EdgeInsets.all(20),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-        children: [
-          _buildStatItem(context, '12', 'Viajes'),
-          Container(width: 1, height: 40, color: AppColors.surfaceMedium),
-          _buildStatItem(context, '4.8', 'Calificación'),
-          Container(width: 1, height: 40, color: AppColors.surfaceMedium),
-          _buildStatItem(context, '\$450.000', 'Gastado'),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildStatItem(BuildContext context, String value, String label) {
-    return Column(
-      children: [
-        Text(
-          value,
-          style: Theme.of(context).textTheme.titleLarge?.copyWith(
-            fontWeight: FontWeight.bold,
-            color: AppColors.electricBlue,
-          ),
-        ),
-        const SizedBox(height: 4),
-        Text(label, style: TextStyle(fontSize: 13, color: Colors.black54)),
-      ],
-    );
-  }
-
   Widget _buildSettingsSection(BuildContext context) {
     return LiquidCard(
       borderRadius: 20,
@@ -125,27 +83,6 @@ class ClientProfileScreen extends StatelessWidget {
             icon: Icons.payment_rounded,
             label: 'Métodos de pago',
             onTap: () => Navigator.pushNamed(context, '/paymentMethods'),
-          ),
-          _buildDivider(),
-          _buildSettingsItem(
-            context,
-            icon: Icons.notifications_outlined,
-            label: 'Notificaciones',
-            onTap: () {},
-          ),
-          _buildDivider(),
-          _buildSettingsItem(
-            context,
-            icon: Icons.security_rounded,
-            label: 'Privacidad y seguridad',
-            onTap: () {},
-          ),
-          _buildDivider(),
-          _buildSettingsItem(
-            context,
-            icon: Icons.help_outline_rounded,
-            label: 'Ayuda y soporte',
-            onTap: () {},
           ),
           _buildDivider(),
           _buildSettingsItem(
@@ -250,19 +187,20 @@ class ClientProfileScreen extends StatelessWidget {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        backgroundColor: AppColors.primary,
+        backgroundColor: Colors.white,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: const Text('¿Cerrar sesión?'),
+        title: const Text(
+          '¿Cerrar sesión?',
+          style: TextStyle(color: Colors.black87),
+        ),
         content: const Text(
           'Tu sesión actual se cerrará y tendrás que iniciar sesión de nuevo.',
+          style: TextStyle(color: Colors.black54),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: Text(
-              'Cancelar',
-              style: TextStyle(color: AppColors.textSecondary),
-            ),
+            child: Text('Cancelar', style: TextStyle(color: Colors.black54)),
           ),
           TextButton(
             onPressed: () {
@@ -330,13 +268,16 @@ class _DeleteAccountDialogState extends State<_DeleteAccountDialog> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      backgroundColor: AppColors.primary,
+      backgroundColor: Colors.white,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
       title: Row(
         children: [
           Icon(Icons.warning_amber_rounded, color: AppColors.error, size: 28),
           const SizedBox(width: 8),
-          const Text('¿Eliminar cuenta?'),
+          const Text(
+            '¿Eliminar cuenta?',
+            style: TextStyle(color: Colors.black87),
+          ),
         ],
       ),
       content: Column(
@@ -348,7 +289,7 @@ class _DeleteAccountDialogState extends State<_DeleteAccountDialog> {
             '• Se eliminarán todos tus datos\n'
             '• Tu historial de viajes se perderá\n'
             '• No podrás recuperar tu cuenta\n',
-            style: TextStyle(fontSize: 14),
+            style: TextStyle(fontSize: 14, color: Colors.black54),
           ),
           const SizedBox(height: 16),
           if (!_canConfirm)
@@ -377,10 +318,7 @@ class _DeleteAccountDialogState extends State<_DeleteAccountDialog> {
       actions: [
         TextButton(
           onPressed: () => Navigator.pop(context),
-          child: Text(
-            'Cancelar',
-            style: TextStyle(color: AppColors.textSecondary),
-          ),
+          child: Text('Cancelar', style: TextStyle(color: Colors.black54)),
         ),
         TextButton(
           onPressed: _canConfirm

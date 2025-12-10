@@ -16,7 +16,7 @@ class LoginScreen extends StatelessWidget {
     final isTablet = ResponsiveUtils.isTabletOrLarger(context);
 
     return Scaffold(
-      backgroundColor: Colors.transparent,
+      backgroundColor: Colors.white.withValues(alpha: 0.95),
       body: SafeArea(
         child: Center(
           child: SingleChildScrollView(
@@ -69,6 +69,7 @@ class LoginScreen extends StatelessWidget {
           style: Theme.of(context).textTheme.headlineLarge?.copyWith(
             fontWeight: FontWeight.bold,
             letterSpacing: -0.5,
+            color: Colors.black87,
           ),
         ),
         const SizedBox(height: 8),
@@ -76,7 +77,7 @@ class LoginScreen extends StatelessWidget {
           'Tu viaje rápido y ecológico',
           style: Theme.of(
             context,
-          ).textTheme.bodyLarge?.copyWith(color: AppColors.textSecondary),
+          ).textTheme.bodyLarge?.copyWith(color: Colors.black54),
           textAlign: TextAlign.center,
         ),
       ],
@@ -93,9 +94,10 @@ class LoginScreen extends StatelessWidget {
         children: [
           Text(
             'Inicia sesión',
-            style: Theme.of(
-              context,
-            ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w600),
+            style: Theme.of(context).textTheme.titleLarge?.copyWith(
+              fontWeight: FontWeight.w600,
+              color: Colors.black87,
+            ),
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: 8),
@@ -103,7 +105,7 @@ class LoginScreen extends StatelessWidget {
             'Elige cómo quieres continuar',
             style: Theme.of(
               context,
-            ).textTheme.bodyMedium?.copyWith(color: AppColors.textSecondary),
+            ).textTheme.bodyMedium?.copyWith(color: Colors.black54),
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: 32),
@@ -137,12 +139,17 @@ class LoginScreen extends StatelessWidget {
           // Divider with text
           Row(
             children: [
-              const Expanded(child: Divider(color: AppColors.surfaceMedium)),
+              Expanded(child: Divider(color: Colors.black26)),
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: Text('o', style: Theme.of(context).textTheme.bodySmall),
+                child: Text(
+                  'o',
+                  style: Theme.of(
+                    context,
+                  ).textTheme.bodySmall?.copyWith(color: Colors.black54),
+                ),
               ),
-              const Expanded(child: Divider(color: AppColors.surfaceMedium)),
+              Expanded(child: Divider(color: Colors.black26)),
             ],
           ),
           const SizedBox(height: 24),
@@ -172,10 +179,9 @@ class LoginScreen extends StatelessWidget {
           // Terms text
           Text(
             'Al continuar, aceptas nuestros Términos de Servicio y Política de Privacidad',
-            style: Theme.of(context).textTheme.bodySmall?.copyWith(
-              color: AppColors.textTertiary,
-              height: 1.4,
-            ),
+            style: Theme.of(
+              context,
+            ).textTheme.bodySmall?.copyWith(color: Colors.black45, height: 1.4),
             textAlign: TextAlign.center,
           ),
         ],
