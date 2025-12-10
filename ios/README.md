@@ -13,30 +13,35 @@ This folder contains the **native iOS implementations** for both Bici Taxi apps,
 
 ### Overview
 
-We implemented a custom **Apple News-style animated tab bar** that replicates the Liquid Glass "water drop" morphing effect showcased at WWDC 2025. This document captures our findings, the APIs used, and the limitations discovered.
+We implemented the **native iOS 26 TabView** with Apple's new `Tab` syntax, which automatically applies the system's Liquid Glass material styling. This approach uses Apple's built-in tab bar with native Liquid Glass effects, rather than a custom implementation.
 
 ### Key Components
 
-#### LiquidGlassTabBar.swift
-Custom SwiftUI tab bar featuring:
-- **Transient water drop**: Appears only during tab transitions
-- **Animation sequence**: 
-  1. Scale-up at origin tab (0.5 → 1.0)
-  2. Slide to destination tab (spring animation)
-  3. Scale-down (1.0 → 0.85)
-  4. Fade out
-- **Pill-shaped drop**: `RoundedRectangle` with 24pt corner radius
-- **Extends above bar**: Drop height (58pt) > bar height (54pt) with -4pt offset
-- **Legible background**: Solid frosted `.ultraThinMaterial` capsule
+#### LiquidGlassTabShell.swift
+Native SwiftUI TabView using iOS 18+ Tab-based syntax:
+- **Native TabView**: Uses `TabView(selection:)` with iOS 26's automatic Liquid Glass styling
+- **Tab syntax**: New `Tab(title, systemImage:, value:)` API for cleaner tab definitions
+- **Automatic styling**: iOS 26 applies Liquid Glass material to the tab bar automatically
+- **Tab bar style**: Uses `.tabViewStyle(.tabBarOnly)` for standard tab bar behavior
 
-#### GlassEffect API Usage
+#### Native Tab Implementation
 
 ```swift
-// Most transparent glass variant available
-.glassEffect(
-    .clear.interactive(),
-    in: RoundedRectangle(cornerRadius: 24)
-)
+// iOS 26 Native TabView with automatic Liquid Glass
+TabView(selection: $selectedTab) {
+    Tab("Mapa", systemImage: "map.fill", value: .map) {
+        ClientMapView(rideViewModel: rideViewModel)
+    }
+    
+    Tab("Viaje", systemImage: "bicycle", value: .activeRide) {
+        ActiveRideView(rideViewModel: rideViewModel, onComplete: { ... })
+    }
+    
+    Tab("Perfil", systemImage: "person.fill", value: .profile) {
+        ProfileView(rideViewModel: rideViewModel)
+    }
+}
+.tabViewStyle(.tabBarOnly)
 ```
 
 ---
@@ -138,19 +143,17 @@ GlassEffectContainer {
 ## 🎯 Implementation Summary
 
 ### What We Achieved
-✅ Apple News-style animated water drop transition  
-✅ Transient drop (only during transitions)  
-✅ Proper scale-up → slide → scale-down → fade sequence  
-✅ Legible tab bar with frosted background  
-✅ Real iOS 26 Liquid Glass using `.glassEffect(.clear)`  
-✅ Icons visible through glass drop  
-✅ Pill-shaped drop extending above bar  
-✅ Spring-based physics for natural animation  
+✅ **Native iOS 26 TabView** with automatic Liquid Glass material  
+✅ Clean `Tab(title, systemImage:, value:)` syntax  
+✅ System-managed tab bar styling and animations  
+✅ Proper tab switching with state management  
+✅ Automatic navigation to Active Ride tab when ride is requested  
+✅ Spanish localization for all tab labels  
 
-### Current Limitations
-⚠️ Slightly more blur than Apple News (public API limitation)  
-⚠️ Cannot completely eliminate glass blur  
-⚠️ Waiting for iOS 26.1 for potential transparency improvements  
+### Notes
+ℹ️ iOS 26 applies Liquid Glass styling automatically to native TabView  
+ℹ️ No custom implementation needed - Apple provides the glass effect  
+ℹ️ Uses `.tabViewStyle(.tabBarOnly)` to prevent sidebar adaptation on iPad  
 
 ---
 
@@ -161,15 +164,16 @@ ios/
 ├── README.md                          # This file
 ├── bicitaxi/                          # Client app
 │   └── bicitaxi/
-│       ├── LiquidGlassTabBar.swift   # Custom tab bar
+│       ├── LiquidGlassTabShell.swift # Native TabView container
+│       ├── MainTabView.swift         # App entry point
+│       ├── AppTab.swift              # Tab enum definitions
 │       ├── BiciTaxiTheme.swift       # Theme/colors
-│       ├── AppTab.swift              # Tab definitions
-│       ├── ClientMapView.swift       # Map with time-based styling
+│       ├── ClientMapView.swift       # Map with route display
 │       ├── ActiveRideView.swift      # Ride tracking
-│       └── ProfileView.swift         # User profile
+│       └── ProfileView.swift         # User profile with logout/delete
 └── bicitaxi-conductor/                # Driver app
     └── bicitaxi-conductor/
-        ├── LiquidGlassTabBar.swift   # Same implementation
+        ├── LiquidGlassTabShell.swift # Native TabView (mirrors client)
         └── ... (mirrors client structure)
 ```
 

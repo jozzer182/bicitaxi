@@ -20,15 +20,15 @@ Both apps share the same design language, use a Liquid Glass-inspired UI, and ar
 - Carefully tuned for **readability + aesthetics** (no “just another Material app” feeling).
 
 ### 🍎 Native iOS 26 Liquid Glass (New!)
-The iOS apps feature a **native SwiftUI implementation** of Apple's iOS 26 Liquid Glass design language:
+The iOS apps feature a **native SwiftUI implementation** using Apple's iOS 26 Liquid Glass design language:
 
-- **Custom Tab Bar**: Apple News-style animated tab bar with transient water drop effect
-- **Real glassEffect API**: Uses `.glassEffect(.clear.interactive())` for transparent glass material
-- **Animated Transitions**: Scale-up at origin → slide to destination → scale-down → fade out
-- **GlassEffectContainer**: Proper grouping of glass effects for morphing animations
+- **Native TabView**: Uses iOS 26's native `TabView` with automatic Liquid Glass styling
+- **Tab Syntax**: Clean `Tab(title, systemImage:, value:)` API for tab definitions
+- **Automatic Styling**: iOS 26 applies Liquid Glass material to the tab bar automatically
+- **System Animations**: Native tab switching with system-managed transitions
 - **Dynamic Map Styling**: Time-of-day based map appearance
 
-> 📖 See [`ios/README.md`](ios/README.md) for detailed technical documentation on our Liquid Glass implementation, API findings, and limitations discovered during development.
+> 📖 See [`ios/README.md`](ios/README.md) for detailed technical documentation on our iOS 26 implementation and API reference.
 
 ### 📱 Built for Phones and Tablets
 - First-class support for:
