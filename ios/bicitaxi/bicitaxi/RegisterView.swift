@@ -2,19 +2,18 @@
 //  RegisterView.swift
 //  bicitaxi
 //
-//  Registration screen with Liquid Glass styling
+//  Registration screen with white theme
 //
 
 import SwiftUI
 
-/// Registration view with Liquid Glass design
+/// Registration view with clean white design
 struct RegisterView: View {
     @ObservedObject var authManager: AuthManager
     @Binding var showRegister: Bool
     
     @State private var name = ""
     @State private var email = ""
-    @State private var phone = ""
     @State private var password = ""
     @State private var confirmPassword = ""
     @State private var showPassword = false
@@ -22,81 +21,91 @@ struct RegisterView: View {
     
     @State private var validationError: String?
     
+    // MARK: - Color Palette
+    
+    private let primaryDark = Color(red: 0.043, green: 0, blue: 0.086)    // #0B0016
+    private let accentBlue = Color(red: 0.294, green: 0.702, blue: 0.992) // #4BB3FD
+    private let grayBlue = Color(red: 0.243, green: 0.4, blue: 0.502)     // #3E6680
+    private let brightBlue = Color(red: 0.016, green: 0.588, blue: 1.0)   // #0496FF
+    private let deepBlue = Color(red: 0.008, green: 0.482, blue: 0.808)   // #027BCE
+    
     var body: some View {
-        ScrollView {
-            VStack(spacing: 24) {
-                Spacer()
-                    .frame(height: 20)
-                
-                // Header with back button
-                headerSection
-                
-                // Form Fields
-                formSection
-                
-                // Error Messages
-                if let error = validationError ?? authManager.errorMessage {
-                    Text(error)
-                        .font(.footnote)
-                        .foregroundColor(.red)
-                        .multilineTextAlignment(.center)
-                        .padding(.horizontal)
-                }
-                
-                // Terms and Conditions
-                termsSection
-                
-                // Register Button
-                registerButton
-                
-                // Login Link
-                loginLink
-                
-                Spacer()
-                    .frame(height: 40)
+        VStack(spacing: 16) {
+            // Header with back button
+            headerSection
+            
+            // Form Fields
+            formSection
+            
+            // Error Messages
+            if let error = validationError ?? authManager.errorMessage {
+                Text(error)
+                    .font(.footnote)
+                    .foregroundColor(.red)
+                    .multilineTextAlignment(.center)
+                    .padding(.horizontal)
             }
-            .padding(.horizontal, 24)
+            
+            // Terms and Conditions
+            termsSection
+            
+            // Register Button
+            registerButton
+            
+            // Login Link
+            loginLink
+            
+            Spacer()
         }
+        .padding(.horizontal, 24)
+        .padding(.top, 16)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(BiciTaxiTheme.background)
+        .background(Color.white)
     }
     
     // MARK: - Header Section
     
     private var headerSection: some View {
-        VStack(spacing: 12) {
+        VStack(spacing: 8) {
             HStack {
                 Button(action: { showRegister = false }) {
                     Image(systemName: "chevron.left")
                         .font(.title2)
-                        .foregroundColor(.white)
+                        .foregroundColor(primaryDark)
                         .padding(12)
-                        .glassEffect()
+                        .background(
+                            Circle()
+                                .fill(accentBlue.opacity(0.15))
+                        )
                 }
                 
                 Spacer()
             }
             
-            Text("Crear Cuenta")
-                .font(.largeTitle)
-                .fontWeight(.bold)
-                .foregroundColor(.white)
+            // App Logo
+            Image("Logo")
+                .resizable()
+                .aspectRatio(contentMode: .fit)
+                .frame(width: 70, height: 70)
+                .clipShape(RoundedRectangle(cornerRadius: 16))
+                .shadow(color: deepBlue.opacity(0.3), radius: 8, x: 0, y: 4)
             
-            Text("Únete a Bici Taxi")
-                .font(.subheadline)
-                .foregroundColor(.white.opacity(0.7))
+            Text("Crear Cuenta")
+                .font(.title2)
+                .fontWeight(.bold)
+                .foregroundColor(primaryDark)
         }
     }
     
     // MARK: - Form Section
     
     private var formSection: some View {
-        VStack(spacing: 16) {
+        VStack(spacing: 12) {
             // Name Field
             fieldContainer(label: "Nombre completo", icon: "person") {
                 TextField("Tu nombre", text: $name)
                     .textContentType(.name)
-                    .foregroundColor(.white)
+                    .foregroundColor(primaryDark)
             }
             
             // Email Field
@@ -105,15 +114,7 @@ struct RegisterView: View {
                     .textContentType(.emailAddress)
                     .keyboardType(.emailAddress)
                     .autocapitalization(.none)
-                    .foregroundColor(.white)
-            }
-            
-            // Phone Field
-            fieldContainer(label: "Teléfono", icon: "phone") {
-                TextField("+52 123 456 7890", text: $phone)
-                    .textContentType(.telephoneNumber)
-                    .keyboardType(.phonePad)
-                    .foregroundColor(.white)
+                    .foregroundColor(primaryDark)
             }
             
             // Password Field
@@ -121,15 +122,15 @@ struct RegisterView: View {
                 HStack {
                     if showPassword {
                         TextField("Mínimo 8 caracteres", text: $password)
-                            .foregroundColor(.white)
+                            .foregroundColor(primaryDark)
                     } else {
                         SecureField("Mínimo 8 caracteres", text: $password)
-                            .foregroundColor(.white)
+                            .foregroundColor(primaryDark)
                     }
                     
                     Button(action: { showPassword.toggle() }) {
                         Image(systemName: showPassword ? "eye.slash" : "eye")
-                            .foregroundColor(.white.opacity(0.5))
+                            .foregroundColor(grayBlue)
                     }
                 }
             }
@@ -137,7 +138,7 @@ struct RegisterView: View {
             // Confirm Password Field
             fieldContainer(label: "Confirmar contraseña", icon: "lock.fill") {
                 SecureField("Repite tu contraseña", text: $confirmPassword)
-                    .foregroundColor(.white)
+                    .foregroundColor(primaryDark)
             }
         }
     }
@@ -149,19 +150,20 @@ struct RegisterView: View {
         icon: String,
         @ViewBuilder content: () -> Content
     ) -> some View {
-        VStack(alignment: .leading, spacing: 8) {
+        VStack(alignment: .leading, spacing: 6) {
             Text(label)
                 .font(.footnote)
-                .foregroundColor(.white.opacity(0.7))
+                .foregroundColor(grayBlue)
             
             HStack {
                 Image(systemName: icon)
-                    .foregroundColor(.white.opacity(0.5))
+                    .foregroundColor(brightBlue)
                 
                 content()
             }
             .padding()
-            .glassEffect(in: .rect(cornerRadius: 12))
+            .background(accentBlue.opacity(0.08))
+            .cornerRadius(12)
         }
     }
     
@@ -171,12 +173,12 @@ struct RegisterView: View {
         HStack(alignment: .top, spacing: 12) {
             Button(action: { acceptTerms.toggle() }) {
                 Image(systemName: acceptTerms ? "checkmark.square.fill" : "square")
-                    .foregroundStyle(acceptTerms ? AnyShapeStyle(BiciTaxiTheme.accentGradient) : AnyShapeStyle(.white.opacity(0.5)))
+                    .foregroundColor(acceptTerms ? brightBlue : grayBlue.opacity(0.5))
             }
             
             Text("Acepto los [Términos y Condiciones](https://example.com) y la [Política de Privacidad](https://example.com)")
                 .font(.footnote)
-                .foregroundColor(.white.opacity(0.7))
+                .foregroundColor(grayBlue)
         }
     }
     
@@ -197,7 +199,7 @@ struct RegisterView: View {
             }
             .frame(maxWidth: .infinity)
             .frame(height: 50)
-            .background(canRegister ? AnyShapeStyle(BiciTaxiTheme.accentGradient) : AnyShapeStyle(.gray.opacity(0.5)))
+            .background(canRegister ? brightBlue : grayBlue.opacity(0.3))
             .foregroundColor(.white)
             .cornerRadius(12)
         }
@@ -209,12 +211,12 @@ struct RegisterView: View {
     private var loginLink: some View {
         HStack {
             Text("¿Ya tienes cuenta?")
-                .foregroundColor(.white.opacity(0.7))
+                .foregroundColor(grayBlue)
             
             Button(action: { showRegister = false }) {
                 Text("Inicia sesión")
                     .fontWeight(.semibold)
-                    .foregroundStyle(BiciTaxiTheme.accentGradient)
+                    .foregroundColor(deepBlue)
             }
         }
         .font(.subheadline)
@@ -255,11 +257,10 @@ struct RegisterView: View {
             return
         }
         
-        authManager.register(name: name, email: email, password: password, phone: phone)
+        authManager.register(name: name, email: email, password: password, phone: "")
     }
 }
 
 #Preview {
     RegisterView(authManager: AuthManager(), showRegister: .constant(true))
-        .preferredColorScheme(.dark)
 }

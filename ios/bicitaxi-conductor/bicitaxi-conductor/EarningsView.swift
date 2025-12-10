@@ -40,7 +40,7 @@ struct EarningsView: View {
         VStack(spacing: 16) {
             Text("Ganancias de Hoy")
                 .font(.headline)
-                .foregroundColor(.white.opacity(0.7))
+                .foregroundColor(.secondary)
             
             Text(String(format: "$%.2f", rideViewModel.totalEarnings))
                 .font(.system(size: 48, weight: .bold))
@@ -62,7 +62,7 @@ struct EarningsView: View {
             
             Divider()
                 .frame(height: 40)
-                .background(Color.white.opacity(0.2))
+                .background(Color.secondary.opacity(0.3))
             
             statItem(
                 value: String(format: "$%.2f", averageFare),
@@ -71,7 +71,7 @@ struct EarningsView: View {
             
             Divider()
                 .frame(height: 40)
-                .background(Color.white.opacity(0.2))
+                .background(Color.secondary.opacity(0.3))
             
             statItem(
                 value: rideViewModel.isOnline ? "En Línea" : "Desconectado",
@@ -86,11 +86,11 @@ struct EarningsView: View {
         VStack(spacing: 4) {
             Text(value)
                 .font(.headline.weight(.bold))
-                .foregroundColor(.white)
+                .foregroundColor(.primary)
             
             Text(label)
                 .font(.caption)
-                .foregroundColor(.white.opacity(0.7))
+                .foregroundColor(.secondary)
         }
         .frame(maxWidth: .infinity)
     }
@@ -106,7 +106,7 @@ struct EarningsView: View {
         VStack(alignment: .leading, spacing: 16) {
             Text("Viajes Completados")
                 .font(.headline)
-                .foregroundColor(.white)
+                .foregroundColor(.primary)
             
             if rideViewModel.completedRides.isEmpty {
                 emptyState
@@ -122,11 +122,11 @@ struct EarningsView: View {
         VStack(spacing: 12) {
             Image(systemName: "bicycle")
                 .font(.system(size: 32))
-                .foregroundColor(.white.opacity(0.4))
+                .foregroundColor(.secondary.opacity(0.6))
             
             Text("Aún no hay viajes completados")
                 .font(.subheadline)
-                .foregroundColor(.white.opacity(0.6))
+                .foregroundColor(.secondary)
         }
         .frame(maxWidth: .infinity)
         .padding(.vertical, 32)
@@ -142,16 +142,16 @@ struct EarningsView: View {
                     
                     Text("Completado")
                         .font(.subheadline.weight(.medium))
-                        .foregroundColor(.white)
+                        .foregroundColor(.primary)
                 }
                 
                 Text(ride.pickup.shortDescription)
                     .font(.caption)
-                    .foregroundColor(.white.opacity(0.7))
+                    .foregroundColor(.secondary)
                 
                 Text(ride.updatedAt, style: .relative)
                     .font(.caption2)
-                    .foregroundColor(.white.opacity(0.5))
+                    .foregroundColor(.secondary.opacity(0.7))
             }
             
             Spacer()
@@ -161,7 +161,7 @@ struct EarningsView: View {
                 .foregroundColor(.green)
         }
         .padding(16)
-        .background(Color.white.opacity(0.05))
+        .background(Color.secondary.opacity(0.1))
         .clipShape(RoundedRectangle(cornerRadius: 12))
     }
 }

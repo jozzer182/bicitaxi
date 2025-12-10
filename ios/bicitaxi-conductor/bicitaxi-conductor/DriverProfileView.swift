@@ -69,7 +69,7 @@ struct DriverProfileView: View {
             
             Text("Conductor Demo")
                 .font(.title2.weight(.bold))
-                .foregroundColor(.white)
+                .foregroundColor(.primary)
             
             // Online status badge
             HStack(spacing: 8) {
@@ -97,7 +97,7 @@ struct DriverProfileView: View {
         VStack(spacing: 16) {
             Text("Tus Estadísticas")
                 .font(.headline)
-                .foregroundColor(.white)
+                .foregroundColor(.primary)
                 .frame(maxWidth: .infinity, alignment: .leading)
             
             HStack(spacing: 20) {
@@ -126,11 +126,11 @@ struct DriverProfileView: View {
             
             Text(value)
                 .font(.title3.weight(.bold))
-                .foregroundColor(.white)
+                .foregroundColor(.primary)
             
             Text(label)
                 .font(.caption)
-                .foregroundColor(.white.opacity(0.7))
+                .foregroundColor(.secondary)
         }
         .frame(maxWidth: .infinity)
     }
@@ -141,7 +141,7 @@ struct DriverProfileView: View {
         VStack(alignment: .leading, spacing: 16) {
             Text("Configuración")
                 .font(.headline)
-                .foregroundColor(.white)
+                .foregroundColor(.primary)
             
             settingsRow(icon: "bell.fill", title: "Notificaciones")
             settingsRow(icon: "car.fill", title: "Información del Vehículo")
@@ -155,18 +155,18 @@ struct DriverProfileView: View {
     private func settingsRow(icon: String, title: String) -> some View {
         HStack(spacing: 12) {
             Image(systemName: icon)
-                .foregroundColor(.white.opacity(0.7))
+                .foregroundColor(.secondary)
                 .frame(width: 24)
             
             Text(title)
                 .font(.subheadline)
-                .foregroundColor(.white)
+                .foregroundColor(.primary)
             
             Spacer()
             
             Image(systemName: "chevron.right")
                 .font(.caption)
-                .foregroundColor(.white.opacity(0.4))
+                .foregroundColor(.secondary.opacity(0.6))
         }
         .padding(.vertical, 8)
     }
@@ -183,10 +183,10 @@ struct DriverProfileView: View {
                     Image(systemName: "rectangle.portrait.and.arrow.right")
                         .foregroundColor(.orange)
                     Text("Cerrar Sesión")
-                        .foregroundColor(.white)
+                        .foregroundColor(.primary)
                     Spacer()
                     Image(systemName: "chevron.right")
-                        .foregroundColor(.white.opacity(0.4))
+                        .foregroundColor(.secondary.opacity(0.6))
                 }
                 .padding(16)
                 .glassCard(cornerRadius: 12)
@@ -204,7 +204,7 @@ struct DriverProfileView: View {
                         .foregroundColor(.red)
                     Spacer()
                     Image(systemName: "chevron.right")
-                        .foregroundColor(.white.opacity(0.4))
+                        .foregroundColor(.secondary.opacity(0.6))
                 }
                 .padding(16)
                 .glassCard(cornerRadius: 12)

@@ -56,11 +56,11 @@ struct DriverActiveRideView: View {
             
             Text(ride.status.displayText)
                 .font(.title2.weight(.bold))
-                .foregroundColor(.white)
+                .foregroundColor(.primary)
             
             Text("ID Cliente: \(ride.clientId)")
                 .font(.caption)
-                .foregroundColor(.white.opacity(0.6))
+                .foregroundColor(.secondary)
         }
         .padding(24)
         .frame(maxWidth: .infinity)
@@ -73,7 +73,7 @@ struct DriverActiveRideView: View {
         VStack(spacing: 16) {
             Text("Ruta")
                 .font(.headline)
-                .foregroundColor(.white)
+                .foregroundColor(.primary)
                 .frame(maxWidth: .infinity, alignment: .leading)
             
             HStack(spacing: 12) {
@@ -84,10 +84,10 @@ struct DriverActiveRideView: View {
                 VStack(alignment: .leading, spacing: 2) {
                     Text("Recogida")
                         .font(.caption)
-                        .foregroundColor(.white.opacity(0.6))
+                        .foregroundColor(.secondary)
                     Text(ride.pickup.shortDescription)
                         .font(.subheadline)
-                        .foregroundColor(.white)
+                        .foregroundColor(.primary)
                 }
                 
                 Spacer()
@@ -95,7 +95,7 @@ struct DriverActiveRideView: View {
             
             if let dropoff = ride.dropoff {
                 Rectangle()
-                    .fill(Color.white.opacity(0.2))
+                    .fill(Color.secondary.opacity(0.3))
                     .frame(width: 2, height: 20)
                     .padding(.leading, 5)
                 
@@ -107,10 +107,10 @@ struct DriverActiveRideView: View {
                     VStack(alignment: .leading, spacing: 2) {
                         Text("Destino")
                             .font(.caption)
-                            .foregroundColor(.white.opacity(0.6))
+                            .foregroundColor(.secondary)
                         Text(dropoff.shortDescription)
                             .font(.subheadline)
-                            .foregroundColor(.white)
+                            .foregroundColor(.primary)
                     }
                     
                     Spacer()
@@ -127,7 +127,7 @@ struct DriverActiveRideView: View {
         HStack {
             Text("Tarifa")
                 .font(.headline)
-                .foregroundColor(.white)
+                .foregroundColor(.primary)
             
             Spacer()
             
@@ -220,11 +220,11 @@ struct DriverActiveRideView: View {
             
             Text("Sin Viaje Activo")
                 .font(.title2.weight(.bold))
-                .foregroundColor(.white)
+                .foregroundColor(.primary)
             
             Text("Ve a Inicio para aceptar una solicitud de viaje")
                 .font(.subheadline)
-                .foregroundColor(.white.opacity(0.7))
+                .foregroundColor(.secondary)
                 .multilineTextAlignment(.center)
         }
         .padding(32)

@@ -2,13 +2,13 @@
 //  LoginView.swift
 //  bicitaxi-conductor
 //
-//  Login screen with Liquid Glass styling for conductors
+//  Login screen with white theme for conductors
 //
 
 import SwiftUI
 import AuthenticationServices
 
-/// Login view with Liquid Glass design for conductors
+/// Login view with clean white design for conductors
 struct LoginView: View {
     @ObservedObject var authManager: AuthManager
     @Binding var showRegister: Bool
@@ -19,101 +19,75 @@ struct LoginView: View {
     
     @Environment(\.colorScheme) var colorScheme
     
+    // MARK: - Color Palette
+    // #0B0016, #4BB3FD, #3E6680, #0496FF, #027BCE
+    
+    private let primaryDark = Color(red: 0.043, green: 0, blue: 0.086)    // #0B0016
+    private let accentBlue = Color(red: 0.294, green: 0.702, blue: 0.992) // #4BB3FD
+    private let grayBlue = Color(red: 0.243, green: 0.4, blue: 0.502)     // #3E6680
+    private let brightBlue = Color(red: 0.016, green: 0.588, blue: 1.0)   // #0496FF
+    private let deepBlue = Color(red: 0.008, green: 0.482, blue: 0.808)   // #027BCE
+    
     var body: some View {
-        ScrollView {
-            VStack(spacing: 24) {
-                Spacer()
-                    .frame(height: 40)
-                
-                // Logo and Title
-                logoSection
-                
-                Spacer()
-                    .frame(height: 20)
-                
-                // Social Sign-In Buttons
-                socialSignInSection
-                
-                // Divider
-                dividerSection
-                
-                // Email/Password Form
-                emailPasswordSection
-                
-                // Error Message
-                if let error = authManager.errorMessage {
-                    Text(error)
-                        .font(.footnote)
-                        .foregroundColor(.red)
-                        .multilineTextAlignment(.center)
-                        .padding(.horizontal)
-                }
-                
-                // Login Button
-                loginButton
-                
-                // Register Link
-                registerLink
-                
-                Spacer()
-                    .frame(height: 20)
-                
-                // Continue as Guest
-                guestButton
-                
-                Spacer()
-                    .frame(height: 40)
+        VStack(spacing: 20) {
+            Spacer()
+                .frame(height: 20)
+            
+            // App Logo
+            logoSection
+            
+            // Social Sign-In Buttons
+            socialSignInSection
+            
+            // Divider
+            dividerSection
+            
+            // Email/Password Form
+            emailPasswordSection
+            
+            // Error Message
+            if let error = authManager.errorMessage {
+                Text(error)
+                    .font(.footnote)
+                    .foregroundColor(.red)
+                    .multilineTextAlignment(.center)
+                    .padding(.horizontal)
             }
-            .padding(.horizontal, 24)
+            
+            // Login Button
+            loginButton
+            
+            // Register Link
+            registerLink
+            
+            Spacer()
+            
+            // Continue as Guest
+            guestButton
+            
+            Spacer()
+                .frame(height: 16)
         }
+        .padding(.horizontal, 24)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(BiciTaxiTheme.background)
+        .background(Color.white)
     }
     
     // MARK: - Logo Section
     
     private var logoSection: some View {
-        VStack(spacing: 16) {
-            // Animated Logo with Liquid Glass - Driver themed
-            ZStack {
-                Circle()
-                    .fill(LinearGradient(
-                        colors: [.orange, BiciTaxiTheme.accentPrimary],
-                        startPoint: .topLeading,
-                        endPoint: .bottomTrailing
-                    ))
-                    .frame(width: 100, height: 100)
-                    .blur(radius: 20)
-                    .opacity(0.5)
-                
-                Image(systemName: "bicycle.circle.fill")
-                    .font(.system(size: 50, weight: .light))
-                    .foregroundStyle(LinearGradient(
-                        colors: [.orange, BiciTaxiTheme.accentPrimary],
-                        startPoint: .topLeading,
-                        endPoint: .bottomTrailing
-                    ))
-            }
-            .glassEffect()
-            .frame(width: 120, height: 120)
-            
-            Text("Bici Taxi")
-                .font(.largeTitle)
-                .fontWeight(.bold)
-                .foregroundColor(.white)
-            
-            Text("Conductor")
-                .font(.title2)
-                .fontWeight(.semibold)
-                .foregroundStyle(LinearGradient(
-                    colors: [.orange, BiciTaxiTheme.accentPrimary],
-                    startPoint: .leading,
-                    endPoint: .trailing
-                ))
+        VStack(spacing: 8) {
+            // App Logo from Assets
+            Image("Logo")
+                .resizable()
+                .aspectRatio(contentMode: .fit)
+                .frame(width: 90, height: 90)
+                .clipShape(RoundedRectangle(cornerRadius: 20))
+                .shadow(color: deepBlue.opacity(0.3), radius: 12, x: 0, y: 6)
             
             Text("Empieza a generar ingresos")
                 .font(.subheadline)
-                .foregroundColor(.white.opacity(0.7))
+                .foregroundColor(grayBlue)
         }
     }
     
@@ -127,7 +101,7 @@ struct LoginView: View {
             } onCompletion: { result in
                 authManager.signInWithApple(result: result)
             }
-            .signInWithAppleButtonStyle(colorScheme == .dark ? .white : .black)
+            .signInWithAppleButtonStyle(.black)
             .frame(height: 50)
             .cornerRadius(12)
             
@@ -144,7 +118,11 @@ struct LoginView: View {
                 .frame(maxWidth: .infinity)
                 .frame(height: 50)
                 .background(Color.white)
-                .foregroundColor(.black)
+                .foregroundColor(primaryDark)
+                .overlay(
+                    RoundedRectangle(cornerRadius: 12)
+                        .stroke(grayBlue.opacity(0.3), lineWidth: 1)
+                )
                 .cornerRadius(12)
             }
         }
@@ -155,16 +133,16 @@ struct LoginView: View {
     private var dividerSection: some View {
         HStack {
             Rectangle()
-                .fill(Color.white.opacity(0.3))
+                .fill(grayBlue.opacity(0.3))
                 .frame(height: 1)
             
             Text("o")
                 .font(.footnote)
-                .foregroundColor(.white.opacity(0.6))
+                .foregroundColor(grayBlue)
                 .padding(.horizontal, 16)
             
             Rectangle()
-                .fill(Color.white.opacity(0.3))
+                .fill(grayBlue.opacity(0.3))
                 .frame(height: 1)
         }
     }
@@ -172,52 +150,54 @@ struct LoginView: View {
     // MARK: - Email/Password Section
     
     private var emailPasswordSection: some View {
-        VStack(spacing: 16) {
+        VStack(spacing: 14) {
             // Email Field
-            VStack(alignment: .leading, spacing: 8) {
+            VStack(alignment: .leading, spacing: 6) {
                 Text("Correo electrónico")
                     .font(.footnote)
-                    .foregroundColor(.white.opacity(0.7))
+                    .foregroundColor(grayBlue)
                 
                 HStack {
                     Image(systemName: "envelope")
-                        .foregroundColor(.white.opacity(0.5))
+                        .foregroundColor(accentBlue)
                     
                     TextField("tu@email.com", text: $email)
                         .textContentType(.emailAddress)
                         .keyboardType(.emailAddress)
                         .autocapitalization(.none)
-                        .foregroundColor(.white)
+                        .foregroundColor(primaryDark)
                 }
                 .padding()
-                .glassEffect(in: .rect(cornerRadius: 12))
+                .background(accentBlue.opacity(0.08))
+                .cornerRadius(12)
             }
             
             // Password Field
-            VStack(alignment: .leading, spacing: 8) {
+            VStack(alignment: .leading, spacing: 6) {
                 Text("Contraseña")
                     .font(.footnote)
-                    .foregroundColor(.white.opacity(0.7))
+                    .foregroundColor(grayBlue)
                 
                 HStack {
                     Image(systemName: "lock")
-                        .foregroundColor(.white.opacity(0.5))
+                        .foregroundColor(accentBlue)
                     
                     if showPassword {
                         TextField("••••••••", text: $password)
-                            .foregroundColor(.white)
+                            .foregroundColor(primaryDark)
                     } else {
                         SecureField("••••••••", text: $password)
-                            .foregroundColor(.white)
+                            .foregroundColor(primaryDark)
                     }
                     
                     Button(action: { showPassword.toggle() }) {
                         Image(systemName: showPassword ? "eye.slash" : "eye")
-                            .foregroundColor(.white.opacity(0.5))
+                            .foregroundColor(grayBlue)
                     }
                 }
                 .padding()
-                .glassEffect(in: .rect(cornerRadius: 12))
+                .background(accentBlue.opacity(0.08))
+                .cornerRadius(12)
             }
         }
     }
@@ -239,11 +219,7 @@ struct LoginView: View {
             }
             .frame(maxWidth: .infinity)
             .frame(height: 50)
-            .background(LinearGradient(
-                colors: [.orange, BiciTaxiTheme.accentPrimary],
-                startPoint: .leading,
-                endPoint: .trailing
-            ))
+            .background(deepBlue)
             .foregroundColor(.white)
             .cornerRadius(12)
         }
@@ -255,16 +231,12 @@ struct LoginView: View {
     private var registerLink: some View {
         HStack {
             Text("¿No tienes cuenta?")
-                .foregroundColor(.white.opacity(0.7))
+                .foregroundColor(grayBlue)
             
             Button(action: { showRegister = true }) {
                 Text("Regístrate como conductor")
                     .fontWeight(.semibold)
-                    .foregroundStyle(LinearGradient(
-                        colors: [.orange, BiciTaxiTheme.accentPrimary],
-                        startPoint: .leading,
-                        endPoint: .trailing
-                    ))
+                    .foregroundColor(brightBlue)
             }
         }
         .font(.subheadline)
@@ -278,7 +250,7 @@ struct LoginView: View {
         }) {
             Text("Continuar como invitado")
                 .font(.subheadline)
-                .foregroundColor(.white.opacity(0.6))
+                .foregroundColor(grayBlue)
                 .underline()
         }
     }
@@ -286,5 +258,4 @@ struct LoginView: View {
 
 #Preview {
     LoginView(authManager: AuthManager(), showRegister: .constant(false))
-        .preferredColorScheme(.dark)
 }

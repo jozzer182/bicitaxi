@@ -65,6 +65,7 @@ LIQUID GLASS FOCUS
 - Whenever you build or change UI:
   - Prefer Liquid Glass components.
   - Smooth, fluid transitions that visually feel “liquid”.
+-Color Palette: white theme and #0B0016, #4BB3FD, #3E6680, #0496FF, #027BCE
 
 NAMING, IDS & BUNDLE IDENTIFIERS
 - Use the existing bundle identifiers unless explicitly instructed to change them.
