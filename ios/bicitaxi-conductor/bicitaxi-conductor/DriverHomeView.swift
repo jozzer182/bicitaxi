@@ -14,6 +14,9 @@ struct DriverHomeView: View {
     @State private var cameraPosition: MapCameraPosition = .automatic
     @State private var hasInitialized = false
     
+    /// Whether the welcome greeting is collapsed to a button
+    @State private var isWelcomeCollapsed = false
+    
     @Environment(\.horizontalSizeClass) var horizontalSizeClass
     
     var body: some View {
@@ -25,7 +28,7 @@ struct DriverHomeView: View {
                 // Welcome greeting overlay at top
                 VStack {
                     welcomeGreeting
-                        .padding(.top, geometry.safeAreaInsets.top + 60)
+                        //.padding(.top, geometry.safeAreaInsets.top)
                     Spacer()
                 }
                 
@@ -38,6 +41,13 @@ struct DriverHomeView: View {
         }
         .onAppear {
             locationManager.requestPermission()
+            
+            // Auto-collapse welcome greeting after 5 seconds
+            DispatchQueue.main.asyncAfter(deadline: .now() + 5) {
+                withAnimation(.spring(response: 0.5, dampingFraction: 0.8)) {
+                    isWelcomeCollapsed = true
+                }
+            }
         }
         .onReceive(locationManager.$currentCoordinate) { newCoordinate in
             if let coordinate = newCoordinate {
@@ -83,27 +93,70 @@ struct DriverHomeView: View {
     // MARK: - Welcome Greeting
     
     private var welcomeGreeting: some View {
-        HStack(spacing: 12) {
-            Image(systemName: "hand.wave.fill")
-                .font(.title2)
-                .foregroundStyle(BiciTaxiTheme.accentGradient)
-            
-            VStack(alignment: .leading, spacing: 2) {
-                Text("¡Bienvenido, Conductor!")
-                    .font(.headline.weight(.bold))
-                    .foregroundColor(.primary)
-                
-                Text("Listo para aceptar viajes")
-                    .font(.caption.weight(.medium))
-                    .foregroundColor(.secondary)
-            }
-            
+        HStack {
             Spacer()
+            
+            if isWelcomeCollapsed {
+                // Collapsed: Circular Liquid Glass button with white hand wave icon
+                Button {
+                    withAnimation(.spring(response: 0.4, dampingFraction: 0.75)) {
+                        isWelcomeCollapsed = false
+                    }
+                    // Re-collapse after 5 seconds
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 5) {
+                        withAnimation(.spring(response: 0.5, dampingFraction: 0.8)) {
+                            isWelcomeCollapsed = true
+                        }
+                    }
+                } label: {
+                    Image(systemName: "hand.wave.fill")
+                        .font(.title2)
+                        .foregroundColor(.black)
+                        .frame(width: 50, height: 50)
+                }
+                .glassEffect(.clear.interactive())
+                .clipShape(Circle())
+//                .shadow(color: .black.opacity(0.15), radius: 8, x: 0, y: 4)
+                .transition(.asymmetric(
+                    insertion: .scale.combined(with: .opacity),
+                    removal: .scale.combined(with: .opacity)
+                ))
+                .padding(.trailing, 16)
+            } else {
+                // Expanded: Full welcome message
+                HStack(spacing: 12) {
+                    Image(systemName: "hand.wave.fill")
+                        .font(.title2)
+                        .foregroundStyle(BiciTaxiTheme.accentGradient)
+                    
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("¡Bienvenido, Conductor!")
+                            .font(.headline.weight(.bold))
+                            .foregroundColor(.primary)
+                        
+                        Text("Listo para aceptar viajes")
+                            .font(.caption.weight(.medium))
+                            .foregroundColor(.secondary)
+                    }
+                    
+                    Spacer()
+                }
+                .padding(.horizontal, 20)
+                .padding(.vertical, 14)
+                .glassCard(cornerRadius: 20)
+                .padding(.horizontal, 16)
+                .transition(.asymmetric(
+                    insertion: .move(edge: .trailing).combined(with: .opacity),
+                    removal: .move(edge: .trailing).combined(with: .opacity)
+                ))
+                .onTapGesture {
+                    // Allow tapping to manually collapse
+                    withAnimation(.spring(response: 0.5, dampingFraction: 0.8)) {
+                        isWelcomeCollapsed = true
+                    }
+                }
+            }
         }
-        .padding(.horizontal, 20)
-        .padding(.vertical, 14)
-        .glassCard(cornerRadius: 20)
-        .padding(.horizontal, 16)
     }
     
     // MARK: - Overlay Panel

@@ -232,4 +232,4 @@ migrate_working_dir/
 agent_ios_memory.json
 agent_*_memory.json
 # Agent workflows folder
-.agent/
+#.agent/
