@@ -226,8 +226,10 @@ temp/
 migrate_working_dir/
 
 # ===========================
-# Agent Memory (Local Only)
+# Agent Memory & Workflows (Local Only)
 # ===========================
 # Persistent agent memory files - keep local, don't share
 agent_ios_memory.json
 agent_*_memory.json
+# Agent workflows folder
+.agent/
