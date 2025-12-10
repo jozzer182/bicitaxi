@@ -1,0 +1,17 @@
+{
+    "sessions": [
+        {
+            "date": "2025-12-10T17:19:00-05:00",
+            "prompt": "User requested to remove all shader-related code from both bicitaxi and bicitaxi_conductor apps since the barrel distortion shader implementation didn't work.",
+            "summary": "Removed all shader code from both Flutter apps: deleted shaders/ folders containing barrel_distortion.frag, deleted barrel_distortion_filter.dart widget files from lib/core/widgets/, and removed shader references from pubspec.yaml files. Both apps passed flutter analyze with no issues.",
+            "changes": [
+                "Deleted: flutter/bicitaxi/shaders/ folder",
+                "Deleted: flutter/bicitaxi/lib/core/widgets/barrel_distortion_filter.dart",
+                "Deleted: flutter/bicitaxi_conductor/shaders/ folder",
+                "Deleted: flutter/bicitaxi_conductor/lib/core/widgets/barrel_distortion_filter.dart",
+                "Modified: flutter/bicitaxi/pubspec.yaml - removed shaders section",
+                "Modified: flutter/bicitaxi_conductor/pubspec.yaml - removed shaders section"
+            ]
+        }
+    ]
+}
