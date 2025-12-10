@@ -21,6 +21,17 @@
                 "Modified: flutter/bicitaxi/lib/features/home/presentation/map_home_screen.dart - arc curve direction fix, DMS coordinate colors",
                 "Modified: flutter/bicitaxi_conductor/lib/features/home/presentation/driver_map_home_screen.dart - status collapse timer, WiFi button, earnings removal, text colors, button centering"
             ]
+        },
+        {
+            "date": "2025-12-10T17:56:00-05:00",
+            "prompt": "Apply glass theme to payment screens, remove profile photo section, change +52 to +57 for Colombia, update currency format.",
+            "summary": "Made theme and localization fixes: Payment screens now use LiquidCard glass theme instead of opaque cards. Removed profile photo section (avatar + camera icon) from both apps. Changed country code from +52 (Mexico) to +57 (Colombia). Updated currency in client app from $450 to $450.000 (Colombian peso format).",
+            "changes": [
+                "Modified: flutter/bicitaxi/lib/features/profile/presentation/payment_methods_screen.dart - LiquidCard glass theme",
+                "Modified: flutter/bicitaxi/lib/features/profile/presentation/client_profile_screen.dart - removed photo, +57, $450.000",
+                "Modified: flutter/bicitaxi_conductor/lib/features/profile/presentation/payment_methods_screen.dart - LiquidCard glass theme",
+                "Modified: flutter/bicitaxi_conductor/lib/features/profile/presentation/driver_profile_screen.dart - removed photo, +57"
+            ]
         }
     ]
 }

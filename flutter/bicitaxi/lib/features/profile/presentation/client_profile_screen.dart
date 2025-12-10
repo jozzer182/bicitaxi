@@ -46,38 +46,6 @@ class ClientProfileScreen extends StatelessWidget {
       padding: const EdgeInsets.all(24),
       child: Column(
         children: [
-          Stack(
-            children: [
-              CircleAvatar(
-                radius: 50,
-                backgroundColor: AppColors.surfaceMedium,
-                child: const Icon(
-                  Icons.person_rounded,
-                  size: 50,
-                  color: AppColors.textSecondary,
-                ),
-              ),
-              Positioned(
-                bottom: 0,
-                right: 0,
-                child: Container(
-                  width: 32,
-                  height: 32,
-                  decoration: BoxDecoration(
-                    color: AppColors.brightBlue,
-                    borderRadius: BorderRadius.circular(10),
-                    border: Border.all(color: AppColors.primary, width: 3),
-                  ),
-                  child: const Icon(
-                    Icons.camera_alt_rounded,
-                    size: 16,
-                    color: AppColors.white,
-                  ),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 16),
           Text(
             'Usuario Invitado',
             style: Theme.of(context).textTheme.headlineSmall?.copyWith(
@@ -87,7 +55,7 @@ class ClientProfileScreen extends StatelessWidget {
           ),
           const SizedBox(height: 4),
           Text(
-            '+52 000 000 0000',
+            '+57 000 000 0000',
             style: Theme.of(
               context,
             ).textTheme.bodyMedium?.copyWith(color: Colors.black54),
@@ -124,7 +92,7 @@ class ClientProfileScreen extends StatelessWidget {
           Container(width: 1, height: 40, color: AppColors.surfaceMedium),
           _buildStatItem(context, '4.8', 'Calificación'),
           Container(width: 1, height: 40, color: AppColors.surfaceMedium),
-          _buildStatItem(context, '\$450', 'Gastado'),
+          _buildStatItem(context, '\$450.000', 'Gastado'),
         ],
       ),
     );
