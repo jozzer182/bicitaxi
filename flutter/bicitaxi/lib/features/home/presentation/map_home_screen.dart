@@ -964,6 +964,13 @@ class _MapHomeScreenState extends State<MapHomeScreen>
                     coordinates: _dropoffPosition,
                     onEdit: _dropoffPosition != null ? _editDropoff : null,
                   ),
+
+                  // Distance between pickup and dropoff
+                  if (_pickupPosition != null && _dropoffPosition != null) ...[
+                    const SizedBox(height: 12),
+                    _buildDistanceDisplay(),
+                  ],
+
                   const SizedBox(height: 16),
 
                   // Action buttons
@@ -992,28 +999,34 @@ class _MapHomeScreenState extends State<MapHomeScreen>
                         const SizedBox(width: 12),
                       Expanded(
                         flex: _pickupPosition != null ? 2 : 1,
-                        child: LiquidButton(
-                          borderRadius: 12,
-                          color: _pickupPosition != null
-                              ? Colors.white.withValues(alpha: 0.3)
-                              : Colors.white.withValues(alpha: 0.15),
-                          onTap: _pickupPosition != null
-                              ? _confirmLocations
-                              : null,
-                          padding: const EdgeInsets.symmetric(vertical: 14),
-                          child: Center(
-                            child: Text(
-                              'Solicitar viaje',
-                              textAlign: TextAlign.center,
-                              style: TextStyle(
-                                fontSize: 14,
-                                fontWeight: FontWeight.w600,
-                                color: _pickupPosition != null
-                                    ? AppColors.textDark
-                                    : AppColors.textDarkTertiary,
+                        child: Builder(
+                          builder: (context) {
+                            // Button is only enabled when BOTH pickup and dropoff are selected
+                            final isEnabled =
+                                _pickupPosition != null &&
+                                _dropoffPosition != null;
+                            return LiquidButton(
+                              borderRadius: 12,
+                              color: isEnabled
+                                  ? Colors.white.withValues(alpha: 0.3)
+                                  : Colors.white.withValues(alpha: 0.15),
+                              onTap: isEnabled ? _confirmLocations : null,
+                              padding: const EdgeInsets.symmetric(vertical: 14),
+                              child: Center(
+                                child: Text(
+                                  'Solicitar viaje',
+                                  textAlign: TextAlign.center,
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w600,
+                                    color: isEnabled
+                                        ? AppColors.textDark
+                                        : AppColors.textDarkTertiary,
+                                  ),
+                                ),
                               ),
-                            ),
-                          ),
+                            );
+                          },
                         ),
                       ),
                     ],
@@ -1166,5 +1179,78 @@ class _MapHomeScreenState extends State<MapHomeScreen>
       'minutes': minutes.toString().padLeft(2, '0'),
       'seconds': seconds.toStringAsFixed(1),
     };
+  }
+
+  /// Calculates the distance between two geographic points using the Haversine formula.
+  /// Returns the distance in meters.
+  double _calculateDistance(LatLng point1, LatLng point2) {
+    const earthRadius = 6371000.0; // Earth's radius in meters
+
+    final dLat = _toRadians(point2.latitude - point1.latitude);
+    final dLng = _toRadians(point2.longitude - point1.longitude);
+
+    final a =
+        sin(dLat / 2) * sin(dLat / 2) +
+        cos(_toRadians(point1.latitude)) *
+            cos(_toRadians(point2.latitude)) *
+            sin(dLng / 2) *
+            sin(dLng / 2);
+
+    final c = 2 * atan2(sqrt(a), sqrt(1 - a));
+
+    return earthRadius * c;
+  }
+
+  double _toRadians(double degrees) => degrees * pi / 180;
+
+  /// Builds the distance display widget for the bottom panel.
+  Widget _buildDistanceDisplay() {
+    if (_pickupPosition == null || _dropoffPosition == null) {
+      return const SizedBox.shrink();
+    }
+
+    final distanceMeters = _calculateDistance(
+      _pickupPosition!,
+      _dropoffPosition!,
+    );
+
+    // Format distance: show meters if < 1000, otherwise show km
+    final String distanceText;
+    if (distanceMeters < 1000) {
+      distanceText = '${distanceMeters.round()} m';
+    } else {
+      distanceText = '${(distanceMeters / 1000).toStringAsFixed(1)} km';
+    }
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+      decoration: BoxDecoration(
+        color: AppColors.electricBlue.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(10),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(
+            Icons.straighten_rounded,
+            color: AppColors.electricBlue,
+            size: 16,
+          ),
+          const SizedBox(width: 6),
+          Text(
+            'Distancia: ',
+            style: TextStyle(fontSize: 12, color: AppColors.textDarkSecondary),
+          ),
+          Text(
+            distanceText,
+            style: const TextStyle(
+              fontSize: 13,
+              fontWeight: FontWeight.w600,
+              color: AppColors.electricBlue,
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }

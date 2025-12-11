@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:bicitaxi/core/widgets/glass_container.dart';
 import 'package:flutter/material.dart';
 import 'package:liquid_glass_ui_design/liquid_glass_ui.dart';
@@ -50,7 +52,7 @@ class _ClientActiveRideScreenState extends State<ClientActiveRideScreen> {
     final ride = controller.activeRide;
 
     return Scaffold(
-      backgroundColor: Colors.transparent,
+      backgroundColor: const Color(0xFFF5F5F0), // Light creamy background
       body: SafeArea(
         child: ride != null
             ? _buildActiveRideContent(context, controller, ride)
@@ -171,14 +173,14 @@ class _ClientActiveRideScreenState extends State<ClientActiveRideScreen> {
                       children: const [
                         Icon(
                           Icons.arrow_back_rounded,
-                          color: AppColors.white,
+                          color: Colors.black87,
                           size: 20,
                         ),
                         SizedBox(width: 8),
                         Text(
                           'Volver',
                           style: TextStyle(
-                            color: AppColors.white,
+                            color: Colors.black87,
                             fontWeight: FontWeight.w500,
                           ),
                         ),
@@ -260,7 +262,8 @@ class _ClientActiveRideScreenState extends State<ClientActiveRideScreen> {
                         icon: Icons.trip_origin_rounded,
                         iconColor: AppColors.success,
                         label: 'Recogida',
-                        value: ride.pickup.dmsCoords,
+                        lat: ride.pickup.lat,
+                        lng: ride.pickup.lng,
                         address: ride.pickup.address,
                       ),
                     ),
@@ -277,8 +280,21 @@ class _ClientActiveRideScreenState extends State<ClientActiveRideScreen> {
                           icon: Icons.location_on_rounded,
                           iconColor: AppColors.error,
                           label: 'Destino',
-                          value: ride.dropoff!.dmsCoords,
+                          lat: ride.dropoff!.lat,
+                          lng: ride.dropoff!.lng,
                           address: ride.dropoff!.address,
+                        ),
+                      ),
+                      // Distance between pickup and dropoff
+                      const SizedBox(height: 16),
+                      Center(
+                        child: _buildDistanceRow(
+                          _calculateDistance(
+                            ride.pickup.lat,
+                            ride.pickup.lng,
+                            ride.dropoff!.lat,
+                            ride.dropoff!.lng,
+                          ),
                         ),
                       ),
                     ],
@@ -489,7 +505,8 @@ class _ClientActiveRideScreenState extends State<ClientActiveRideScreen> {
     required IconData icon,
     required Color iconColor,
     required String label,
-    required String value,
+    required double lat,
+    required double lng,
     String? address,
   }) {
     return Row(
@@ -506,10 +523,8 @@ class _ClientActiveRideScreenState extends State<ClientActiveRideScreen> {
               label,
               style: TextStyle(fontSize: 12, color: AppColors.textTertiary),
             ),
-            Text(
-              value,
-              style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
-            ),
+            // Coordinates in compact DMS format (matching map screen)
+            _buildDmsCoordinates(lat, lng),
             if (address != null && address.isNotEmpty)
               Padding(
                 padding: const EdgeInsets.only(top: 2),
@@ -540,6 +555,138 @@ class _ClientActiveRideScreenState extends State<ClientActiveRideScreen> {
           ],
         ),
       ],
+    );
+  }
+
+  /// Builds DMS coordinates in compact format matching the map screen.
+  /// Shows minutes and seconds with decimal precision.
+  Widget _buildDmsCoordinates(double latitude, double longitude) {
+    final latDms = _toDms(latitude.abs());
+    final lngDms = _toDms(longitude.abs());
+    final latDir = latitude >= 0 ? 'N' : 'S';
+    final lngDir = longitude >= 0 ? 'E' : 'W';
+
+    // Colors for different parts - darker for readability
+    const minuteColor = Color(0x99000000); // Black 60%
+    const secondColor = Color(0xCC000000); // Black 80%
+
+    return RichText(
+      text: TextSpan(
+        style: const TextStyle(fontSize: 12, fontStyle: FontStyle.italic),
+        children: [
+          // Latitude: minutes (subtle) + seconds (visible)
+          TextSpan(
+            text: "${latDms['minutes']}'",
+            style: const TextStyle(color: minuteColor),
+          ),
+          TextSpan(
+            text: '${latDms['seconds']}"$latDir',
+            style: const TextStyle(
+              color: secondColor,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+          const TextSpan(
+            text: ', ',
+            style: TextStyle(color: minuteColor),
+          ),
+          // Longitude: minutes (subtle) + seconds (visible)
+          TextSpan(
+            text: "${lngDms['minutes']}'",
+            style: const TextStyle(color: minuteColor),
+          ),
+          TextSpan(
+            text: '${lngDms['seconds']}"$lngDir',
+            style: const TextStyle(
+              color: secondColor,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// Converts decimal degrees to DMS components.
+  Map<String, String> _toDms(double decimal) {
+    final degrees = decimal.floor();
+    final minutesDecimal = (decimal - degrees) * 60;
+    final minutes = minutesDecimal.floor();
+    final seconds = ((minutesDecimal - minutes) * 60);
+
+    return {
+      'degrees': degrees.toString(),
+      'minutes': minutes.toString().padLeft(2, '0'),
+      'seconds': seconds.toStringAsFixed(1),
+    };
+  }
+
+  /// Calculates the distance between two geographic points using the Haversine formula.
+  /// Returns the distance in meters.
+  double _calculateDistance(
+    double lat1,
+    double lng1,
+    double lat2,
+    double lng2,
+  ) {
+    const earthRadius = 6371000.0; // Earth's radius in meters
+
+    final dLat = _toRadians(lat2 - lat1);
+    final dLng = _toRadians(lng2 - lng1);
+
+    final a =
+        sin(dLat / 2) * sin(dLat / 2) +
+        cos(_toRadians(lat1)) *
+            cos(_toRadians(lat2)) *
+            sin(dLng / 2) *
+            sin(dLng / 2);
+
+    final c = 2 * atan2(sqrt(a), sqrt(1 - a));
+
+    return earthRadius * c;
+  }
+
+  double _toRadians(double degrees) => degrees * pi / 180;
+
+  /// Builds a row displaying the distance between pickup and dropoff.
+  Widget _buildDistanceRow(double distanceMeters) {
+    // Format distance: show meters if < 1000, otherwise show km
+    final String distanceText;
+    if (distanceMeters < 1000) {
+      distanceText = '${distanceMeters.round()} m';
+    } else {
+      distanceText = '${(distanceMeters / 1000).toStringAsFixed(1)} km';
+    }
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+      decoration: BoxDecoration(
+        color: AppColors.electricBlue.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(
+            Icons.straighten_rounded,
+            color: AppColors.electricBlue,
+            size: 18,
+          ),
+          const SizedBox(width: 8),
+          Text(
+            'Distancia: ',
+            style: TextStyle(fontSize: 13, color: AppColors.textSecondary),
+          ),
+          Text(
+            distanceText,
+            style: const TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.w600,
+              color: AppColors.electricBlue,
+            ),
+          ),
+        ],
+      ),
     );
   }
 
