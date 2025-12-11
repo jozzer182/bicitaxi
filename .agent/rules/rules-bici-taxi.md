@@ -6,6 +6,8 @@ WORKSPACE RULES – iOS (Bici Taxi)
 
 You are working in a monorepo that contains BOTH Flutter and native iOS projects.
 
+Always record the prompt on agent_ios_memory.json
+
 REPO STRUCTURE (VERY IMPORTANT)
 - From the workspace root, the relevant folders are:
 
