@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:liquid_glass_ui_design/liquid_glass_ui.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/widgets/responsive_layout.dart';
+import '../../../core/widgets/glass_container.dart';
 import '../../../core/providers/app_state.dart';
 import '../models/ride.dart';
 import '../models/ride_status.dart';
@@ -102,7 +103,7 @@ class _ClientHistoryScreenState extends State<ClientHistoryScreen> {
   }
 
   Widget _buildEmptyState(BuildContext context) {
-    return LiquidCard(
+    return UltraGlassCard(
       borderRadius: 20,
       padding: const EdgeInsets.all(32),
       child: Column(
@@ -142,7 +143,7 @@ class _ClientHistoryScreenState extends State<ClientHistoryScreen> {
   Widget _buildRideCard(BuildContext context, Ride ride) {
     final isCompleted = ride.status == RideStatus.completed;
 
-    return LiquidCard(
+    return UltraGlassCard(
       borderRadius: 20,
       padding: const EdgeInsets.all(20),
       child: Column(

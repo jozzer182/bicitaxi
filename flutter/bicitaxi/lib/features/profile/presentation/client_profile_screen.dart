@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:liquid_glass_ui_design/liquid_glass_ui.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/widgets/responsive_layout.dart';
+import '../../../core/widgets/glass_container.dart';
 import '../../../core/routes/app_routes.dart';
 
 /// Profile screen for the Bici Taxi client app.
@@ -39,7 +40,7 @@ class ClientProfileScreen extends StatelessWidget {
   }
 
   Widget _buildProfileHeader(BuildContext context) {
-    return LiquidCard(
+    return UltraGlassCard(
       borderRadius: 24,
       padding: const EdgeInsets.all(24),
       child: Column(
@@ -73,7 +74,7 @@ class ClientProfileScreen extends StatelessWidget {
   }
 
   Widget _buildSettingsSection(BuildContext context) {
-    return LiquidCard(
+    return UltraGlassCard(
       borderRadius: 20,
       padding: const EdgeInsets.symmetric(vertical: 8),
       child: Column(

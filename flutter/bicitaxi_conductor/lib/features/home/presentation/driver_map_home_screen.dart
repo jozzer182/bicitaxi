@@ -315,7 +315,7 @@ class _DriverMapHomeScreenState extends State<DriverMapHomeScreen> {
                 GestureDetector(
                   onTap: () =>
                       Navigator.pushNamed(context, AppRoutes.activeRide),
-                  child: LiquidCard(
+                  child: UltraGlassCard(
                     borderRadius: 16,
                     color: AppColors.driverAccent.withValues(alpha: 0.2),
                     padding: const EdgeInsets.symmetric(
@@ -484,7 +484,7 @@ class _DriverMapHomeScreenState extends State<DriverMapHomeScreen> {
   Widget _buildLocationFab() {
     return GestureDetector(
       onTap: _centerOnUser,
-      child: LiquidCard(
+      child: UltraGlassCard(
         borderRadius: 14,
         padding: const EdgeInsets.all(14),
         child: const Icon(
@@ -503,7 +503,7 @@ class _DriverMapHomeScreenState extends State<DriverMapHomeScreen> {
         : 'Permiso de ubicación requerido';
     final buttonText = isGpsDisabled ? 'Activar GPS' : 'Dar permiso';
 
-    return LiquidCard(
+    return UltraGlassCard(
       borderRadius: 14,
       color: AppColors.warning.withValues(alpha: 0.15),
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),

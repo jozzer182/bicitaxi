@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:liquid_glass_ui_design/liquid_glass_ui.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/widgets/responsive_layout.dart';
+import '../../../core/widgets/glass_container.dart';
 import '../../../core/providers/app_state.dart';
 import '../../../core/routes/app_routes.dart';
 import '../../rides/models/ride_status.dart';
@@ -78,7 +79,7 @@ class _DriverHomeScreenState extends State<DriverHomeScreen> {
 
     return GestureDetector(
       onTap: () => Navigator.pushNamed(context, AppRoutes.activeRide),
-      child: LiquidCard(
+      child: UltraGlassCard(
         borderRadius: 20,
         color: AppColors.driverAccent.withValues(alpha: 0.15),
         padding: const EdgeInsets.all(16),
@@ -150,7 +151,7 @@ class _DriverHomeScreenState extends State<DriverHomeScreen> {
   }
 
   Widget _buildStatusSection(BuildContext context, bool isOnline) {
-    return LiquidCard(
+    return UltraGlassCard(
       borderRadius: 24,
       padding: const EdgeInsets.all(24),
       child: Column(
@@ -315,7 +316,7 @@ class _DriverHomeScreenState extends State<DriverHomeScreen> {
   }
 
   Widget _buildTodaySummary(BuildContext context) {
-    return LiquidCard(
+    return UltraGlassCard(
       borderRadius: 20,
       padding: const EdgeInsets.all(20),
       child: Column(
@@ -390,7 +391,7 @@ class _DriverHomeScreenState extends State<DriverHomeScreen> {
   Widget _buildRecentRequests(BuildContext context, bool isOnline) {
     final pendingRides = context.rideController.pendingRides;
 
-    return LiquidCard(
+    return UltraGlassCard(
       borderRadius: 20,
       padding: const EdgeInsets.all(20),
       child: Column(

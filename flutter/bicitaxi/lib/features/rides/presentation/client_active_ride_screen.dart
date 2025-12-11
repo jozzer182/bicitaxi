@@ -1,3 +1,4 @@
+import 'package:bicitaxi/core/widgets/glass_container.dart';
 import 'package:flutter/material.dart';
 import 'package:liquid_glass_ui_design/liquid_glass_ui.dart';
 import '../../../core/theme/app_colors.dart';
@@ -71,7 +72,7 @@ class _ClientActiveRideScreenState extends State<ClientActiveRideScreen> {
           constraints: BoxConstraints(
             maxWidth: isTablet ? 500 : double.infinity,
           ),
-          child: LiquidCard(
+          child: UltraGlassCard(
             borderRadius: 24,
             padding: const EdgeInsets.all(32),
             child: Column(
@@ -159,7 +160,7 @@ class _ClientActiveRideScreenState extends State<ClientActiveRideScreen> {
                 alignment: Alignment.centerLeft,
                 child: GestureDetector(
                   onTap: () => Navigator.pop(context),
-                  child: LiquidCard(
+                  child: UltraGlassCard(
                     borderRadius: 12,
                     padding: const EdgeInsets.symmetric(
                       horizontal: 16,
@@ -189,7 +190,7 @@ class _ClientActiveRideScreenState extends State<ClientActiveRideScreen> {
               const SizedBox(height: 24),
 
               // Status card
-              LiquidCard(
+              UltraGlassCard(
                 borderRadius: 24,
                 padding: const EdgeInsets.all(24),
                 child: Column(
@@ -240,7 +241,7 @@ class _ClientActiveRideScreenState extends State<ClientActiveRideScreen> {
               const SizedBox(height: 20),
 
               // Route details card
-              LiquidCard(
+              UltraGlassCard(
                 borderRadius: 20,
                 padding: const EdgeInsets.all(20),
                 child: Column(
@@ -288,7 +289,7 @@ class _ClientActiveRideScreenState extends State<ClientActiveRideScreen> {
 
               // Driver info (when assigned)
               if (ride.driverId != null) ...[
-                LiquidCard(
+                UltraGlassCard(
                   borderRadius: 20,
                   padding: const EdgeInsets.all(20),
                   child: Row(
@@ -434,7 +435,7 @@ class _ClientActiveRideScreenState extends State<ClientActiveRideScreen> {
 
               // Completed message
               if (ride.status == RideStatus.completed)
-                LiquidCard(
+                UltraGlassCard(
                   borderRadius: 16,
                   padding: const EdgeInsets.all(20),
                   child: Column(

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:liquid_glass_ui_design/liquid_glass_ui.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/widgets/responsive_layout.dart';
+import '../../../core/widgets/glass_container.dart';
 import 'map_home_screen.dart';
 import '../../rides/presentation/client_active_ride_screen.dart';
 import '../../rides/presentation/client_history_screen.dart';
@@ -194,9 +195,8 @@ class _HomeShellState extends State<HomeShell> {
   }
 
   Widget _buildNavigationRail(BuildContext context) {
-    return LiquidCard(
+    return UltraGlassCard(
       borderRadius: 0,
-      margin: EdgeInsets.zero,
       padding: EdgeInsets.zero,
       child: SizedBox(
         width: 80,

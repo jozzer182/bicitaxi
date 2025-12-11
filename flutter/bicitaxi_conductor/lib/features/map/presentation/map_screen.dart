@@ -4,6 +4,7 @@ import 'package:latlong2/latlong.dart';
 import 'package:liquid_glass_ui_design/liquid_glass_ui.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/widgets/responsive_layout.dart';
+import '../../../core/widgets/glass_container.dart';
 import '../../../core/providers/app_state.dart';
 import '../../../core/routes/app_routes.dart';
 import '../../rides/models/ride.dart';
@@ -136,9 +137,7 @@ class _MapScreenState extends State<MapScreen> {
             Container(
               color: AppColors.primary.withValues(alpha: 0.7),
               child: const Center(
-                child: CircularProgressIndicator(
-                  color: AppColors.driverAccent,
-                ),
+                child: CircularProgressIndicator(color: AppColors.driverAccent),
               ),
             ),
         ],
@@ -167,10 +166,26 @@ class _MapScreenState extends State<MapScreen> {
             // Darken tiles to match app theme
             return ColorFiltered(
               colorFilter: const ColorFilter.matrix([
-                0.7, 0, 0, 0, 0,
-                0, 0.7, 0, 0, 0,
-                0, 0, 0.8, 0, 0,
-                0, 0, 0, 1, 0,
+                0.7,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0.7,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0.8,
+                0,
+                0,
+                0,
+                0,
+                0,
+                1,
+                0,
               ]),
               child: widget,
             );
@@ -178,9 +193,7 @@ class _MapScreenState extends State<MapScreen> {
         ),
 
         // Markers layer
-        MarkerLayer(
-          markers: _buildMarkers(pendingRides),
-        ),
+        MarkerLayer(markers: _buildMarkers(pendingRides)),
       ],
     );
   }
@@ -262,11 +275,7 @@ class _MapScreenState extends State<MapScreen> {
             size: 20,
           ),
         ),
-        Container(
-          width: 3,
-          height: 8,
-          color: AppColors.brightBlue,
-        ),
+        Container(width: 3, height: 8, color: AppColors.brightBlue),
       ],
     );
   }
@@ -280,7 +289,7 @@ class _MapScreenState extends State<MapScreen> {
             // Back button
             GestureDetector(
               onTap: () => Navigator.pop(context),
-              child: LiquidCard(
+              child: UltraGlassCard(
                 borderRadius: 12,
                 padding: const EdgeInsets.all(12),
                 child: const Icon(
@@ -295,12 +304,15 @@ class _MapScreenState extends State<MapScreen> {
             Expanded(
               child: GestureDetector(
                 onTap: _toggleOnlineStatus,
-                child: LiquidCard(
+                child: UltraGlassCard(
                   borderRadius: 12,
                   color: isOnline
                       ? AppColors.success.withValues(alpha: 0.2)
                       : AppColors.steelBlue.withValues(alpha: 0.2),
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 12,
+                  ),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
@@ -308,7 +320,9 @@ class _MapScreenState extends State<MapScreen> {
                         width: 10,
                         height: 10,
                         decoration: BoxDecoration(
-                          color: isOnline ? AppColors.success : AppColors.steelBlue,
+                          color: isOnline
+                              ? AppColors.success
+                              : AppColors.steelBlue,
                           shape: BoxShape.circle,
                         ),
                       ),
@@ -317,7 +331,9 @@ class _MapScreenState extends State<MapScreen> {
                         isOnline ? 'En línea' : 'Desconectado',
                         style: TextStyle(
                           fontWeight: FontWeight.w600,
-                          color: isOnline ? AppColors.success : AppColors.textSecondary,
+                          color: isOnline
+                              ? AppColors.success
+                              : AppColors.textSecondary,
                         ),
                       ),
                     ],
@@ -329,7 +345,7 @@ class _MapScreenState extends State<MapScreen> {
             // Center on user button
             GestureDetector(
               onTap: _centerOnUser,
-              child: LiquidCard(
+              child: UltraGlassCard(
                 borderRadius: 12,
                 padding: const EdgeInsets.all(12),
                 child: const Icon(
@@ -359,7 +375,7 @@ class _MapScreenState extends State<MapScreen> {
             constraints: BoxConstraints(
               maxWidth: isTablet ? 500 : double.infinity,
             ),
-            child: LiquidCard(
+            child: UltraGlassCard(
               borderRadius: 20,
               padding: const EdgeInsets.all(24),
               child: Column(
@@ -373,10 +389,7 @@ class _MapScreenState extends State<MapScreen> {
                   const SizedBox(height: 12),
                   const Text(
                     'Estás desconectado',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                    ),
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
                   ),
                   const SizedBox(height: 4),
                   Text(
@@ -391,7 +404,10 @@ class _MapScreenState extends State<MapScreen> {
                     borderRadius: 12,
                     color: AppColors.driverAccent,
                     onTap: _toggleOnlineStatus,
-                    padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 24),
+                    padding: const EdgeInsets.symmetric(
+                      vertical: 12,
+                      horizontal: 24,
+                    ),
                     child: const Text(
                       'Conectarse',
                       style: TextStyle(
@@ -423,7 +439,7 @@ class _MapScreenState extends State<MapScreen> {
             constraints: BoxConstraints(
               maxWidth: isTablet ? 500 : double.infinity,
             ),
-            child: LiquidCard(
+            child: UltraGlassCard(
               borderRadius: 20,
               padding: const EdgeInsets.all(20),
               child: Column(
@@ -435,12 +451,14 @@ class _MapScreenState extends State<MapScreen> {
                     children: [
                       Text(
                         'Solicitudes cercanas',
-                        style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                              fontWeight: FontWeight.w600,
-                            ),
+                        style: Theme.of(context).textTheme.titleMedium
+                            ?.copyWith(fontWeight: FontWeight.w600),
                       ),
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 10,
+                          vertical: 4,
+                        ),
                         decoration: BoxDecoration(
                           color: AppColors.brightBlue.withValues(alpha: 0.2),
                           borderRadius: BorderRadius.circular(12),
@@ -459,9 +477,7 @@ class _MapScreenState extends State<MapScreen> {
                     const SizedBox(height: 16),
                     Text(
                       'No hay solicitudes en este momento',
-                      style: TextStyle(
-                        color: AppColors.textSecondary,
-                      ),
+                      style: TextStyle(color: AppColors.textSecondary),
                       textAlign: TextAlign.center,
                     ),
                   ] else ...[
@@ -530,9 +546,7 @@ class _MapScreenState extends State<MapScreen> {
                   children: [
                     Text(
                       'Pasajero',
-                      style: TextStyle(
-                        fontWeight: FontWeight.w600,
-                      ),
+                      style: TextStyle(fontWeight: FontWeight.w600),
                     ),
                     if (distance != null)
                       Text(

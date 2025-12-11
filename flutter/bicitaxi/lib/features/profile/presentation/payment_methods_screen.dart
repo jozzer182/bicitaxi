@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:liquid_glass_ui_design/liquid_glass_ui.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/widgets/responsive_layout.dart';
+import '../../../core/widgets/glass_container.dart';
 
 /// Payment methods screen for the Bici Taxi client app.
 /// Shows available payment options with "Efectivo" as default.
@@ -85,7 +86,7 @@ class _PaymentMethodsScreenState extends State<PaymentMethodsScreen> {
                 ),
                 const SizedBox(height: 24),
                 // Coming soon message
-                LiquidCard(
+                UltraGlassCard(
                   borderRadius: 16,
                   color: AppColors.electricBlue.withValues(alpha: 0.1),
                   padding: const EdgeInsets.all(16),
@@ -132,7 +133,7 @@ class _PaymentMethodsScreenState extends State<PaymentMethodsScreen> {
       onTap: isEnabled ? () => setState(() => _selectedMethod = value) : null,
       child: Opacity(
         opacity: isEnabled ? 1.0 : 0.6,
-        child: LiquidCard(
+        child: UltraGlassCard(
           borderRadius: 14,
           color: isSelected
               ? AppColors.electricBlue.withValues(alpha: 0.15)

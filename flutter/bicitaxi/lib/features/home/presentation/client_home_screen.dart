@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:liquid_glass_ui_design/liquid_glass_ui.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/widgets/responsive_layout.dart';
+import '../../../core/widgets/glass_container.dart';
 import '../../../core/providers/app_state.dart';
 import '../../../core/routes/app_routes.dart';
 import '../../rides/models/ride_status.dart';
@@ -74,7 +75,7 @@ class _ClientHomeScreenState extends State<ClientHomeScreen> {
 
     return GestureDetector(
       onTap: () => Navigator.pushNamed(context, AppRoutes.activeRide),
-      child: LiquidCard(
+      child: UltraGlassCard(
         borderRadius: 20,
         color: AppColors.brightBlue.withValues(alpha: 0.15),
         padding: const EdgeInsets.all(16),
@@ -100,18 +101,12 @@ class _ClientHomeScreenState extends State<ClientHomeScreen> {
                 children: [
                   const Text(
                     'Viaje en curso',
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 16,
-                    ),
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
                   ),
                   const SizedBox(height: 2),
                   Text(
                     ride.status.displayName,
-                    style: TextStyle(
-                      fontSize: 13,
-                      color: AppColors.brightBlue,
-                    ),
+                    style: TextStyle(fontSize: 13, color: AppColors.brightBlue),
                   ),
                 ],
               ),
@@ -149,7 +144,7 @@ class _ClientHomeScreenState extends State<ClientHomeScreen> {
   }
 
   Widget _buildWelcomeSection(BuildContext context) {
-    return LiquidCard(
+    return UltraGlassCard(
       borderRadius: 24,
       padding: const EdgeInsets.all(24),
       child: Column(
@@ -177,15 +172,14 @@ class _ClientHomeScreenState extends State<ClientHomeScreen> {
                   children: [
                     Text(
                       '¡Hola!',
-                      style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                            fontWeight: FontWeight.bold,
-                          ),
+                      style: Theme.of(context).textTheme.headlineSmall
+                          ?.copyWith(fontWeight: FontWeight.bold),
                     ),
                     Text(
                       'Bienvenido a Bici Taxi',
                       style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                            color: AppColors.textSecondary,
-                          ),
+                        color: AppColors.textSecondary,
+                      ),
                     ),
                   ],
                 ),
@@ -195,9 +189,9 @@ class _ClientHomeScreenState extends State<ClientHomeScreen> {
           const SizedBox(height: 20),
           Text(
             '¿A dónde quieres ir hoy?',
-            style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                  color: AppColors.textSecondary,
-                ),
+            style: Theme.of(
+              context,
+            ).textTheme.titleMedium?.copyWith(color: AppColors.textSecondary),
           ),
         ],
       ),
@@ -246,10 +240,7 @@ class _ClientHomeScreenState extends State<ClientHomeScreen> {
                   ),
                   Text(
                     'Encuentra un conductor cercano',
-                    style: TextStyle(
-                      fontSize: 13,
-                      color: AppColors.white,
-                    ),
+                    style: TextStyle(fontSize: 13, color: AppColors.white),
                   ),
                 ],
               ),
@@ -273,11 +264,7 @@ class _ClientHomeScreenState extends State<ClientHomeScreen> {
           child: const Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(
-                Icons.map_outlined,
-                color: AppColors.white,
-                size: 22,
-              ),
+              Icon(Icons.map_outlined, color: AppColors.white, size: 22),
               SizedBox(width: 12),
               Text(
                 'Ver mapa',
@@ -295,7 +282,7 @@ class _ClientHomeScreenState extends State<ClientHomeScreen> {
   }
 
   Widget _buildRecentActivity(BuildContext context) {
-    return LiquidCard(
+    return UltraGlassCard(
       borderRadius: 20,
       padding: const EdgeInsets.all(20),
       child: Column(
@@ -306,9 +293,9 @@ class _ClientHomeScreenState extends State<ClientHomeScreen> {
             children: [
               Text(
                 'Actividad reciente',
-                style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.w600,
-                    ),
+                style: Theme.of(
+                  context,
+                ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
               ),
               TextButton(
                 onPressed: () {
@@ -380,20 +367,14 @@ class _ClientHomeScreenState extends State<ClientHomeScreen> {
               ),
               Text(
                 subtitle,
-                style: TextStyle(
-                  color: AppColors.textSecondary,
-                  fontSize: 13,
-                ),
+                style: TextStyle(color: AppColors.textSecondary, fontSize: 13),
               ),
             ],
           ),
         ),
         Text(
           time,
-          style: TextStyle(
-            color: AppColors.textTertiary,
-            fontSize: 12,
-          ),
+          style: TextStyle(color: AppColors.textTertiary, fontSize: 12),
         ),
       ],
     );

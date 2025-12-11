@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:liquid_glass_ui_design/liquid_glass_ui.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../core/widgets/glass_container.dart';
 
 /// About screen displaying app information and developer credits.
 class AboutScreen extends StatelessWidget {
@@ -112,7 +113,7 @@ class AboutScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: 48),
                   // Developer Info Card
-                  LiquidCard(
+                  UltraGlassCard(
                     borderRadius: 24,
                     padding: const EdgeInsets.all(24),
                     child: Column(
