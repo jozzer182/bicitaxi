@@ -10,9 +10,12 @@ import SwiftUI
 struct EditAccountView: View {
     @Environment(\.dismiss) private var dismiss
     
+    // MARK: - MockData Manager
+    @StateObject private var mockDataManager = MockDataManager.shared
+    
     // MARK: - State
-    @State private var userName: String = "Cliente Demo"
-    @State private var userEmail: String = "cliente@demo.com"
+    @State private var userName: String = ""
+    @State private var userEmail: String = ""
     @State private var showChangePassword = false
     @State private var showSaveConfirmation = false
     @State private var isSaving = false
@@ -59,6 +62,10 @@ struct EditAccountView: View {
                 }
             } message: {
                 Text("Tu información ha sido actualizada correctamente.")
+            }
+            .onAppear {
+                userName = mockDataManager.userName
+                userEmail = mockDataManager.userEmail
             }
         }
     }

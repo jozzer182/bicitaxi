@@ -11,6 +11,7 @@ import MapKit
 struct DriverHomeView: View {
     @ObservedObject var rideViewModel: DriverRideViewModel
     @StateObject private var locationManager = LocationManager()
+    @StateObject private var mockDataManager = MockDataManager.shared
     @State private var cameraPosition: MapCameraPosition = .automatic
     @State private var hasInitialized = false
     
@@ -56,9 +57,25 @@ struct DriverHomeView: View {
                     span: MKCoordinateSpan(latitudeDelta: 0.015, longitudeDelta: 0.015)
                 ))
                 
-                // Initialize pending rides around driver location
+                // Initialize pending rides around driver location (only with mock data enabled)
                 if !hasInitialized {
                     hasInitialized = true
+                    if mockDataManager.isMockDataEnabled {
+                        Task {
+                            let centerPoint = RideLocationPoint(coordinate: coordinate)
+                            await rideViewModel.initializeWithDummyRides(around: centerPoint)
+                        }
+                    }
+                }
+            }
+        }
+        .onChange(of: mockDataManager.isMockDataEnabled) { _, isEnabled in
+            if !isEnabled {
+                // Clear dummy data when mock data is disabled
+                rideViewModel.clearPendingRides()
+            } else {
+                // Regenerate dummy data when mock data is re-enabled
+                if let coordinate = locationManager.currentCoordinate {
                     Task {
                         let centerPoint = RideLocationPoint(coordinate: coordinate)
                         await rideViewModel.initializeWithDummyRides(around: centerPoint)

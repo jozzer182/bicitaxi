@@ -11,6 +11,9 @@ struct DriverProfileView: View {
     @ObservedObject var rideViewModel: DriverRideViewModel
     var authManager: AuthManager?
     
+    // MARK: - MockData Manager
+    @StateObject private var mockDataManager = MockDataManager.shared
+    
     // MARK: - State
     @State private var showLogoutAlert = false
     @State private var showDeleteAccountSheet = false
@@ -20,6 +23,7 @@ struct DriverProfileView: View {
     @State private var showPaymentMethods = false
     @State private var showAbout = false
     @State private var showEditAccount = false
+    @State private var showMockDataWarning = false
     
     var body: some View {
         ScrollView {
@@ -60,6 +64,16 @@ struct DriverProfileView: View {
         .sheet(isPresented: $showEditAccount) {
             EditAccountView()
         }
+        .alert("⚠️ Datos de Prueba", isPresented: $showMockDataWarning) {
+            Button("Cancelar", role: .cancel) {
+                // Keep mock data disabled
+            }
+            Button("Continuar") {
+                mockDataManager.isMockDataEnabled = true
+            }
+        } message: {
+            Text("Los datos que verás son FALSOS y solo para pruebas. No se conectará a la base de datos real.\n\n¿Deseas continuar?")
+        }
     }
     
     // MARK: - Name Header
@@ -69,7 +83,7 @@ struct DriverProfileView: View {
             showEditAccount = true
         } label: {
             VStack(spacing: 16) {
-                Text("Conductor Demo")
+                Text(mockDataManager.userName.isEmpty ? "Sin Usuario" : mockDataManager.userName)
                     .font(.title.weight(.bold))
                     .foregroundColor(.primary)
                 
@@ -152,6 +166,37 @@ struct DriverProfileView: View {
     
     private var accountActionsSection: some View {
         VStack(spacing: 12) {
+            // Mockup data toggle
+            HStack {
+                Image(systemName: "flask.fill")
+                    .foregroundColor(BiciTaxiTheme.accentPrimary)
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("Datos de Demostración")
+                        .font(.subheadline)
+                        .foregroundColor(.primary)
+                    Text("Desactiva para preparar Firebase")
+                        .font(.caption2)
+                        .foregroundColor(.secondary)
+                }
+                Spacer()
+                Toggle("", isOn: Binding(
+                    get: { mockDataManager.isMockDataEnabled },
+                    set: { newValue in
+                        if newValue {
+                            // Show warning when trying to enable
+                            showMockDataWarning = true
+                        } else {
+                            // Allow disabling without warning
+                            mockDataManager.isMockDataEnabled = false
+                        }
+                    }
+                ))
+                    .labelsHidden()
+                    .tint(BiciTaxiTheme.accentPrimary)
+            }
+            .padding(16)
+            .glassCard(cornerRadius: 12)
+            
             // Logout button
             Button {
                 showLogoutAlert = true

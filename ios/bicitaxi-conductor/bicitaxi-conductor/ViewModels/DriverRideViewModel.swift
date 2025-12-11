@@ -67,6 +67,12 @@ class DriverRideViewModel: ObservableObject {
         }
     }
     
+    /// Clear all pending rides (for when mock data is disabled)
+    func clearPendingRides() {
+        pendingRides = []
+        hasGeneratedDummyRides = false
+    }
+    
     /// Load pending rides
     func loadPendingRides() {
         Task {

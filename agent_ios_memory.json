@@ -22,7 +22,7 @@
     "metadata": {
         "file_purpose": "Persistent agent memory for iOS development - sequential prompt/response log",
         "format_version": "2.1",
-        "last_updated": "2025-12-11T08:35:00-05:00",
+        "last_updated": "2025-12-11T11:09:00-05:00",
         "total_prompts_logged": 28
     },
     "project_context": {
@@ -575,6 +575,31 @@
                 "If animation is absolutely needed, must use UIKit MKMapView with MKOverlayRenderer"
             ],
             "outcome": "Removed breathing animation completely. Route now displays as static cyan line with no CPU overhead. Performance is excellent."
+        },
+        {
+            "id": 28,
+            "timestamp": "2025-12-11T11:09:00-05:00",
+            "user_prompt": "puedes por favor incluir un switch antes de cerrar sesion que este activo por defecto, y que sea para activar la informacion dummy o mockup, y al desactivarlo toda es informaicon debe quedar en blanco, esto es para ir preparando camino para la integracion con firebase",
+            "agent_interpretation": "User wants a toggle switch before the logout button in both apps to control mockup/demo data. When ON (default): show demo data like 'Cliente Demo', 'conductor@demo.com'. When OFF: show empty/blank data to prepare for Firebase integration.",
+            "actions_taken": [
+                "Created MockDataManager.swift in both apps as singleton class with @Published isMockDataEnabled (persisted with UserDefaults)",
+                "MockDataManager has computed properties: userName, userHandle, userEmail that return demo data or empty strings based on toggle state",
+                "Added mockup toggle UI in accountActionsSection before logout button in ProfileView.swift (client)",
+                "Added mockup toggle UI in accountActionsSection before logout button in DriverProfileView.swift (conductor)",
+                "Updated nameHeader in both ProfileView files to use MockDataManager.userName instead of hardcoded strings",
+                "Updated EditAccountView in both apps to use MockDataManager for initial values via onAppear",
+                "Added 'flask.fill' icon and 'Desactiva para preparar Firebase' hint text for toggle",
+                "Toggle uses BiciTaxiTheme.accentPrimary tint color",
+                "Both apps build successfully"
+            ],
+            "key_learnings": [
+                "Use ObservableObject singleton with @Published for app-wide settings",
+                "UserDefaults for persistence - loads default value (true) if not set",
+                "Conditional UI: show 'Sin Usuario' when data is blank vs demo name when enabled",
+                "Toggle component uses $mockDataManager.isMockDataEnabled binding",
+                "Preparing for Firebase: when toggle is OFF, UI shows empty state similar to unauthenticated user"
+            ],
+            "outcome": "Both apps now have 'Datos de Demostración' toggle in profile settings. ON (default) shows demo data, OFF shows blank fields ready for Firebase data."
         }
     ],
     "technical_reference": {
