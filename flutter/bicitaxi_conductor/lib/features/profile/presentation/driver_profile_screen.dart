@@ -55,7 +55,7 @@ class DriverProfileScreen extends StatelessWidget {
           LiquidButton(
             borderRadius: 12,
             onTap: () {
-              // TODO: Edit profile
+              Navigator.pushNamed(context, '/editProfile');
             },
             padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 10),
             child: const Text(

@@ -107,8 +107,28 @@
             "date": "2025-12-11T05:39:00-05:00",
             "prompt": "Make ride request items more compact and show geocoded address for destination instead of GPS coordinates.",
             "summary": "Made ride request items ultra-compact: reduced padding (10x8px), smaller fonts (11px/10px), smaller buttons (32x32px), single-line layout. Changed destination from GPS coordinates (displayText/dmsCoords) to geocoded street address (ride.dropoff?.address).",
+            "changes": []
+        },
+        {
+            "date": "2025-12-11T05:47:00-05:00",
+            "prompt": "Create edit profile screen for both apps: allow editing name, show but don't allow editing email, add password change functionality.",
+            "summary": "Created EditProfileScreen for both apps with editable name field, read-only email field with visual distinction, and 'Cambiar contraseña' button that opens a dialog with current/new/confirm password fields. Added /editProfile route and connected navigation from profile screens. Client app uses electricBlue accent, conductor app uses driverAccent.",
             "changes": [
-                "Modified: flutter/bicitaxi_conductor/lib/features/home/presentation/driver_map_home_screen.dart - ultra-compact layout, geocoded addresses"
+                "Created: flutter/bicitaxi/lib/features/profile/presentation/edit_profile_screen.dart",
+                "Created: flutter/bicitaxi_conductor/lib/features/profile/presentation/edit_profile_screen.dart",
+                "Modified: flutter/bicitaxi/lib/core/routes/app_routes.dart - added editProfile route",
+                "Modified: flutter/bicitaxi_conductor/lib/core/routes/app_routes.dart - added editProfile route",
+                "Modified: flutter/bicitaxi/lib/features/profile/presentation/client_profile_screen.dart - navigation to /editProfile",
+                "Modified: flutter/bicitaxi_conductor/lib/features/profile/presentation/driver_profile_screen.dart - navigation to /editProfile"
+            ]
+        },
+        {
+            "date": "2025-12-11T05:54:00-05:00",
+            "prompt": "Fix dark theme on edit profile screens - should be light theme like rest of app.",
+            "summary": "Fixed edit profile screens displaying with dark background. Changed Scaffold backgroundColor from Colors.transparent to Colors.white.withValues(alpha: 0.95) to match payment methods screen and other light-themed screens.",
+            "changes": [
+                "Modified: flutter/bicitaxi/lib/features/profile/presentation/edit_profile_screen.dart - white background",
+                "Modified: flutter/bicitaxi_conductor/lib/features/profile/presentation/edit_profile_screen.dart - white background"
             ]
         }
     ]
