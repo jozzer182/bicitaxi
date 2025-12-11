@@ -161,7 +161,7 @@ class _DriverMapHomeScreenState extends State<DriverMapHomeScreen> {
         // Center on user FAB
         Positioned(
           right: 16,
-          bottom: isOnline ? 320 : 200,
+          bottom: isOnline ? 380 : 260,
           child: _buildLocationFab(),
         ),
 
@@ -579,6 +579,8 @@ class _DriverMapHomeScreenState extends State<DriverMapHomeScreen> {
     final isTablet = ResponsiveUtils.isTabletOrLarger(context);
     // Extra bottom padding to account for the transparent navigation bar
     const navBarHeight = 80.0;
+    // Height for compact ride request items (approx 70px per item, show ~4)
+    const maxListHeight = 300.0;
 
     return SafeArea(
       child: Padding(
@@ -595,7 +597,7 @@ class _DriverMapHomeScreenState extends State<DriverMapHomeScreen> {
             ),
             child: UltraGlassCard(
               borderRadius: 24,
-              padding: const EdgeInsets.all(20),
+              padding: const EdgeInsets.all(16),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -604,7 +606,7 @@ class _DriverMapHomeScreenState extends State<DriverMapHomeScreen> {
                   if (!isOnline)
                     LiquidButton(
                       borderRadius: 14,
-                      color: Colors.white.withValues(alpha: 0.3),
+                      color: AppColors.driverAccent.withValues(alpha: 0.3),
                       onTap: _toggleOnlineStatus,
                       padding: const EdgeInsets.symmetric(vertical: 14),
                       child: Row(
@@ -628,7 +630,7 @@ class _DriverMapHomeScreenState extends State<DriverMapHomeScreen> {
                       ),
                     )
                   else ...[
-                    // Nearby requests section
+                    // Nearby requests section header
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
@@ -669,14 +671,14 @@ class _DriverMapHomeScreenState extends State<DriverMapHomeScreen> {
                           children: [
                             Icon(
                               Icons.search_rounded,
-                              color: AppColors.textDarkTertiary,
+                              color: AppColors.textTertiary,
                               size: 20,
                             ),
                             const SizedBox(width: 8),
                             Text(
                               'Buscando solicitudes...',
                               style: TextStyle(
-                                color: AppColors.textDarkSecondary,
+                                color: AppColors.textSecondary,
                                 fontSize: 14,
                               ),
                             ),
@@ -684,7 +686,24 @@ class _DriverMapHomeScreenState extends State<DriverMapHomeScreen> {
                         ),
                       )
                     else
-                      _buildRideRequestCard(context, pendingRides.first),
+                      // Scrollable list of ride requests
+                      ConstrainedBox(
+                        constraints: const BoxConstraints(
+                          maxHeight: maxListHeight,
+                        ),
+                        child: ListView.separated(
+                          shrinkWrap: true,
+                          itemCount: pendingRides.length,
+                          separatorBuilder: (context, index) =>
+                              const SizedBox(height: 8),
+                          itemBuilder: (context, index) {
+                            return _buildCompactRideRequestItem(
+                              context,
+                              pendingRides[index],
+                            );
+                          },
+                        ),
+                      ),
                   ],
                 ],
               ),
@@ -695,7 +714,7 @@ class _DriverMapHomeScreenState extends State<DriverMapHomeScreen> {
     );
   }
 
-  Widget _buildRideRequestCard(BuildContext context, Ride ride) {
+  Widget _buildCompactRideRequestItem(BuildContext context, Ride ride) {
     double? distance;
     if (_currentPosition != null) {
       distance = _locationService.calculateDistance(
@@ -704,96 +723,97 @@ class _DriverMapHomeScreenState extends State<DriverMapHomeScreen> {
       );
     }
 
+    // Use geocoded address if available, otherwise fallback to short text
+    final destinationAddress = ride.dropoff?.address ?? 'Sin destino';
+
     return Container(
-      padding: const EdgeInsets.all(14),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
       decoration: BoxDecoration(
-        color: AppColors.surfaceDark.withValues(alpha: 0.5),
-        borderRadius: BorderRadius.circular(14),
+        color: Colors.white.withValues(alpha: 0.6),
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(
+          color: Colors.black.withValues(alpha: 0.05),
+          width: 1,
+        ),
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      child: Row(
         children: [
-          Row(
-            children: [
-              Container(
-                width: 36,
-                height: 36,
-                decoration: BoxDecoration(
-                  color: AppColors.brightBlue.withValues(alpha: 0.2),
-                  borderRadius: BorderRadius.circular(10),
+          // Left: Passenger + distance (compact)
+          SizedBox(
+            width: 60,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  'Pasajero',
+                  style: TextStyle(
+                    fontWeight: FontWeight.w600,
+                    fontSize: 11,
+                    color: Colors.black87,
+                  ),
                 ),
-                child: Icon(
-                  Icons.person_rounded,
-                  color: AppColors.brightBlue,
-                  size: 20,
+                Text(
+                  distance != null
+                      ? '${(distance / 1000).toStringAsFixed(1)} km'
+                      : '-- km',
+                  style: TextStyle(fontSize: 10, color: AppColors.electricBlue),
                 ),
-              ),
-              const SizedBox(width: 10),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text(
-                      'Pasajero',
-                      style: TextStyle(
-                        fontWeight: FontWeight.w600,
-                        fontSize: 14,
-                        color: Colors.black87,
-                      ),
-                    ),
-                    if (distance != null)
-                      Text(
-                        '${(distance / 1000).toStringAsFixed(1)} km',
-                        style: const TextStyle(
-                          fontSize: 12,
-                          color: Colors.black54,
-                        ),
-                      ),
-                  ],
-                ),
-              ),
-              Text(
-                '\$5,000',
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                  color: AppColors.driverAccent,
-                ),
-              ),
-            ],
+              ],
+            ),
           ),
-          const SizedBox(height: 10),
-          Row(
-            children: [
-              Icon(
-                Icons.trip_origin_rounded,
-                size: 14,
-                color: AppColors.electricBlue,
-              ),
-              const SizedBox(width: 6),
-              Expanded(
-                child: Text(
-                  ride.pickup.displayText,
-                  style: const TextStyle(fontSize: 12, color: Colors.black87),
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ),
-            ],
+          const SizedBox(width: 6),
+          // Center: Destination address (expanded)
+          Expanded(
+            child: Text(
+              destinationAddress,
+              style: TextStyle(fontSize: 11, color: Colors.black87),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
           ),
-          const SizedBox(height: 10),
-          LiquidButton(
-            borderRadius: 10,
-            color: AppColors.driverAccent,
+          const SizedBox(width: 6),
+          // Price
+          Text(
+            '\$5,000',
+            style: TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.bold,
+              color: AppColors.driverAccent,
+            ),
+          ),
+          const SizedBox(width: 8),
+          // Accept/Reject buttons (smaller)
+          GestureDetector(
             onTap: () => _acceptRide(ride),
-            padding: const EdgeInsets.symmetric(vertical: 10),
-            child: const Center(
-              child: Text(
-                'Aceptar viaje',
-                style: TextStyle(
-                  fontWeight: FontWeight.w600,
-                  color: Colors.black,
-                  fontSize: 14,
-                ),
+            child: Container(
+              width: 32,
+              height: 32,
+              decoration: BoxDecoration(
+                color: AppColors.success.withValues(alpha: 0.15),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Icon(
+                Icons.check_rounded,
+                color: AppColors.success,
+                size: 18,
+              ),
+            ),
+          ),
+          const SizedBox(width: 4),
+          GestureDetector(
+            onTap: () => context.rideController.dismissRide(ride),
+            child: Container(
+              width: 32,
+              height: 32,
+              decoration: BoxDecoration(
+                color: AppColors.error.withValues(alpha: 0.15),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Icon(
+                Icons.close_rounded,
+                color: AppColors.error,
+                size: 18,
               ),
             ),
           ),

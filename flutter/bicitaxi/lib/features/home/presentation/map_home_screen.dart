@@ -365,7 +365,7 @@ class _MapHomeScreenState extends State<MapHomeScreen>
           ),
 
         // Center on user FAB
-        Positioned(right: 16, bottom: 280, child: _buildLocationFab()),
+        Positioned(right: 16, bottom: 340, child: _buildLocationFab()),
 
         // Bottom panel
         Positioned(
