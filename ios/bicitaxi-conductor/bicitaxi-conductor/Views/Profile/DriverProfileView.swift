@@ -18,6 +18,7 @@ struct DriverProfileView: View {
     @State private var countdownTimer: Timer?
     @State private var showPaymentMethods = false
     @State private var showAbout = false
+    @State private var showEditAccount = false
     
     var body: some View {
         ScrollView {
@@ -55,34 +56,50 @@ struct DriverProfileView: View {
         .sheet(isPresented: $showAbout) {
             AboutSheet()
         }
+        .sheet(isPresented: $showEditAccount) {
+            EditAccountView()
+        }
     }
     
     // MARK: - Name Header
     
     private var nameHeader: some View {
-        VStack(spacing: 16) {
-            Text("Conductor Demo")
-                .font(.title.weight(.bold))
-                .foregroundColor(.primary)
-            
-            // Online status badge
-            HStack(spacing: 8) {
-                Circle()
-                    .fill(rideViewModel.isOnline ? Color.green : Color.gray)
-                    .frame(width: 8, height: 8)
+        Button {
+            showEditAccount = true
+        } label: {
+            VStack(spacing: 16) {
+                Text("Conductor Demo")
+                    .font(.title.weight(.bold))
+                    .foregroundColor(.primary)
                 
-                Text(rideViewModel.isOnline ? "En Línea" : "Desconectado")
-                    .font(.caption)
-                    .foregroundColor(rideViewModel.isOnline ? .green : .gray)
+                // Online status badge
+                HStack(spacing: 8) {
+                    Circle()
+                        .fill(rideViewModel.isOnline ? Color.green : Color.gray)
+                        .frame(width: 8, height: 8)
+                    
+                    Text(rideViewModel.isOnline ? "En Línea" : "Desconectado")
+                        .font(.caption)
+                        .foregroundColor(rideViewModel.isOnline ? .green : .gray)
+                }
+                .padding(.horizontal, 12)
+                .padding(.vertical, 6)
+                .background(Color.white.opacity(0.1))
+                .clipShape(Capsule())
+                
+                // Edit hint
+                HStack(spacing: 4) {
+                    Image(systemName: "pencil")
+                        .font(.caption2)
+                    Text("Toca para editar")
+                        .font(.caption2)
+                }
+                .foregroundColor(BiciTaxiTheme.accentPrimary)
             }
-            .padding(.horizontal, 12)
-            .padding(.vertical, 6)
-            .background(Color.white.opacity(0.1))
-            .clipShape(Capsule())
+            .padding(24)
+            .frame(maxWidth: .infinity)
+            .glassCard(cornerRadius: 24)
         }
-        .padding(24)
-        .frame(maxWidth: .infinity)
-        .glassCard(cornerRadius: 24)
     }
     
     // MARK: - Settings Section

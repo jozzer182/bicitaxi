@@ -18,6 +18,7 @@ struct ProfileView: View {
     @State private var countdownTimer: Timer?
     @State private var showPaymentMethods = false
     @State private var showAbout = false
+    @State private var showEditAccount = false
     
     var body: some View {
         ScrollView {
@@ -55,23 +56,39 @@ struct ProfileView: View {
         .sheet(isPresented: $showAbout) {
             AboutSheet()
         }
+        .sheet(isPresented: $showEditAccount) {
+            EditAccountView()
+        }
     }
     
     // MARK: - Name Header
     
     private var nameHeader: some View {
-        VStack(spacing: 12) {
-            Text("Cliente Demo")
-                .font(.title.weight(.bold))
-                .foregroundColor(.primary)
-            
-            Text("cliente-demo")
-                .font(.caption)
-                .foregroundColor(.secondary)
+        Button {
+            showEditAccount = true
+        } label: {
+            VStack(spacing: 12) {
+                Text("Cliente Demo")
+                    .font(.title.weight(.bold))
+                    .foregroundColor(.primary)
+                
+                Text("cliente-demo")
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+                
+                // Edit hint
+                HStack(spacing: 4) {
+                    Image(systemName: "pencil")
+                        .font(.caption2)
+                    Text("Toca para editar")
+                        .font(.caption2)
+                }
+                .foregroundColor(BiciTaxiTheme.accentPrimary)
+            }
+            .padding(24)
+            .frame(maxWidth: .infinity)
+            .glassCard(cornerRadius: 24)
         }
-        .padding(24)
-        .frame(maxWidth: .infinity)
-        .glassCard(cornerRadius: 24)
     }
     
     // MARK: - Settings Section
