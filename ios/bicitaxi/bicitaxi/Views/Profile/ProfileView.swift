@@ -9,6 +9,7 @@ import SwiftUI
 
 struct ProfileView: View {
     @ObservedObject var rideViewModel: ClientRideViewModel
+    var authManager: AuthManager?
     
     // MARK: - State
     @State private var showLogoutAlert = false
@@ -294,8 +295,7 @@ struct ProfileView: View {
     }
     
     private func handleLogout() {
-        // TODO: Implement actual logout logic
-        print("User logged out")
+        authManager?.signOut()
     }
     
     private func handleDeleteAccount() {
@@ -308,7 +308,7 @@ struct ProfileView: View {
 #Preview {
     ZStack {
         BiciTaxiTheme.background.ignoresSafeArea()
-        ProfileView(rideViewModel: ClientRideViewModel(repo: InMemoryRideRepository()))
+        ProfileView(rideViewModel: ClientRideViewModel(repo: InMemoryRideRepository()), authManager: nil)
     }
     .preferredColorScheme(.light)
 }

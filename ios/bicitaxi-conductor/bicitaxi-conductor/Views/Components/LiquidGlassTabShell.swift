@@ -16,8 +16,12 @@ struct LiquidGlassTabShell: View {
     
     @Environment(\.horizontalSizeClass) var horizontalSizeClass
     
-    init(repo: InMemoryRideRepository) {
+    // AuthManager for logout functionality
+    let authManager: AuthManager?
+    
+    init(repo: InMemoryRideRepository, authManager: AuthManager? = nil) {
         _rideViewModel = StateObject(wrappedValue: DriverRideViewModel(repo: repo))
+        self.authManager = authManager
     }
     
     var body: some View {
@@ -43,7 +47,7 @@ struct LiquidGlassTabShell: View {
             
             // Profile Tab
             Tab("Perfil", systemImage: "person.fill", value: .profile) {
-                DriverProfileView(rideViewModel: rideViewModel)
+                DriverProfileView(rideViewModel: rideViewModel, authManager: authManager)
             }
         }
         .tabViewStyle(.tabBarOnly)  // Standard tab bar, no sidebar adaptation
