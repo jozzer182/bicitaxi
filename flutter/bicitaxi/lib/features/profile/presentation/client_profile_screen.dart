@@ -4,49 +4,64 @@ import '../../../core/theme/app_colors.dart';
 import '../../../core/widgets/responsive_layout.dart';
 import '../../../core/widgets/glass_container.dart';
 import '../../../core/routes/app_routes.dart';
+import '../../../core/services/demo_mode_service.dart';
 
 /// Profile screen for the Bici Taxi client app.
 /// Shows user profile and settings.
-class ClientProfileScreen extends StatelessWidget {
+class ClientProfileScreen extends StatefulWidget {
   const ClientProfileScreen({super.key});
 
   @override
+  State<ClientProfileScreen> createState() => _ClientProfileScreenState();
+}
+
+class _ClientProfileScreenState extends State<ClientProfileScreen> {
+  final DemoModeService _demoModeService = DemoModeService();
+
+  @override
   Widget build(BuildContext context) {
-    return SingleChildScrollView(
-      padding: ResponsiveUtils.getHorizontalPadding(context),
-      child: Center(
-        child: ConstrainedBox(
-          constraints: BoxConstraints(
-            maxWidth: ResponsiveUtils.getContentMaxWidth(context),
+    return ValueListenableBuilder<bool>(
+      valueListenable: _demoModeService.isDemoMode,
+      builder: (context, isDemoMode, child) {
+        return SingleChildScrollView(
+          padding: ResponsiveUtils.getHorizontalPadding(context),
+          child: Center(
+            child: ConstrainedBox(
+              constraints: BoxConstraints(
+                maxWidth: ResponsiveUtils.getContentMaxWidth(context),
+              ),
+              child: Column(
+                children: [
+                  const SizedBox(height: 24),
+                  _buildProfileHeader(context, isDemoMode),
+                  const SizedBox(height: 24),
+                  _buildSettingsSection(context),
+                  const SizedBox(height: 24),
+                  _buildDemoModeSwitch(context, isDemoMode),
+                  const SizedBox(height: 24),
+                  _buildLogoutButton(context),
+                  const SizedBox(height: 12),
+                  _buildDeleteAccountButton(context),
+                  const SizedBox(
+                    height: 120,
+                  ), // Espacio extra para la barra de navegación
+                ],
+              ),
+            ),
           ),
-          child: Column(
-            children: [
-              const SizedBox(height: 24),
-              _buildProfileHeader(context),
-              const SizedBox(height: 24),
-              _buildSettingsSection(context),
-              const SizedBox(height: 24),
-              _buildLogoutButton(context),
-              const SizedBox(height: 12),
-              _buildDeleteAccountButton(context),
-              const SizedBox(
-                height: 120,
-              ), // Espacio extra para la barra de navegación
-            ],
-          ),
-        ),
-      ),
+        );
+      },
     );
   }
 
-  Widget _buildProfileHeader(BuildContext context) {
+  Widget _buildProfileHeader(BuildContext context, bool isDemoMode) {
     return UltraGlassCard(
       borderRadius: 24,
       padding: const EdgeInsets.all(24),
       child: Column(
         children: [
           Text(
-            'Usuario Invitado',
+            isDemoMode ? 'Usuario Invitado' : '',
             style: Theme.of(context).textTheme.headlineSmall?.copyWith(
               fontWeight: FontWeight.bold,
               color: Colors.black87,
@@ -93,6 +108,45 @@ class ClientProfileScreen extends StatelessWidget {
             onTap: () => Navigator.pushNamed(context, '/about'),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildDemoModeSwitch(BuildContext context, bool isDemoMode) {
+    return UltraGlassCard(
+      borderRadius: 20,
+      padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
+      child: SwitchListTile(
+        secondary: Container(
+          width: 40,
+          height: 40,
+          decoration: BoxDecoration(
+            color: AppColors.surfaceLight,
+            borderRadius: BorderRadius.circular(10),
+          ),
+          child: Icon(
+            Icons.science_outlined,
+            color: isDemoMode ? AppColors.electricBlue : Colors.black38,
+            size: 22,
+          ),
+        ),
+        title: const Text(
+          'Modo Demo',
+          style: TextStyle(
+            fontWeight: FontWeight.w500,
+            fontSize: 15,
+            color: Colors.black87,
+          ),
+        ),
+        subtitle: Text(
+          isDemoMode ? 'Datos de ejemplo activos' : 'Sin datos de ejemplo',
+          style: TextStyle(fontSize: 12, color: Colors.black54),
+        ),
+        value: isDemoMode,
+        activeTrackColor: AppColors.electricBlue,
+        onChanged: (value) {
+          _demoModeService.setDemoMode(value);
+        },
       ),
     );
   }

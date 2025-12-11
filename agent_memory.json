@@ -147,6 +147,23 @@
             "changes": [
                 "Modified: flutter/bicitaxi/lib/features/rides/presentation/client_active_ride_screen.dart - changed backgroundColor from transparent to light creamy color"
             ]
+        },
+        {
+            "date": "2025-12-11T10:22:00-05:00",
+            "prompt": "Add 'Modo Demo' switch to profile screens in both apps - enabled by default, when disabled shows empty states instead of mockup data.",
+            "summary": "Implemented demo mode feature: Created DemoModeService singleton with ValueNotifier and SharedPreferences persistence. Added 'Modo Demo' switch to profile screens before 'Cerrar sesión' button. Updated client history and driver earnings screens to show 'Sin datos disponibles' empty state when demo mode is off. Profile headers show/hide demo names based on setting. Fixed deprecated activeColor → activeTrackColor warning.",
+            "changes": [
+                "Created: flutter/bicitaxi/lib/core/services/demo_mode_service.dart",
+                "Created: flutter/bicitaxi_conductor/lib/core/services/demo_mode_service.dart",
+                "Modified: flutter/bicitaxi/pubspec.yaml - added shared_preferences dependency",
+                "Modified: flutter/bicitaxi_conductor/pubspec.yaml - added shared_preferences dependency",
+                "Modified: flutter/bicitaxi/lib/main.dart - initialize DemoModeService",
+                "Modified: flutter/bicitaxi_conductor/lib/main.dart - initialize DemoModeService",
+                "Modified: flutter/bicitaxi/lib/features/profile/presentation/client_profile_screen.dart - StatefulWidget with demo switch",
+                "Modified: flutter/bicitaxi_conductor/lib/features/profile/presentation/driver_profile_screen.dart - StatefulWidget with demo switch",
+                "Modified: flutter/bicitaxi/lib/features/rides/presentation/client_history_screen.dart - demo mode empty state",
+                "Modified: flutter/bicitaxi_conductor/lib/features/earnings/presentation/driver_earnings_screen.dart - demo mode empty state"
+            ]
         }
     ]
 }

@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:liquid_glass_ui_design/liquid_glass_ui.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/widgets/responsive_layout.dart';
 import '../../../core/widgets/glass_container.dart';
 import '../../../core/providers/app_state.dart';
+import '../../../core/services/demo_mode_service.dart';
 import '../models/ride.dart';
 import '../models/ride_status.dart';
 
@@ -17,6 +17,7 @@ class ClientHistoryScreen extends StatefulWidget {
 }
 
 class _ClientHistoryScreenState extends State<ClientHistoryScreen> {
+  final DemoModeService _demoModeService = DemoModeService();
   List<Ride>? _rides;
   bool _isLoading = true;
 
@@ -27,6 +28,15 @@ class _ClientHistoryScreenState extends State<ClientHistoryScreen> {
   }
 
   Future<void> _loadHistory() async {
+    // Only load history if demo mode is enabled
+    if (!_demoModeService.isDemoMode.value) {
+      setState(() {
+        _rides = [];
+        _isLoading = false;
+      });
+      return;
+    }
+
     setState(() => _isLoading = true);
 
     try {
@@ -45,59 +55,107 @@ class _ClientHistoryScreenState extends State<ClientHistoryScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return RefreshIndicator(
-      onRefresh: _loadHistory,
-      color: AppColors.electricBlue,
-      backgroundColor: AppColors.primary,
-      child: SingleChildScrollView(
-        physics: const AlwaysScrollableScrollPhysics(),
-        padding: ResponsiveUtils.getHorizontalPadding(context),
-        child: Center(
-          child: ConstrainedBox(
-            constraints: BoxConstraints(
-              maxWidth: ResponsiveUtils.getContentMaxWidth(context),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const SizedBox(height: 24),
-                Text(
-                  'Historial de viajes',
-                  style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                    fontWeight: FontWeight.bold,
-                    color: Colors.black87,
-                  ),
+    return ValueListenableBuilder<bool>(
+      valueListenable: _demoModeService.isDemoMode,
+      builder: (context, isDemoMode, child) {
+        return RefreshIndicator(
+          onRefresh: _loadHistory,
+          color: AppColors.electricBlue,
+          backgroundColor: AppColors.primary,
+          child: SingleChildScrollView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            padding: ResponsiveUtils.getHorizontalPadding(context),
+            child: Center(
+              child: ConstrainedBox(
+                constraints: BoxConstraints(
+                  maxWidth: ResponsiveUtils.getContentMaxWidth(context),
                 ),
-                const SizedBox(height: 8),
-                Text(
-                  _isLoading
-                      ? 'Cargando...'
-                      : '${_rides?.length ?? 0} viajes realizados',
-                  style: Theme.of(
-                    context,
-                  ).textTheme.bodyMedium?.copyWith(color: Colors.black54),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const SizedBox(height: 24),
+                    Text(
+                      'Historial de viajes',
+                      style: Theme.of(context).textTheme.headlineSmall
+                          ?.copyWith(
+                            fontWeight: FontWeight.bold,
+                            color: Colors.black87,
+                          ),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      _isLoading
+                          ? 'Cargando...'
+                          : isDemoMode
+                          ? '${_rides?.length ?? 0} viajes realizados'
+                          : 'Modo demo desactivado',
+                      style: Theme.of(
+                        context,
+                      ).textTheme.bodyMedium?.copyWith(color: Colors.black54),
+                    ),
+                    const SizedBox(height: 24),
+                    if (_isLoading)
+                      const Center(
+                        child: CircularProgressIndicator(
+                          color: AppColors.electricBlue,
+                        ),
+                      )
+                    else if (!isDemoMode)
+                      _buildDemoModeOffState(context)
+                    else if (_rides == null || _rides!.isEmpty)
+                      _buildEmptyState(context)
+                    else
+                      ..._rides!.map(
+                        (ride) => Padding(
+                          padding: const EdgeInsets.only(bottom: 16),
+                          child: _buildRideCard(context, ride),
+                        ),
+                      ),
+                    const SizedBox(height: 24),
+                  ],
                 ),
-                const SizedBox(height: 24),
-                if (_isLoading)
-                  const Center(
-                    child: CircularProgressIndicator(
-                      color: AppColors.electricBlue,
-                    ),
-                  )
-                else if (_rides == null || _rides!.isEmpty)
-                  _buildEmptyState(context)
-                else
-                  ..._rides!.map(
-                    (ride) => Padding(
-                      padding: const EdgeInsets.only(bottom: 16),
-                      child: _buildRideCard(context, ride),
-                    ),
-                  ),
-                const SizedBox(height: 24),
-              ],
+              ),
             ),
           ),
-        ),
+        );
+      },
+    );
+  }
+
+  Widget _buildDemoModeOffState(BuildContext context) {
+    return UltraGlassCard(
+      borderRadius: 20,
+      padding: const EdgeInsets.all(32),
+      child: Column(
+        children: [
+          Container(
+            width: 64,
+            height: 64,
+            decoration: BoxDecoration(
+              color: AppColors.steelBlue.withValues(alpha: 0.2),
+              borderRadius: BorderRadius.circular(16),
+            ),
+            child: Icon(
+              Icons.cloud_off_rounded,
+              size: 32,
+              color: AppColors.steelBlue,
+            ),
+          ),
+          const SizedBox(height: 16),
+          Text(
+            'Sin datos disponibles',
+            style: Theme.of(context).textTheme.titleMedium?.copyWith(
+              fontWeight: FontWeight.w600,
+              color: Colors.black87,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'Activa el modo demo en Perfil para ver datos de ejemplo',
+            style: TextStyle(color: Colors.black54),
+            textAlign: TextAlign.center,
+          ),
+        ],
       ),
     );
   }

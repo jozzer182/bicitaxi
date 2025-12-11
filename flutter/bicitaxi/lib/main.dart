@@ -5,9 +5,13 @@ import 'core/theme/app_theme.dart';
 import 'core/theme/app_colors.dart';
 import 'core/routes/app_routes.dart';
 import 'core/providers/app_state.dart';
+import 'core/services/demo_mode_service.dart';
 
-void main() {
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // Initialize demo mode service
+  await DemoModeService().init();
 
   // Set system UI overlay style for light theme
   SystemChrome.setSystemUIOverlayStyle(
