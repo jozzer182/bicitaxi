@@ -29,26 +29,40 @@ struct BiciTaxiTheme {
     
     // MARK: - Map Marker Colors
     
-    /// Pickup point color - uses light blue for visibility
-    static let pickupColor = accentPrimary
+    /// Pickup point color - uses bright cyan for visibility
+    static let pickupColor = accentPrimary  // #4BB3FD - Bright cyan
     
     /// Destination point color - uses deeper blue for contrast
-    static let destinationColor = accentQuaternary
+    static let destinationColor = accentQuaternary  // #027BCE - Deep blue
     
-    /// Route gradient from pickup to destination
+    /// Main route color - bright cyan for visibility
+    static let routeColor = accentPrimary  // #4BB3FD
+    
+    /// Route gradient from pickup to destination (for bounding box gradient)
     static let routeGradient = LinearGradient(
-        colors: [pickupColor, destinationColor],
-        startPoint: .leading,
-        endPoint: .trailing
+        colors: [accentPrimary, accentTertiary, accentQuaternary],
+        startPoint: .topLeading,
+        endPoint: .bottomTrailing
     )
     
-    /// Route gradient with breathing opacity (0.0-1.0 produces opacity 0.3-1.0)
+    /// Solid route color with breathing opacity effect
+    /// Returns a simple Color with opacity based on phase (0.0-1.0)
+    static func breathingRouteColor(phase: CGFloat) -> Color {
+        return routeColor.opacity(phase)
+    }
+    
+    /// Route gradient with breathing effect for visual feedback
+    /// Uses diagonal gradient to work better with various route directions
     static func breathingRouteGradient(phase: CGFloat) -> LinearGradient {
-        let opacity = 0.3 + (phase * 0.7)  // Ranges from 0.3 to 1.0
+        let opacity = phase
         return LinearGradient(
-            colors: [pickupColor.opacity(opacity), destinationColor.opacity(opacity)],
-            startPoint: .leading,
-            endPoint: .trailing
+            colors: [
+                accentPrimary.opacity(opacity),
+                accentTertiary.opacity(opacity),
+                accentQuaternary.opacity(opacity)
+            ],
+            startPoint: .topLeading,  // Diagonal for better visibility on varied routes
+            endPoint: .bottomTrailing
         )
     }
     

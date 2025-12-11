@@ -22,8 +22,8 @@
     "metadata": {
         "file_purpose": "Persistent agent memory for iOS development - sequential prompt/response log",
         "format_version": "2.1",
-        "last_updated": "2025-12-11T06:00:00-05:00",
-        "total_prompts_logged": 26
+        "last_updated": "2025-12-11T08:35:00-05:00",
+        "total_prompts_logged": 28
     },
     "project_context": {
         "name": "Bici Taxi",
@@ -533,6 +533,48 @@
                 "State changes in AuthManager automatically trigger view updates via @Published and @StateObject"
             ],
             "outcome": "Logout button now properly calls authManager.signOut() which changes authState to .unauthenticated, triggering navigation back to login screen. Both apps build successfully."
+        },
+        {
+            "id": 26,
+            "timestamp": "2025-12-11T06:14:00-05:00",
+            "user_prompt": "quiero que el degrade se note mas, es decir cuando la linea de la ruta va llegando al azul oscuro no se ve del mismo tono que el azul oscuro, ademas el efecto breathing si es que esta presente no se nota, yo espero que el efecto breathing hace que la ruta desaparezca completamente y vuelva a aparecer",
+            "agent_interpretation": "User wants two improvements to route line: 1) Gradient should be more noticeable with higher contrast between start and end colors (current end color too similar to light blue). 2) Breathing effect should be full opacity animation (0 to 1) so route completely disappears and reappears instead of subtle 30%-100% change.",
+            "actions_taken": [
+                "Modified BiciTaxiTheme.swift to use much darker end color: #0B0016 (dark blue/purple from palette) instead of #027BCE",
+                "Added three-color gradient: bright cyan (#4BB3FD) → bright blue (#0496FF) → dark navy for visible progression",
+                "Changed breathing opacity from 0.3-1.0 to 0.0-1.0 so route completely fades out and back in",
+                "Updated breathingRouteGradient function to use direct phase mapping (phase = opacity)",
+                "Built app successfully on iPhone 17 simulator"
+            ],
+            "key_learnings": [
+                "For visible gradients, use colors with high contrast (e.g., bright cyan to very dark blue/black)",
+                "Breathing animation visibility: full 0.0-1.0 opacity range creates dramatic appear/disappear effect",
+                "Three-color gradients show more visible progression than two-color",
+                "Use colors from the defined palette (#0B0016) for the darkest values"
+            ],
+            "outcome": "Route gradient now shows clear color progression from bright cyan to dark navy, breathing effect fully fades route to invisible and back"
+        },
+        {
+            "id": 27,
+            "timestamp": "2025-12-11T08:35:00-05:00",
+            "user_prompt": "ese efecto es demasiado pesado, consume la cpu al 100%, cuando la app esta solo mostrando consume casi cero, pero cuando entra el efecto de la ruta llega al 100% creo que hay que cambiar de estrategia para la animacion",
+            "agent_interpretation": "Timer-based breathing animation causes 100% CPU because updating @State that affects MapPolyline forces the entire Map view to redraw repeatedly. Need to remove animation entirely.",
+            "actions_taken": [
+                "Diagnosed root cause: MapPolyline redraws trigger full Map view redraw, which is extremely expensive",
+                "Removed all breathing animation code: Timer, state variables, start/stop functions",
+                "Changed MapPolyline to use static BiciTaxiTheme.routeColor instead of animated opacity",
+                "Removed Timer from 100ms interval that was causing constant redraws",
+                "Fixed syntax errors from code removal",
+                "Build and launch successful"
+            ],
+            "key_learnings": [
+                "CRITICAL: Animating MapPolyline properties causes 100% CPU because Map view redraws entirely",
+                "SwiftUI Map content (MapPolyline, Annotation, etc.) does NOT support efficient animations",
+                "Timer-based @State updates on Map content = performance disaster",
+                "Static styling is the ONLY performant option for MapPolyline in SwiftUI",
+                "If animation is absolutely needed, must use UIKit MKMapView with MKOverlayRenderer"
+            ],
+            "outcome": "Removed breathing animation completely. Route now displays as static cyan line with no CPU overhead. Performance is excellent."
         }
     ],
     "technical_reference": {

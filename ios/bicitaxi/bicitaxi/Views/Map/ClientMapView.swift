@@ -47,9 +47,6 @@ struct ClientMapView: View {
     /// Whether the welcome greeting is collapsed to a button
     @State private var isWelcomeCollapsed = false
     
-    /// Route breathing animation phase (0-1)
-    @State private var routeBreathingPhase: CGFloat = 0
-    
     @Environment(\.horizontalSizeClass) var horizontalSizeClass
     
     var body: some View {
@@ -82,11 +79,6 @@ struct ClientMapView: View {
                 withAnimation(.spring(response: 0.5, dampingFraction: 0.8)) {
                     isWelcomeCollapsed = true
                 }
-            }
-            
-            // Start breathing animation for route line
-            withAnimation(.easeInOut(duration: 1.2).repeatForever(autoreverses: true)) {
-                routeBreathingPhase = 1.0
             }
         }
         .onReceive(locationManager.$currentCoordinate) { newCoordinate in
@@ -127,21 +119,21 @@ struct ClientMapView: View {
                 
                 // Route polyline (from MKDirections - FREE!)
                 if let route = calculatedRoute {
-                    // Breathing effect: opacity pulses from 30% to 100%
+                    // Static route line with solid color for best performance
                     MapPolyline(route.polyline)
                         .stroke(
-                            BiciTaxiTheme.breathingRouteGradient(phase: routeBreathingPhase),
+                            BiciTaxiTheme.routeColor,
                             lineWidth: 6
                         )
                 }
                 
-                // Fallback: straight gradient line when MKDirections fails
+                // Fallback: straight dashed line when MKDirections fails
                 if useStraightLineFallback, 
                    let pickup = pickupLocation, 
                    let dropoff = dropoffLocation {
                     MapPolyline(coordinates: [pickup, dropoff])
                         .stroke(
-                            BiciTaxiTheme.breathingRouteGradient(phase: routeBreathingPhase),
+                            BiciTaxiTheme.routeColor,
                             style: StrokeStyle(lineWidth: 5, lineCap: .round, dash: [10, 5])
                         )
                 }
