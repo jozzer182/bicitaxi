@@ -64,5 +64,5 @@ struct AuthContainerView: View {
 
 #Preview {
     AuthContainerView(authManager: AuthManager())
-        .preferredColorScheme(.dark)
+        .preferredColorScheme(.light)
 }

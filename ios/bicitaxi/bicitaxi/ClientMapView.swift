@@ -583,5 +583,5 @@ struct DropoffAnnotationView: View {
         BiciTaxiTheme.background.ignoresSafeArea()
         ClientMapView(rideViewModel: ClientRideViewModel(repo: InMemoryRideRepository()))
     }
-    .preferredColorScheme(.dark)
+    .preferredColorScheme(.light)
 }

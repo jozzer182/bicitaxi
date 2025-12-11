@@ -373,5 +373,5 @@ struct PendingRideAnnotationView: View {
         BiciTaxiTheme.background.ignoresSafeArea()
         DriverHomeView(rideViewModel: DriverRideViewModel(repo: InMemoryRideRepository()))
     }
-    .preferredColorScheme(.dark)
+    .preferredColorScheme(.light)
 }

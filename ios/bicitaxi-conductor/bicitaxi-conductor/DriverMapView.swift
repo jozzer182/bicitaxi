@@ -356,5 +356,5 @@ struct RideRequestAnnotationView: View {
         BiciTaxiTheme.background.ignoresSafeArea()
         DriverMapView()
     }
-    .preferredColorScheme(.dark)
+    .preferredColorScheme(.light)
 }

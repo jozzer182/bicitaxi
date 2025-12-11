@@ -157,5 +157,5 @@ struct HomeView: View {
         BiciTaxiTheme.background.ignoresSafeArea()
         HomeView(rideViewModel: ClientRideViewModel(repo: InMemoryRideRepository()))
     }
-    .preferredColorScheme(.dark)
+    .preferredColorScheme(.light)
 }

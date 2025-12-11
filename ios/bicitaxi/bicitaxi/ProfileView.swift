@@ -2,7 +2,7 @@
 //  ProfileView.swift
 //  bicitaxi
 //
-//  Profile and ride history view
+//  Simplified profile view with settings
 //
 
 import SwiftUI
@@ -10,26 +10,25 @@ import SwiftUI
 struct ProfileView: View {
     @ObservedObject var rideViewModel: ClientRideViewModel
     
-    // MARK: - Account Action States
+    // MARK: - State
     @State private var showLogoutAlert = false
     @State private var showDeleteAccountSheet = false
     @State private var deleteCountdown = 10
     @State private var isDeleteButtonEnabled = false
     @State private var countdownTimer: Timer?
+    @State private var showPaymentMethods = false
+    @State private var showAbout = false
     
     var body: some View {
         ScrollView {
             VStack(spacing: 24) {
-                // Profile header
-                profileHeader
+                // Name header (no photo)
+                nameHeader
                 
-                // Stats
-                statsCard
+                // Settings section (Pagos, Acerca de)
+                settingsSection
                 
-                // Ride history
-                historySection
-                
-                // Account actions section
+                // Account actions
                 accountActionsSection
                 
                 Spacer(minLength: 100)
@@ -39,9 +38,6 @@ struct ProfileView: View {
         }
         .scrollContentBackground(.hidden)
         .background(.clear)
-        .task {
-            await rideViewModel.loadHistory()
-        }
         .alert("Cerrar Sesión", isPresented: $showLogoutAlert) {
             Button("Cancelar", role: .cancel) { }
             Button("Cerrar Sesión", role: .destructive) {
@@ -53,18 +49,20 @@ struct ProfileView: View {
         .sheet(isPresented: $showDeleteAccountSheet, onDismiss: resetDeleteState) {
             deleteAccountSheet
         }
+        .sheet(isPresented: $showPaymentMethods) {
+            PaymentMethodsView()
+        }
+        .sheet(isPresented: $showAbout) {
+            AboutSheet()
+        }
     }
     
-    // MARK: - Profile Header
+    // MARK: - Name Header
     
-    private var profileHeader: some View {
-        VStack(spacing: 16) {
-            Image(systemName: "person.circle.fill")
-                .font(.system(size: 60))
-                .foregroundStyle(BiciTaxiTheme.accentGradient)
-            
+    private var nameHeader: some View {
+        VStack(spacing: 12) {
             Text("Cliente Demo")
-                .font(.title2.weight(.bold))
+                .font(.title.weight(.bold))
                 .foregroundColor(.primary)
             
             Text("cliente-demo")
@@ -76,97 +74,49 @@ struct ProfileView: View {
         .glassCard(cornerRadius: 24)
     }
     
-    // MARK: - Stats Card
+    // MARK: - Settings Section
     
-    private var statsCard: some View {
-        HStack(spacing: 20) {
-            statItem(
-                value: "\(rideViewModel.history.count)",
-                label: "Total Viajes"
-            )
+    private var settingsSection: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            Text("Configuración")
+                .font(.headline)
+                .foregroundColor(.primary)
             
-            Divider()
-                .frame(height: 40)
-                .background(Color.secondary.opacity(0.3))
+            // Payment Methods
+            Button {
+                showPaymentMethods = true
+            } label: {
+                settingsRow(icon: "creditcard.fill", title: "Métodos de Pago")
+            }
             
-            statItem(
-                value: BiciTaxiTheme.formatCOP(totalSpent),
-                label: "Total Gastado"
-            )
+            // About
+            Button {
+                showAbout = true
+            } label: {
+                settingsRow(icon: "info.circle.fill", title: "Acerca de")
+            }
         }
         .padding(20)
         .glassCard(cornerRadius: 20)
     }
     
-    private func statItem(value: String, label: String) -> some View {
-        VStack(spacing: 4) {
-            Text(value)
-                .font(.title2.weight(.bold))
-                .foregroundStyle(BiciTaxiTheme.accentGradient)
-            
-            Text(label)
-                .font(.caption)
+    private func settingsRow(icon: String, title: String) -> some View {
+        HStack(spacing: 12) {
+            Image(systemName: icon)
                 .foregroundColor(.secondary)
-        }
-        .frame(maxWidth: .infinity)
-    }
-    
-    private var totalSpent: Int {
-        rideViewModel.history.reduce(0) { $0 + $1.estimatedFare }
-    }
-    
-    // MARK: - History Section
-    
-    private var historySection: some View {
-        VStack(alignment: .leading, spacing: 16) {
-            Text("Historial de Viajes")
-                .font(.headline)
-                .foregroundColor(.primary)
+                .frame(width: 24)
             
-            if rideViewModel.history.isEmpty {
-                Text("Aún no hay viajes")
-                    .font(.subheadline)
-                    .foregroundColor(.secondary)
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, 20)
-            } else {
-                ForEach(rideViewModel.history) { ride in
-                    historyRow(ride)
-                }
-            }
-        }
-    }
-    
-    private func historyRow(_ ride: Ride) -> some View {
-        HStack {
-            VStack(alignment: .leading, spacing: 4) {
-                HStack(spacing: 8) {
-                    Image(systemName: ride.status.iconName)
-                        .foregroundColor(ride.status == .completed ? .green : .orange)
-                        .font(.caption)
-                    
-                    Text(ride.status.displayText)
-                        .font(.subheadline.weight(.medium))
-                        .foregroundColor(.primary)
-                }
-                
-                Text(ride.pickup.shortDescription)
-                    .font(.caption)
-                    .foregroundColor(.secondary)
-                
-                Text(ride.createdAt, style: .date)
-                    .font(.caption2)
-                    .foregroundColor(.secondary.opacity(0.8))
-            }
+            Text(title)
+                .font(.subheadline)
+                .foregroundColor(.primary)
             
             Spacer()
             
-            Text(BiciTaxiTheme.formatCOP(ride.estimatedFare))
-                .font(.subheadline.weight(.semibold))
-                .foregroundColor(.primary)
+            Image(systemName: "chevron.right")
+                .font(.caption)
+                .foregroundColor(.secondary.opacity(0.6))
         }
-        .padding(16)
-        .glassCard(cornerRadius: 12)
+        .padding(.vertical, 8)
     }
     
     // MARK: - Account Actions Section
@@ -249,7 +199,6 @@ struct ProfileView: View {
             // Countdown or delete button
             VStack(spacing: 16) {
                 if !isDeleteButtonEnabled {
-                    // Countdown timer
                     Text("El botón se habilitará en")
                         .font(.caption)
                         .foregroundColor(.secondary)
@@ -273,7 +222,7 @@ struct ProfileView: View {
                     }
                 }
                 
-                // Delete button (disabled until countdown finishes)
+                // Delete button
                 Button {
                     handleDeleteAccount()
                 } label: {
@@ -344,5 +293,5 @@ struct ProfileView: View {
         BiciTaxiTheme.background.ignoresSafeArea()
         ProfileView(rideViewModel: ClientRideViewModel(repo: InMemoryRideRepository()))
     }
-    .preferredColorScheme(.dark)
+    .preferredColorScheme(.light)
 }

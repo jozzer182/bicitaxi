@@ -2,7 +2,7 @@
 //  DriverProfileView.swift
 //  bicitaxi-conductor
 //
-//  Driver profile and stats view
+//  Simplified driver profile view with settings
 //
 
 import SwiftUI
@@ -10,26 +10,25 @@ import SwiftUI
 struct DriverProfileView: View {
     @ObservedObject var rideViewModel: DriverRideViewModel
     
-    // MARK: - Account Action States
+    // MARK: - State
     @State private var showLogoutAlert = false
     @State private var showDeleteAccountSheet = false
     @State private var deleteCountdown = 10
     @State private var isDeleteButtonEnabled = false
     @State private var countdownTimer: Timer?
+    @State private var showPaymentMethods = false
+    @State private var showAbout = false
     
     var body: some View {
         ScrollView {
             VStack(spacing: 24) {
-                // Profile header
-                profileHeader
+                // Name header with status (no photo)
+                nameHeader
                 
-                // Stats
-                statsCard
-                
-                // Settings (placeholder)
+                // Settings section (Pagos, Acerca de)
                 settingsSection
                 
-                // Account actions section
+                // Account actions
                 accountActionsSection
                 
                 Spacer(minLength: 100)
@@ -50,25 +49,20 @@ struct DriverProfileView: View {
         .sheet(isPresented: $showDeleteAccountSheet, onDismiss: resetDeleteState) {
             deleteAccountSheet
         }
+        .sheet(isPresented: $showPaymentMethods) {
+            PaymentMethodsView()
+        }
+        .sheet(isPresented: $showAbout) {
+            AboutSheet()
+        }
     }
     
-    // MARK: - Profile Header
+    // MARK: - Name Header
     
-    private var profileHeader: some View {
+    private var nameHeader: some View {
         VStack(spacing: 16) {
-            // Avatar
-            ZStack {
-                Circle()
-                    .fill(BiciTaxiTheme.accentPrimary.opacity(0.2))
-                    .frame(width: 80, height: 80)
-                
-                Image(systemName: "person.circle.fill")
-                    .font(.system(size: 50))
-                    .foregroundStyle(BiciTaxiTheme.accentGradient)
-            }
-            
             Text("Conductor Demo")
-                .font(.title2.weight(.bold))
+                .font(.title.weight(.bold))
                 .foregroundColor(.primary)
             
             // Online status badge
@@ -91,50 +85,6 @@ struct DriverProfileView: View {
         .glassCard(cornerRadius: 24)
     }
     
-    // MARK: - Stats Card
-    
-    private var statsCard: some View {
-        VStack(spacing: 16) {
-            Text("Tus Estadísticas")
-                .font(.headline)
-                .foregroundColor(.primary)
-                .frame(maxWidth: .infinity, alignment: .leading)
-            
-            HStack(spacing: 20) {
-                statItem(
-                    value: "\(rideViewModel.completedRides.count)",
-                    label: "Total Viajes",
-                    icon: "bicycle"
-                )
-                
-                statItem(
-                    value: String(format: "$%.2f", rideViewModel.totalEarnings),
-                    label: "Ganancias",
-                    icon: "dollarsign.circle.fill"
-                )
-            }
-        }
-        .padding(20)
-        .glassCard(cornerRadius: 20)
-    }
-    
-    private func statItem(value: String, label: String, icon: String) -> some View {
-        VStack(spacing: 8) {
-            Image(systemName: icon)
-                .font(.title2)
-                .foregroundStyle(BiciTaxiTheme.accentGradient)
-            
-            Text(value)
-                .font(.title3.weight(.bold))
-                .foregroundColor(.primary)
-            
-            Text(label)
-                .font(.caption)
-                .foregroundColor(.secondary)
-        }
-        .frame(maxWidth: .infinity)
-    }
-    
     // MARK: - Settings Section
     
     private var settingsSection: some View {
@@ -143,10 +93,19 @@ struct DriverProfileView: View {
                 .font(.headline)
                 .foregroundColor(.primary)
             
-            settingsRow(icon: "bell.fill", title: "Notificaciones")
-            settingsRow(icon: "car.fill", title: "Información del Vehículo")
-            settingsRow(icon: "creditcard.fill", title: "Pagos")
-            settingsRow(icon: "questionmark.circle.fill", title: "Ayuda")
+            // Payment Methods
+            Button {
+                showPaymentMethods = true
+            } label: {
+                settingsRow(icon: "creditcard.fill", title: "Métodos de Pago")
+            }
+            
+            // About
+            Button {
+                showAbout = true
+            } label: {
+                settingsRow(icon: "info.circle.fill", title: "Acerca de")
+            }
         }
         .padding(20)
         .glassCard(cornerRadius: 20)
@@ -186,7 +145,7 @@ struct DriverProfileView: View {
                         .foregroundColor(.primary)
                     Spacer()
                     Image(systemName: "chevron.right")
-                        .foregroundColor(.secondary.opacity(0.6))
+                        .foregroundColor(.secondary)
                 }
                 .padding(16)
                 .glassCard(cornerRadius: 12)
@@ -204,7 +163,7 @@ struct DriverProfileView: View {
                         .foregroundColor(.red)
                     Spacer()
                     Image(systemName: "chevron.right")
-                        .foregroundColor(.secondary.opacity(0.6))
+                        .foregroundColor(.secondary)
                 }
                 .padding(16)
                 .glassCard(cornerRadius: 12)
@@ -251,7 +210,6 @@ struct DriverProfileView: View {
             // Countdown or delete button
             VStack(spacing: 16) {
                 if !isDeleteButtonEnabled {
-                    // Countdown timer
                     Text("El botón se habilitará en")
                         .font(.caption)
                         .foregroundColor(.secondary)
@@ -275,7 +233,7 @@ struct DriverProfileView: View {
                     }
                 }
                 
-                // Delete button (disabled until countdown finishes)
+                // Delete button
                 Button {
                     handleDeleteAccount()
                 } label: {
@@ -346,5 +304,5 @@ struct DriverProfileView: View {
         BiciTaxiTheme.background.ignoresSafeArea()
         DriverProfileView(rideViewModel: DriverRideViewModel(repo: InMemoryRideRepository()))
     }
-    .preferredColorScheme(.dark)
+    .preferredColorScheme(.light)
 }

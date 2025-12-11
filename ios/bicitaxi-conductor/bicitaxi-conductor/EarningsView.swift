@@ -171,5 +171,5 @@ struct EarningsView: View {
         BiciTaxiTheme.background.ignoresSafeArea()
         EarningsView(rideViewModel: DriverRideViewModel(repo: InMemoryRideRepository()))
     }
-    .preferredColorScheme(.dark)
+    .preferredColorScheme(.light)
 }

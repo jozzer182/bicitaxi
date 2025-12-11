@@ -274,5 +274,5 @@ struct DriverActiveRideView: View {
             onComplete: {}
         )
     }
-    .preferredColorScheme(.dark)
+    .preferredColorScheme(.light)
 }

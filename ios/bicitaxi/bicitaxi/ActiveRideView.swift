@@ -202,5 +202,5 @@ struct ActiveRideView: View {
             onComplete: {}
         )
     }
-    .preferredColorScheme(.dark)
+    .preferredColorScheme(.light)
 }

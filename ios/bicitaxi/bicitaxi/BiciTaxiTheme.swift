@@ -12,8 +12,8 @@ struct BiciTaxiTheme {
     
     // MARK: - Colors
     
-    /// Primary dark background color (#0B0016)
-    static let background = Color(red: 0.043, green: 0, blue: 0.086)
+    /// Primary background color (white for light theme)
+    static let background = Color.white
     
     /// Primary accent blue (#4BB3FD)
     static let accentPrimary = Color(red: 0.294, green: 0.702, blue: 0.992)

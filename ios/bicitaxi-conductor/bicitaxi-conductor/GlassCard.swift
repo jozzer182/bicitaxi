@@ -70,5 +70,5 @@ struct PlaceholderTabView: View {
         
         PlaceholderTabView(title: "Home", systemImage: "house.fill")
     }
-    .preferredColorScheme(.dark)
+    .preferredColorScheme(.light)
 }
