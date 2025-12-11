@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:liquid_glass_ui_design/liquid_glass_ui.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/widgets/responsive_layout.dart';
 import '../../../core/widgets/glass_container.dart';
