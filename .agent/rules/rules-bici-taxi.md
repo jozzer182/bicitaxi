@@ -1,5 +1,5 @@
 ---
-trigger: always_on
+trigger: manual
 ---
 
 WORKSPACE RULES – iOS (Bici Taxi)

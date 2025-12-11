@@ -1,5 +1,5 @@
 ---
-trigger: always_on
+trigger: manual
 ---
 
 WORKSPACE RULES – Flutter (Bici Taxi)
