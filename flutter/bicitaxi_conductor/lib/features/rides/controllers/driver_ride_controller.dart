@@ -206,6 +206,12 @@ class DriverRideController extends ChangeNotifier {
     }
   }
 
+  /// Dismisses/rejects a pending ride request.
+  void dismissRide(Ride ride) {
+    pendingRides.removeWhere((r) => r.id == ride.id);
+    notifyListeners();
+  }
+
   /// Gets ride history for the current driver.
   Future<List<Ride>> getHistory() async {
     return repo.historyForDriver(currentDriverId);
@@ -223,4 +229,3 @@ class DriverRideController extends ChangeNotifier {
     notifyListeners();
   }
 }
-

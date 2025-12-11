@@ -5,25 +5,30 @@ import '../../../core/widgets/responsive_layout.dart';
 import '../../../core/widgets/glass_container.dart';
 import '../../../core/routes/app_routes.dart';
 
-/// Login screen for Bici Taxi.
-/// Displays authentication options with a liquid glass aesthetic.
-class LoginScreen extends StatefulWidget {
-  const LoginScreen({super.key});
+/// Registration screen for Bici Taxi Conductor.
+/// Displays a form to create a new driver account with liquid glass aesthetic.
+class RegisterScreen extends StatefulWidget {
+  const RegisterScreen({super.key});
 
   @override
-  State<LoginScreen> createState() => _LoginScreenState();
+  State<RegisterScreen> createState() => _RegisterScreenState();
 }
 
-class _LoginScreenState extends State<LoginScreen> {
+class _RegisterScreenState extends State<RegisterScreen> {
   final _formKey = GlobalKey<FormState>();
+  final _nameController = TextEditingController();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
+  final _confirmPasswordController = TextEditingController();
   bool _obscurePassword = true;
+  bool _obscureConfirmPassword = true;
 
   @override
   void dispose() {
+    _nameController.dispose();
     _emailController.dispose();
     _passwordController.dispose();
+    _confirmPasswordController.dispose();
     super.dispose();
   }
 
@@ -57,11 +62,11 @@ class _LoginScreenState extends State<LoginScreen> {
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        const SizedBox(height: 48),
+        const SizedBox(height: 32),
         _buildHeader(context),
-        const SizedBox(height: 48),
-        _buildLoginCard(context),
-        const SizedBox(height: 48),
+        const SizedBox(height: 32),
+        _buildRegisterCard(context),
+        const SizedBox(height: 32),
       ],
     );
   }
@@ -73,7 +78,7 @@ class _LoginScreenState extends State<LoginScreen> {
       children: [
         Expanded(child: _buildHeader(context)),
         const SizedBox(width: 48),
-        Expanded(child: _buildLoginCard(context)),
+        Expanded(child: _buildRegisterCard(context)),
       ],
     );
   }
@@ -83,9 +88,9 @@ class _LoginScreenState extends State<LoginScreen> {
       mainAxisSize: MainAxisSize.min,
       children: [
         Image.asset('icons/Android/Icon-192.png', width: 100, height: 100),
-        const SizedBox(height: 16),
+        const SizedBox(height: 8),
         Text(
-          'Tu viaje rápido y ecológico',
+          'Crea tu cuenta de conductor',
           style: Theme.of(
             context,
           ).textTheme.bodyLarge?.copyWith(color: Colors.black54),
@@ -95,7 +100,7 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
-  Widget _buildLoginCard(BuildContext context) {
+  Widget _buildRegisterCard(BuildContext context) {
     return UltraGlassCard(
       borderRadius: 28,
       padding: const EdgeInsets.all(28),
@@ -106,7 +111,7 @@ class _LoginScreenState extends State<LoginScreen> {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             Text(
-              'Inicia sesión',
+              'Registro',
               style: Theme.of(context).textTheme.titleLarge?.copyWith(
                 fontWeight: FontWeight.w600,
                 color: Colors.black87,
@@ -115,13 +120,27 @@ class _LoginScreenState extends State<LoginScreen> {
             ),
             const SizedBox(height: 8),
             Text(
-              'Elige cómo quieres continuar',
+              'Completa tus datos para continuar',
               style: Theme.of(
                 context,
               ).textTheme.bodyMedium?.copyWith(color: Colors.black54),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 24),
+
+            // Name field
+            _buildTextField(
+              controller: _nameController,
+              label: 'Nombre completo',
+              icon: Icons.person_outline,
+              validator: (value) {
+                if (value == null || value.trim().isEmpty) {
+                  return 'Por favor ingresa tu nombre';
+                }
+                return null;
+              },
+            ),
+            const SizedBox(height: 16),
 
             // Email field
             _buildTextField(
@@ -160,22 +179,56 @@ class _LoginScreenState extends State<LoginScreen> {
               ),
               validator: (value) {
                 if (value == null || value.isEmpty) {
-                  return 'Por favor ingresa tu contraseña';
+                  return 'Por favor ingresa una contraseña';
+                }
+                if (value.length < 6) {
+                  return 'La contraseña debe tener al menos 6 caracteres';
+                }
+                return null;
+              },
+            ),
+            const SizedBox(height: 16),
+
+            // Confirm Password field
+            _buildTextField(
+              controller: _confirmPasswordController,
+              label: 'Confirmar contraseña',
+              icon: Icons.lock_outline,
+              obscureText: _obscureConfirmPassword,
+              suffixIcon: IconButton(
+                icon: Icon(
+                  _obscureConfirmPassword
+                      ? Icons.visibility_off
+                      : Icons.visibility,
+                  color: Colors.black45,
+                ),
+                onPressed: () {
+                  setState(
+                    () => _obscureConfirmPassword = !_obscureConfirmPassword,
+                  );
+                },
+              ),
+              validator: (value) {
+                if (value == null || value.isEmpty) {
+                  return 'Por favor confirma tu contraseña';
+                }
+                if (value != _passwordController.text) {
+                  return 'Las contraseñas no coinciden';
                 }
                 return null;
               },
             ),
             const SizedBox(height: 24),
 
-            // Login Button
+            // Register Button
             LiquidButton(
               borderRadius: 16,
-              color: AppColors.brightBlue,
-              onTap: _handleLogin,
+              color: AppColors.driverAccent,
+              onTap: _handleRegister,
               child: const Padding(
                 padding: EdgeInsets.symmetric(vertical: 4),
                 child: Text(
-                  'Iniciar sesión',
+                  'Registrarse',
                   style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w600,
@@ -184,99 +237,29 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
               ),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 24),
 
-            // Register link
+            // Login link
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Text(
-                  '¿No tienes cuenta? ',
+                  '¿Ya tienes cuenta? ',
                   style: Theme.of(
                     context,
                   ).textTheme.bodyMedium?.copyWith(color: Colors.black54),
                 ),
                 GestureDetector(
-                  onTap: () => Navigator.pushNamed(context, AppRoutes.register),
+                  onTap: () => Navigator.pop(context),
                   child: Text(
-                    'Regístrate',
+                    'Inicia sesión',
                     style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: AppColors.brightBlue,
+                      color: AppColors.driverAccent,
                       fontWeight: FontWeight.w600,
                     ),
                   ),
                 ),
               ],
-            ),
-            const SizedBox(height: 24),
-
-            // Divider with text
-            Row(
-              children: [
-                Expanded(child: Divider(color: Colors.black26)),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  child: Text(
-                    'o',
-                    style: Theme.of(
-                      context,
-                    ).textTheme.bodySmall?.copyWith(color: Colors.black54),
-                  ),
-                ),
-                Expanded(child: Divider(color: Colors.black26)),
-              ],
-            ),
-            const SizedBox(height: 24),
-
-            // Google Sign In Button
-            _AuthButton(
-              onPressed: () {
-                // TODO: Implement Google Sign In with Firebase Auth
-                _navigateToHome(context);
-              },
-              icon: _buildGoogleIcon(),
-              label: 'Continuar con Google',
-            ),
-            const SizedBox(height: 16),
-
-            // Apple Sign In Button
-            _AuthButton(
-              onPressed: () {
-                // TODO: Implement Apple Sign In with Firebase Auth
-                _navigateToHome(context);
-              },
-              icon: const Icon(
-                Icons.apple_rounded,
-                size: 24,
-                color: Colors.black87,
-              ),
-              label: 'Continuar con Apple',
-            ),
-            const SizedBox(height: 16),
-
-            // Guest Button
-            _AuthButton(
-              onPressed: () {
-                // TODO: Implement guest mode with anonymous Firebase Auth
-                _navigateToHome(context);
-              },
-              icon: const Icon(
-                Icons.person_outline,
-                size: 24,
-                color: Colors.black87,
-              ),
-              label: 'Continuar como invitado',
-            ),
-            const SizedBox(height: 24),
-
-            // Terms text
-            Text(
-              'Al continuar, aceptas nuestros Términos de Servicio y Política de Privacidad',
-              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                color: Colors.black45,
-                height: 1.4,
-              ),
-              textAlign: TextAlign.center,
             ),
           ],
         ),
@@ -316,7 +299,7 @@ class _LoginScreenState extends State<LoginScreen> {
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: AppColors.brightBlue, width: 2),
+          borderSide: const BorderSide(color: AppColors.driverAccent, width: 2),
         ),
         errorBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
@@ -330,74 +313,10 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
-  Widget _buildGoogleIcon() {
-    return Container(
-      width: 24,
-      height: 24,
-      decoration: BoxDecoration(
-        color: AppColors.white,
-        borderRadius: BorderRadius.circular(4),
-      ),
-      child: Center(
-        child: Text(
-          'G',
-          style: TextStyle(
-            color: Colors.blue.shade700,
-            fontSize: 16,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-      ),
-    );
-  }
-
-  void _handleLogin() {
+  void _handleRegister() {
     if (_formKey.currentState?.validate() ?? false) {
-      // TODO: Implement Firebase Auth login with email/password
-      _navigateToHome(context);
+      // TODO: Implement Firebase Auth registration
+      Navigator.pushReplacementNamed(context, AppRoutes.homeShell);
     }
-  }
-
-  void _navigateToHome(BuildContext context) {
-    Navigator.pushReplacementNamed(context, AppRoutes.homeShell);
-  }
-}
-
-/// Custom auth button with glass effect.
-class _AuthButton extends StatelessWidget {
-  const _AuthButton({
-    required this.onPressed,
-    required this.icon,
-    required this.label,
-  });
-
-  final VoidCallback onPressed;
-  final Widget icon;
-  final String label;
-
-  @override
-  Widget build(BuildContext context) {
-    return LiquidButton(
-      borderRadius: 16,
-      onTap: onPressed,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 4),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            icon,
-            const SizedBox(width: 12),
-            Text(
-              label,
-              style: const TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.w500,
-                color: Colors.black87,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
   }
 }

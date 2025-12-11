@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:liquid_glass_ui_design/liquid_glass_ui.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/widgets/responsive_layout.dart';
+import '../../../core/widgets/glass_container.dart';
 import '../../../core/providers/app_state.dart';
 import '../../../core/routes/app_routes.dart';
 import '../models/ride.dart';
@@ -69,7 +70,7 @@ class _DriverActiveRideScreenState extends State<DriverActiveRideScreen> {
           constraints: BoxConstraints(
             maxWidth: isTablet ? 500 : double.infinity,
           ),
-          child: LiquidCard(
+          child: UltraGlassCard(
             borderRadius: 24,
             padding: const EdgeInsets.all(32),
             child: Column(
@@ -157,12 +158,12 @@ class _DriverActiveRideScreenState extends State<DriverActiveRideScreen> {
                 alignment: Alignment.centerLeft,
                 child: GestureDetector(
                   onTap: () => Navigator.pop(context),
-                  child: LiquidCard(
+                  child: UltraGlassCard(
                     borderRadius: 12,
                     padding: const EdgeInsets.all(12),
                     child: const Icon(
                       Icons.arrow_back_rounded,
-                      color: AppColors.white,
+                      color: Colors.black87,
                       size: 24,
                     ),
                   ),
@@ -171,7 +172,7 @@ class _DriverActiveRideScreenState extends State<DriverActiveRideScreen> {
               const SizedBox(height: 24),
 
               // Status card
-              LiquidCard(
+              UltraGlassCard(
                 borderRadius: 24,
                 padding: const EdgeInsets.all(24),
                 child: Column(
@@ -215,7 +216,7 @@ class _DriverActiveRideScreenState extends State<DriverActiveRideScreen> {
               const SizedBox(height: 20),
 
               // Passenger info card
-              LiquidCard(
+              UltraGlassCard(
                 borderRadius: 20,
                 padding: const EdgeInsets.all(20),
                 child: Row(
@@ -299,7 +300,7 @@ class _DriverActiveRideScreenState extends State<DriverActiveRideScreen> {
               const SizedBox(height: 20),
 
               // Route details card
-              LiquidCard(
+              UltraGlassCard(
                 borderRadius: 20,
                 padding: const EdgeInsets.all(20),
                 child: Column(
@@ -678,19 +679,20 @@ class _DriverActiveRideScreenState extends State<DriverActiveRideScreen> {
     showDialog(
       context: context,
       builder: (dialogContext) => AlertDialog(
-        backgroundColor: AppColors.primary,
+        backgroundColor: Colors.white,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: const Text('¿Cancelar viaje?'),
+        title: const Text(
+          '¿Cancelar viaje?',
+          style: TextStyle(color: Colors.black87),
+        ),
         content: const Text(
           'Si cancelas después de aceptar, puede afectar tu calificación.',
+          style: TextStyle(color: Colors.black54),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(dialogContext),
-            child: Text(
-              'Volver',
-              style: TextStyle(color: AppColors.textSecondary),
-            ),
+            child: Text('Volver', style: TextStyle(color: Colors.black54)),
           ),
           TextButton(
             onPressed: () async {

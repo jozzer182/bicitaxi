@@ -2,131 +2,76 @@ import 'package:flutter/material.dart';
 import 'package:liquid_glass_ui_design/liquid_glass_ui.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/widgets/responsive_layout.dart';
+import '../../../core/widgets/glass_container.dart';
 import '../../../core/routes/app_routes.dart';
+import '../../../core/services/demo_mode_service.dart';
 
 /// Profile screen for the Bici Taxi Conductor app.
 /// Shows driver profile and settings.
-class DriverProfileScreen extends StatelessWidget {
+class DriverProfileScreen extends StatefulWidget {
   const DriverProfileScreen({super.key});
 
   @override
+  State<DriverProfileScreen> createState() => _DriverProfileScreenState();
+}
+
+class _DriverProfileScreenState extends State<DriverProfileScreen> {
+  final DemoModeService _demoModeService = DemoModeService();
+
+  @override
   Widget build(BuildContext context) {
-    return SingleChildScrollView(
-      padding: ResponsiveUtils.getHorizontalPadding(context),
-      child: Center(
-        child: ConstrainedBox(
-          constraints: BoxConstraints(
-            maxWidth: ResponsiveUtils.getContentMaxWidth(context),
+    return ValueListenableBuilder<bool>(
+      valueListenable: _demoModeService.isDemoMode,
+      builder: (context, isDemoMode, child) {
+        return SingleChildScrollView(
+          padding: ResponsiveUtils.getHorizontalPadding(context),
+          child: Center(
+            child: ConstrainedBox(
+              constraints: BoxConstraints(
+                maxWidth: ResponsiveUtils.getContentMaxWidth(context),
+              ),
+              child: Column(
+                children: [
+                  const SizedBox(height: 24),
+                  _buildProfileHeader(context, isDemoMode),
+                  const SizedBox(height: 24),
+                  _buildSettingsSection(context),
+                  const SizedBox(height: 24),
+                  _buildDemoModeSwitch(context, isDemoMode),
+                  const SizedBox(height: 24),
+                  _buildLogoutButton(context),
+                  const SizedBox(height: 12),
+                  _buildDeleteAccountButton(context),
+                  const SizedBox(
+                    height: 120,
+                  ), // Espacio extra para la barra de navegación
+                ],
+              ),
+            ),
           ),
-          child: Column(
-            children: [
-              const SizedBox(height: 24),
-              _buildProfileHeader(context),
-              const SizedBox(height: 24),
-              _buildDriverStats(context),
-              const SizedBox(height: 24),
-              _buildVehicleInfo(context),
-              const SizedBox(height: 24),
-              _buildSettingsSection(context),
-              const SizedBox(height: 24),
-              _buildLogoutButton(context),
-              const SizedBox(height: 12),
-              _buildDeleteAccountButton(context),
-              const SizedBox(
-                height: 120,
-              ), // Espacio extra para la barra de navegación
-            ],
-          ),
-        ),
-      ),
+        );
+      },
     );
   }
 
-  Widget _buildProfileHeader(BuildContext context) {
-    return LiquidCard(
+  Widget _buildProfileHeader(BuildContext context, bool isDemoMode) {
+    return UltraGlassCard(
       borderRadius: 24,
       padding: const EdgeInsets.all(24),
       child: Column(
         children: [
-          Stack(
-            children: [
-              CircleAvatar(
-                radius: 50,
-                backgroundColor: AppColors.surfaceMedium,
-                child: const Icon(
-                  Icons.person_rounded,
-                  size: 50,
-                  color: AppColors.textSecondary,
-                ),
-              ),
-              Positioned(
-                bottom: 0,
-                right: 0,
-                child: Container(
-                  width: 32,
-                  height: 32,
-                  decoration: BoxDecoration(
-                    color: AppColors.driverAccent,
-                    borderRadius: BorderRadius.circular(10),
-                    border: Border.all(color: AppColors.primary, width: 3),
-                  ),
-                  child: const Icon(
-                    Icons.camera_alt_rounded,
-                    size: 16,
-                    color: AppColors.white,
-                  ),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 16),
           Text(
-            'Conductor Demo',
+            isDemoMode ? 'Conductor Demo' : '',
             style: Theme.of(context).textTheme.headlineSmall?.copyWith(
               fontWeight: FontWeight.bold,
               color: Colors.black87,
-            ),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            '+52 000 000 0000',
-            style: Theme.of(
-              context,
-            ).textTheme.bodyMedium?.copyWith(color: Colors.black54),
-          ),
-          const SizedBox(height: 8),
-          // Verification badge
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-            decoration: BoxDecoration(
-              color: AppColors.success.withValues(alpha: 0.15),
-              borderRadius: BorderRadius.circular(20),
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(
-                  Icons.verified_rounded,
-                  size: 16,
-                  color: AppColors.success,
-                ),
-                const SizedBox(width: 4),
-                Text(
-                  'Verificado',
-                  style: TextStyle(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w600,
-                    color: AppColors.success,
-                  ),
-                ),
-              ],
             ),
           ),
           const SizedBox(height: 16),
           LiquidButton(
             borderRadius: 12,
             onTap: () {
-              // TODO: Edit profile
+              Navigator.pushNamed(context, '/editProfile');
             },
             padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 10),
             child: const Text(
@@ -143,133 +88,8 @@ class DriverProfileScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildDriverStats(BuildContext context) {
-    return LiquidCard(
-      borderRadius: 20,
-      padding: const EdgeInsets.all(20),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'Estadísticas de conductor',
-            style: Theme.of(context).textTheme.titleMedium?.copyWith(
-              fontWeight: FontWeight.w600,
-              color: Colors.black87,
-            ),
-          ),
-          const SizedBox(height: 16),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: [
-              _buildStatItem(context, '156', 'Viajes'),
-              Container(width: 1, height: 40, color: AppColors.surfaceMedium),
-              _buildStatItem(context, '4.9', 'Calificación'),
-              Container(width: 1, height: 40, color: AppColors.surfaceMedium),
-              _buildStatItem(context, '98%', 'Aceptación'),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildStatItem(BuildContext context, String value, String label) {
-    return Column(
-      children: [
-        Text(
-          value,
-          style: Theme.of(context).textTheme.titleLarge?.copyWith(
-            fontWeight: FontWeight.bold,
-            color: AppColors.driverAccent,
-          ),
-        ),
-        const SizedBox(height: 4),
-        Text(label, style: TextStyle(fontSize: 13, color: Colors.black54)),
-      ],
-    );
-  }
-
-  Widget _buildVehicleInfo(BuildContext context) {
-    return LiquidCard(
-      borderRadius: 20,
-      padding: const EdgeInsets.all(20),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                'Mi bicicleta',
-                style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.w600,
-                  color: Colors.black87,
-                ),
-              ),
-              TextButton(
-                onPressed: () {
-                  // TODO: Edit vehicle
-                },
-                child: Text(
-                  'Editar',
-                  style: TextStyle(
-                    color: AppColors.driverAccent,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 12),
-          Row(
-            children: [
-              Container(
-                width: 60,
-                height: 60,
-                decoration: BoxDecoration(
-                  color: AppColors.surfaceLight,
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Icon(
-                  Icons.pedal_bike_rounded,
-                  size: 32,
-                  color: AppColors.driverAccent,
-                ),
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text(
-                      'Bicicleta de carga',
-                      style: TextStyle(
-                        fontWeight: FontWeight.w600,
-                        fontSize: 16,
-                        color: Colors.black87,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      'Capacidad: 2 pasajeros',
-                      style: TextStyle(color: Colors.black54, fontSize: 14),
-                    ),
-                    Text(
-                      'Color: Verde',
-                      style: TextStyle(color: Colors.black45, fontSize: 13),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
   Widget _buildSettingsSection(BuildContext context) {
-    return LiquidCard(
+    return UltraGlassCard(
       borderRadius: 20,
       padding: const EdgeInsets.symmetric(vertical: 8),
       child: Column(
@@ -283,39 +103,50 @@ class DriverProfileScreen extends StatelessWidget {
           _buildDivider(),
           _buildSettingsItem(
             context,
-            icon: Icons.history_rounded,
-            label: 'Historial de ganancias',
-            onTap: () {},
-          ),
-          _buildDivider(),
-          _buildSettingsItem(
-            context,
-            icon: Icons.notifications_outlined,
-            label: 'Notificaciones',
-            onTap: () {},
-          ),
-          _buildDivider(),
-          _buildSettingsItem(
-            context,
-            icon: Icons.description_outlined,
-            label: 'Documentos',
-            onTap: () {},
-          ),
-          _buildDivider(),
-          _buildSettingsItem(
-            context,
-            icon: Icons.help_outline_rounded,
-            label: 'Ayuda y soporte',
-            onTap: () {},
-          ),
-          _buildDivider(),
-          _buildSettingsItem(
-            context,
             icon: Icons.info_outline_rounded,
             label: 'Acerca de',
-            onTap: () {},
+            onTap: () => Navigator.pushNamed(context, '/about'),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildDemoModeSwitch(BuildContext context, bool isDemoMode) {
+    return UltraGlassCard(
+      borderRadius: 20,
+      padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
+      child: SwitchListTile(
+        secondary: Container(
+          width: 40,
+          height: 40,
+          decoration: BoxDecoration(
+            color: AppColors.surfaceLight,
+            borderRadius: BorderRadius.circular(10),
+          ),
+          child: Icon(
+            Icons.science_outlined,
+            color: isDemoMode ? AppColors.driverAccent : Colors.black38,
+            size: 22,
+          ),
+        ),
+        title: const Text(
+          'Modo Demo',
+          style: TextStyle(
+            fontWeight: FontWeight.w500,
+            fontSize: 15,
+            color: Colors.black87,
+          ),
+        ),
+        subtitle: Text(
+          isDemoMode ? 'Datos de ejemplo activos' : 'Sin datos de ejemplo',
+          style: TextStyle(fontSize: 12, color: Colors.black54),
+        ),
+        value: isDemoMode,
+        activeTrackColor: AppColors.driverAccent,
+        onChanged: (value) {
+          _demoModeService.setDemoMode(value);
+        },
       ),
     );
   }
@@ -411,19 +242,20 @@ class DriverProfileScreen extends StatelessWidget {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        backgroundColor: AppColors.primary,
+        backgroundColor: Colors.white,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: const Text('¿Cerrar sesión?'),
+        title: const Text(
+          '¿Cerrar sesión?',
+          style: TextStyle(color: Colors.black87),
+        ),
         content: const Text(
           'Tu sesión actual se cerrará y tendrás que iniciar sesión de nuevo.',
+          style: TextStyle(color: Colors.black54),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: Text(
-              'Cancelar',
-              style: TextStyle(color: AppColors.textSecondary),
-            ),
+            child: Text('Cancelar', style: TextStyle(color: Colors.black54)),
           ),
           TextButton(
             onPressed: () {
@@ -491,13 +323,16 @@ class _DeleteAccountDialogState extends State<_DeleteAccountDialog> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      backgroundColor: AppColors.primary,
+      backgroundColor: Colors.white,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
       title: Row(
         children: [
           Icon(Icons.warning_amber_rounded, color: AppColors.error, size: 28),
           const SizedBox(width: 8),
-          const Text('¿Eliminar cuenta?'),
+          const Text(
+            '¿Eliminar cuenta?',
+            style: TextStyle(color: Colors.black87),
+          ),
         ],
       ),
       content: Column(
@@ -509,7 +344,7 @@ class _DeleteAccountDialogState extends State<_DeleteAccountDialog> {
             '• Se eliminarán todos tus datos\n'
             '• Tu historial de viajes y ganancias se perderá\n'
             '• No podrás recuperar tu cuenta\n',
-            style: TextStyle(fontSize: 14),
+            style: TextStyle(fontSize: 14, color: Colors.black54),
           ),
           const SizedBox(height: 16),
           if (!_canConfirm)
@@ -538,10 +373,7 @@ class _DeleteAccountDialogState extends State<_DeleteAccountDialog> {
       actions: [
         TextButton(
           onPressed: () => Navigator.pop(context),
-          child: Text(
-            'Cancelar',
-            style: TextStyle(color: AppColors.textSecondary),
-          ),
+          child: Text('Cancelar', style: TextStyle(color: Colors.black54)),
         ),
         TextButton(
           onPressed: _canConfirm

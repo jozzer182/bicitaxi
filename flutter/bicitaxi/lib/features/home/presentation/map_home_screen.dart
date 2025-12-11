@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:math';
 
 import 'package:flutter/material.dart';
@@ -45,6 +46,10 @@ class _MapHomeScreenState extends State<MapHomeScreen>
   bool _isRequesting = false;
   LocationErrorType? _locationError;
 
+  // Greeting collapse state
+  bool _isGreetingCollapsed = false;
+  Timer? _collapseTimer;
+
   // Edit mode state - when not none, next tap updates that specific point
   EditingPoint _editingPoint = EditingPoint.none;
 
@@ -67,6 +72,14 @@ class _MapHomeScreenState extends State<MapHomeScreen>
     _breathingController.repeat(reverse: true);
 
     _initializeLocation();
+
+    // Start greeting collapse timer
+    _collapseTimer = Timer(const Duration(seconds: 5), () {
+      if (mounted) {
+        setState(() => _isGreetingCollapsed = true);
+      }
+    });
+
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.rideController.addListener(_onControllerChange);
     });
@@ -74,6 +87,7 @@ class _MapHomeScreenState extends State<MapHomeScreen>
 
   @override
   void dispose() {
+    _collapseTimer?.cancel();
     _breathingController.dispose();
     try {
       context.rideController.removeListener(_onControllerChange);
@@ -336,6 +350,17 @@ class _MapHomeScreenState extends State<MapHomeScreen>
         // Full-screen map
         _buildMap(context),
 
+        // Status bar background overlay
+        Positioned(
+          top: 0,
+          left: 0,
+          right: 0,
+          child: Container(
+            height: MediaQuery.of(context).padding.top,
+            color: Colors.white.withValues(alpha: 0.9),
+          ),
+        ),
+
         // Top welcome bar
         Positioned(
           top: 0,
@@ -354,7 +379,7 @@ class _MapHomeScreenState extends State<MapHomeScreen>
           ),
 
         // Center on user FAB
-        Positioned(right: 16, bottom: 280, child: _buildLocationFab()),
+        Positioned(right: 16, bottom: 340, child: _buildLocationFab()),
 
         // Bottom panel
         Positioned(
@@ -367,7 +392,7 @@ class _MapHomeScreenState extends State<MapHomeScreen>
         // Loading overlay
         if (_isLoading || _isRequesting)
           Container(
-            color: AppColors.primary.withValues(alpha: 0.7),
+            color: Colors.white.withValues(alpha: 0.85),
             child: Center(
               child: Column(
                 mainAxisSize: MainAxisSize.min,
@@ -379,7 +404,7 @@ class _MapHomeScreenState extends State<MapHomeScreen>
                     const SizedBox(height: 16),
                     const Text(
                       'Solicitando viaje...',
-                      style: TextStyle(color: AppColors.white),
+                      style: TextStyle(color: AppColors.textPrimary),
                     ),
                   ],
                 ],
@@ -486,10 +511,17 @@ class _MapHomeScreenState extends State<MapHomeScreen>
     // Calculate the distance between points
     final distance = sqrt(deltaLat * deltaLat + deltaLng * deltaLng);
 
-    // Calculate perpendicular vector (rotate 90 degrees to the left)
-    // This creates the bulge to the side
-    final perpLat = -deltaLng;
-    final perpLng = deltaLat;
+    // Calculate perpendicular vector (rotate 90 degrees to the right)
+    // This creates the bulge to the right/upward side
+    double perpLat = deltaLng;
+    double perpLng = -deltaLat;
+
+    // Ensure arc always curves upward when going primarily horizontal
+    // If the perpendicular would point downward, flip it
+    if (perpLat < 0) {
+      perpLat = -perpLat;
+      perpLng = -perpLng;
+    }
 
     // Normalize and scale by arc height
     final arcOffset = distance * arcHeight;
@@ -631,18 +663,108 @@ class _MapHomeScreenState extends State<MapHomeScreen>
   }
 
   Widget _buildTopBar(BuildContext context, bool hasActiveRide) {
-    return SafeArea(
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          children: [
-            // Active ride banner
-            if (hasActiveRide)
-              GestureDetector(
-                onTap: () => Navigator.pushNamed(context, AppRoutes.activeRide),
-                child: LiquidCard(
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        // Status bar background
+        Container(
+          height: MediaQuery.of(context).padding.top,
+          color: Colors.white.withValues(alpha: 0.92),
+        ),
+        // Content below status bar
+        Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            children: [
+              // Active ride banner
+              if (hasActiveRide)
+                GestureDetector(
+                  onTap: () =>
+                      Navigator.pushNamed(context, AppRoutes.activeRide),
+                  child: UltraGlassCard(
+                    borderRadius: 16,
+                    color: AppColors.brightBlue.withValues(alpha: 0.2),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 12,
+                    ),
+                    child: Row(
+                      children: [
+                        Container(
+                          width: 40,
+                          height: 40,
+                          decoration: BoxDecoration(
+                            color: AppColors.brightBlue.withValues(alpha: 0.2),
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: const Icon(
+                            Icons.directions_bike_rounded,
+                            color: AppColors.brightBlue,
+                            size: 22,
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        const Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Viaje en curso',
+                                style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 14,
+                                ),
+                              ),
+                              Text(
+                                'Toca para ver detalles',
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: AppColors.textSecondary,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const Icon(
+                          Icons.arrow_forward_ios_rounded,
+                          color: AppColors.brightBlue,
+                          size: 16,
+                        ),
+                      ],
+                    ),
+                  ),
+                )
+              else if (_isGreetingCollapsed)
+                // Collapsed greeting button
+                Align(
+                  alignment: Alignment.topRight,
+                  child: Container(
+                    width: 48,
+                    height: 48,
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: 0.7),
+                      shape: BoxShape.circle,
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.1),
+                          blurRadius: 8,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
+                    ),
+                    child: const Center(
+                      child: Icon(
+                        Icons.waving_hand_rounded,
+                        color: AppColors.electricBlue,
+                        size: 24,
+                      ),
+                    ),
+                  ),
+                )
+              else
+                // Welcome card (expanded)
+                UltraGlassCard(
                   borderRadius: 16,
-                  color: AppColors.brightBlue.withValues(alpha: 0.2),
                   padding: const EdgeInsets.symmetric(
                     horizontal: 16,
                     vertical: 12,
@@ -653,105 +775,52 @@ class _MapHomeScreenState extends State<MapHomeScreen>
                         width: 40,
                         height: 40,
                         decoration: BoxDecoration(
-                          color: AppColors.brightBlue.withValues(alpha: 0.2),
+                          color: AppColors.electricBlue.withValues(alpha: 0.2),
                           borderRadius: BorderRadius.circular(10),
                         ),
                         child: const Icon(
-                          Icons.directions_bike_rounded,
-                          color: AppColors.brightBlue,
+                          Icons.waving_hand_rounded,
+                          color: AppColors.electricBlue,
                           size: 22,
                         ),
                       ),
                       const SizedBox(width: 12),
-                      const Expanded(
+                      Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              'Viaje en curso',
-                              style: TextStyle(
-                                fontWeight: FontWeight.bold,
-                                fontSize: 14,
-                              ),
+                              '¡Hola!',
+                              style: Theme.of(context).textTheme.titleMedium
+                                  ?.copyWith(
+                                    fontWeight: FontWeight.bold,
+                                    color: AppColors.textDark,
+                                  ),
                             ),
                             Text(
-                              'Toca para ver detalles',
+                              '¿A dónde quieres ir hoy?',
                               style: TextStyle(
-                                fontSize: 12,
-                                color: AppColors.textSecondary,
+                                fontSize: 13,
+                                color: AppColors.textDarkSecondary,
                               ),
                             ),
                           ],
                         ),
                       ),
-                      const Icon(
-                        Icons.arrow_forward_ios_rounded,
-                        color: AppColors.brightBlue,
-                        size: 16,
-                      ),
                     ],
                   ),
                 ),
-              )
-            else
-              // Welcome card
-              UltraGlassCard(
-                borderRadius: 16,
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 12,
-                ),
-                child: Row(
-                  children: [
-                    Container(
-                      width: 40,
-                      height: 40,
-                      decoration: BoxDecoration(
-                        color: AppColors.electricBlue.withValues(alpha: 0.2),
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: const Icon(
-                        Icons.waving_hand_rounded,
-                        color: AppColors.electricBlue,
-                        size: 22,
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            '¡Hola!',
-                            style: Theme.of(context).textTheme.titleMedium
-                                ?.copyWith(
-                                  fontWeight: FontWeight.bold,
-                                  color: AppColors.textDark,
-                                ),
-                          ),
-                          Text(
-                            '¿A dónde quieres ir hoy?',
-                            style: TextStyle(
-                              fontSize: 13,
-                              color: AppColors.textDarkSecondary,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-          ],
+            ],
+          ),
         ),
-      ),
+      ],
     );
   }
 
   Widget _buildLocationFab() {
     return GestureDetector(
       onTap: _centerOnUser,
-      child: LiquidCard(
+      child: UltraGlassCard(
         borderRadius: 14,
         padding: const EdgeInsets.all(14),
         child: const Icon(
@@ -770,7 +839,7 @@ class _MapHomeScreenState extends State<MapHomeScreen>
         : 'Permiso de ubicación requerido';
     final buttonText = isGpsDisabled ? 'Activar GPS' : 'Dar permiso';
 
-    return LiquidCard(
+    return UltraGlassCard(
       borderRadius: 14,
       color: AppColors.warning.withValues(alpha: 0.15),
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
@@ -895,6 +964,13 @@ class _MapHomeScreenState extends State<MapHomeScreen>
                     coordinates: _dropoffPosition,
                     onEdit: _dropoffPosition != null ? _editDropoff : null,
                   ),
+
+                  // Distance between pickup and dropoff
+                  if (_pickupPosition != null && _dropoffPosition != null) ...[
+                    const SizedBox(height: 12),
+                    _buildDistanceDisplay(),
+                  ],
+
                   const SizedBox(height: 16),
 
                   // Action buttons
@@ -923,28 +999,34 @@ class _MapHomeScreenState extends State<MapHomeScreen>
                         const SizedBox(width: 12),
                       Expanded(
                         flex: _pickupPosition != null ? 2 : 1,
-                        child: LiquidButton(
-                          borderRadius: 12,
-                          color: _pickupPosition != null
-                              ? Colors.white.withValues(alpha: 0.3)
-                              : Colors.white.withValues(alpha: 0.15),
-                          onTap: _pickupPosition != null
-                              ? _confirmLocations
-                              : null,
-                          padding: const EdgeInsets.symmetric(vertical: 14),
-                          child: Center(
-                            child: Text(
-                              'Solicitar viaje',
-                              textAlign: TextAlign.center,
-                              style: TextStyle(
-                                fontSize: 14,
-                                fontWeight: FontWeight.w600,
-                                color: _pickupPosition != null
-                                    ? AppColors.textDark
-                                    : AppColors.textDarkTertiary,
+                        child: Builder(
+                          builder: (context) {
+                            // Button is only enabled when BOTH pickup and dropoff are selected
+                            final isEnabled =
+                                _pickupPosition != null &&
+                                _dropoffPosition != null;
+                            return LiquidButton(
+                              borderRadius: 12,
+                              color: isEnabled
+                                  ? Colors.white.withValues(alpha: 0.3)
+                                  : Colors.white.withValues(alpha: 0.15),
+                              onTap: isEnabled ? _confirmLocations : null,
+                              padding: const EdgeInsets.symmetric(vertical: 14),
+                              child: Center(
+                                child: Text(
+                                  'Solicitar viaje',
+                                  textAlign: TextAlign.center,
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w600,
+                                    color: isEnabled
+                                        ? AppColors.textDark
+                                        : AppColors.textDarkTertiary,
+                                  ),
+                                ),
                               ),
-                            ),
-                          ),
+                            );
+                          },
                         ),
                       ),
                     ],
@@ -1050,9 +1132,9 @@ class _MapHomeScreenState extends State<MapHomeScreen>
     final latDir = coordinates.latitude >= 0 ? 'N' : 'S';
     final lngDir = coordinates.longitude >= 0 ? 'E' : 'W';
 
-    // Colors for different parts
-    const minuteColor = AppColors.textTertiary;
-    final secondColor = AppColors.textSecondary.withValues(alpha: 0.8);
+    // Colors for different parts - use dark colors for readability on glass
+    const minuteColor = Color(0x99000000); // Black 60%
+    const secondColor = Color(0xCC000000); // Black 80%
 
     return RichText(
       text: TextSpan(
@@ -1097,5 +1179,78 @@ class _MapHomeScreenState extends State<MapHomeScreen>
       'minutes': minutes.toString().padLeft(2, '0'),
       'seconds': seconds.toStringAsFixed(1),
     };
+  }
+
+  /// Calculates the distance between two geographic points using the Haversine formula.
+  /// Returns the distance in meters.
+  double _calculateDistance(LatLng point1, LatLng point2) {
+    const earthRadius = 6371000.0; // Earth's radius in meters
+
+    final dLat = _toRadians(point2.latitude - point1.latitude);
+    final dLng = _toRadians(point2.longitude - point1.longitude);
+
+    final a =
+        sin(dLat / 2) * sin(dLat / 2) +
+        cos(_toRadians(point1.latitude)) *
+            cos(_toRadians(point2.latitude)) *
+            sin(dLng / 2) *
+            sin(dLng / 2);
+
+    final c = 2 * atan2(sqrt(a), sqrt(1 - a));
+
+    return earthRadius * c;
+  }
+
+  double _toRadians(double degrees) => degrees * pi / 180;
+
+  /// Builds the distance display widget for the bottom panel.
+  Widget _buildDistanceDisplay() {
+    if (_pickupPosition == null || _dropoffPosition == null) {
+      return const SizedBox.shrink();
+    }
+
+    final distanceMeters = _calculateDistance(
+      _pickupPosition!,
+      _dropoffPosition!,
+    );
+
+    // Format distance: show meters if < 1000, otherwise show km
+    final String distanceText;
+    if (distanceMeters < 1000) {
+      distanceText = '${distanceMeters.round()} m';
+    } else {
+      distanceText = '${(distanceMeters / 1000).toStringAsFixed(1)} km';
+    }
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+      decoration: BoxDecoration(
+        color: AppColors.electricBlue.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(10),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(
+            Icons.straighten_rounded,
+            color: AppColors.electricBlue,
+            size: 16,
+          ),
+          const SizedBox(width: 6),
+          Text(
+            'Distancia: ',
+            style: TextStyle(fontSize: 12, color: AppColors.textDarkSecondary),
+          ),
+          Text(
+            distanceText,
+            style: const TextStyle(
+              fontSize: 13,
+              fontWeight: FontWeight.w600,
+              color: AppColors.electricBlue,
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }

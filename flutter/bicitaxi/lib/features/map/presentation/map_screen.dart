@@ -4,6 +4,7 @@ import 'package:latlong2/latlong.dart';
 import 'package:liquid_glass_ui_design/liquid_glass_ui.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/widgets/responsive_layout.dart';
+import '../../../core/widgets/glass_container.dart';
 import '../../../core/providers/app_state.dart';
 import '../../../core/routes/app_routes.dart';
 import '../../rides/models/ride_location_point.dart';
@@ -84,7 +85,9 @@ class _MapScreenState extends State<MapScreen> {
           content: const Text('Por favor selecciona un punto de recogida'),
           backgroundColor: AppColors.warning,
           behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
         ),
       );
       return;
@@ -120,7 +123,9 @@ class _MapScreenState extends State<MapScreen> {
             content: Text('Error al solicitar viaje: $e'),
             backgroundColor: AppColors.error,
             behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
           ),
         );
       }
@@ -147,12 +152,7 @@ class _MapScreenState extends State<MapScreen> {
           _buildMap(context),
 
           // Top bar
-          Positioned(
-            top: 0,
-            left: 0,
-            right: 0,
-            child: _buildTopBar(context),
-          ),
+          Positioned(top: 0, left: 0, right: 0, child: _buildTopBar(context)),
 
           // Bottom overlay
           Positioned(
@@ -211,10 +211,26 @@ class _MapScreenState extends State<MapScreen> {
             // Darken tiles to match app theme
             return ColorFiltered(
               colorFilter: const ColorFilter.matrix([
-                0.7, 0, 0, 0, 0,
-                0, 0.7, 0, 0, 0,
-                0, 0, 0.8, 0, 0,
-                0, 0, 0, 1, 0,
+                0.7,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0.7,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0.8,
+                0,
+                0,
+                0,
+                0,
+                0,
+                1,
+                0,
               ]),
               child: widget,
             );
@@ -222,9 +238,7 @@ class _MapScreenState extends State<MapScreen> {
         ),
 
         // Markers layer
-        MarkerLayer(
-          markers: _buildMarkers(),
-        ),
+        MarkerLayer(markers: _buildMarkers()),
       ],
     );
   }
@@ -311,11 +325,7 @@ class _MapScreenState extends State<MapScreen> {
             size: 20,
           ),
         ),
-        Container(
-          width: 3,
-          height: 8,
-          color: AppColors.success,
-        ),
+        Container(width: 3, height: 8, color: AppColors.success),
       ],
     );
   }
@@ -343,11 +353,7 @@ class _MapScreenState extends State<MapScreen> {
             size: 20,
           ),
         ),
-        Container(
-          width: 3,
-          height: 8,
-          color: AppColors.error,
-        ),
+        Container(width: 3, height: 8, color: AppColors.error),
       ],
     );
   }
@@ -361,7 +367,7 @@ class _MapScreenState extends State<MapScreen> {
             // Back button
             GestureDetector(
               onTap: () => Navigator.pop(context),
-              child: LiquidCard(
+              child: UltraGlassCard(
                 borderRadius: 12,
                 padding: const EdgeInsets.all(12),
                 child: const Icon(
@@ -375,7 +381,7 @@ class _MapScreenState extends State<MapScreen> {
             // Center on user button
             GestureDetector(
               onTap: _centerOnUser,
-              child: LiquidCard(
+              child: UltraGlassCard(
                 borderRadius: 12,
                 padding: const EdgeInsets.all(12),
                 child: const Icon(
@@ -405,7 +411,7 @@ class _MapScreenState extends State<MapScreen> {
             constraints: BoxConstraints(
               maxWidth: isTablet ? 500 : double.infinity,
             ),
-            child: LiquidCard(
+            child: UltraGlassCard(
               borderRadius: 20,
               padding: const EdgeInsets.all(20),
               child: Column(
@@ -464,8 +470,8 @@ class _MapScreenState extends State<MapScreen> {
                     value: _dropoffPosition != null
                         ? '${_dropoffPosition!.latitude.toStringAsFixed(4)}, ${_dropoffPosition!.longitude.toStringAsFixed(4)}'
                         : _pickupPosition != null
-                            ? 'Toca de nuevo para seleccionar destino'
-                            : 'Selecciona primero el punto de recogida',
+                        ? 'Toca de nuevo para seleccionar destino'
+                        : 'Selecciona primero el punto de recogida',
                     isSelected: _dropoffPosition != null,
                   ),
 
@@ -499,7 +505,9 @@ class _MapScreenState extends State<MapScreen> {
                           color: _pickupPosition != null
                               ? AppColors.brightBlue
                               : AppColors.surfaceMedium,
-                          onTap: _pickupPosition != null ? _confirmLocations : null,
+                          onTap: _pickupPosition != null
+                              ? _confirmLocations
+                              : null,
                           padding: const EdgeInsets.symmetric(vertical: 14),
                           child: Text(
                             'Solicitar viaje',
@@ -549,10 +557,7 @@ class _MapScreenState extends State<MapScreen> {
             children: [
               Text(
                 label,
-                style: TextStyle(
-                  fontSize: 11,
-                  color: AppColors.textTertiary,
-                ),
+                style: TextStyle(fontSize: 11, color: AppColors.textTertiary),
               ),
               Text(
                 value,
@@ -566,11 +571,7 @@ class _MapScreenState extends State<MapScreen> {
           ),
         ),
         if (isSelected)
-          Icon(
-            Icons.check_circle_rounded,
-            color: iconColor,
-            size: 20,
-          ),
+          Icon(Icons.check_circle_rounded, color: iconColor, size: 20),
       ],
     );
   }

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:liquid_glass_ui_design/liquid_glass_ui.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/widgets/responsive_layout.dart';
+import '../../../core/widgets/glass_container.dart';
 import '../controllers/chat_controller.dart';
 import '../models/chat_message.dart';
 import '../repository/chat_repository.dart';
@@ -84,7 +84,8 @@ class _ChatScreenState extends State<ChatScreen> {
   @override
   Widget build(BuildContext context) {
     final isTablet = ResponsiveUtils.isTabletOrLarger(context);
-    final participantName = widget.participantName ??
+    final participantName =
+        widget.participantName ??
         (widget.isClientApp ? 'Conductor' : 'Pasajero');
 
     return Scaffold(
@@ -129,7 +130,7 @@ class _ChatScreenState extends State<ChatScreen> {
         children: [
           GestureDetector(
             onTap: () => Navigator.pop(context),
-            child: LiquidCard(
+            child: UltraGlassCard(
               borderRadius: 12,
               padding: const EdgeInsets.all(12),
               child: const Icon(
@@ -141,14 +142,16 @@ class _ChatScreenState extends State<ChatScreen> {
           ),
           const SizedBox(width: 12),
           Expanded(
-            child: LiquidCard(
+            child: UltraGlassCard(
               borderRadius: 12,
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               child: Row(
                 children: [
                   CircleAvatar(
                     radius: 18,
-                    backgroundColor: AppColors.electricBlue.withValues(alpha: 0.2),
+                    backgroundColor: AppColors.electricBlue.withValues(
+                      alpha: 0.2,
+                    ),
                     child: Icon(
                       widget.isClientApp
                           ? Icons.directions_bike_rounded
@@ -202,18 +205,12 @@ class _ChatScreenState extends State<ChatScreen> {
             const SizedBox(height: 16),
             Text(
               'Sin mensajes aún',
-              style: TextStyle(
-                fontSize: 16,
-                color: AppColors.textSecondary,
-              ),
+              style: TextStyle(fontSize: 16, color: AppColors.textSecondary),
             ),
             const SizedBox(height: 8),
             Text(
               'Envía un mensaje para iniciar la conversación',
-              style: TextStyle(
-                fontSize: 14,
-                color: AppColors.textTertiary,
-              ),
+              style: TextStyle(fontSize: 14, color: AppColors.textTertiary),
             ),
           ],
         ),
@@ -227,11 +224,9 @@ class _ChatScreenState extends State<ChatScreen> {
       itemBuilder: (context, index) {
         final message = _controller.messages[index];
         final isMe = message.senderId == widget.currentUserId;
-        final showTimestamp = index == 0 ||
-            _shouldShowTimestamp(
-              _controller.messages[index - 1],
-              message,
-            );
+        final showTimestamp =
+            index == 0 ||
+            _shouldShowTimestamp(_controller.messages[index - 1], message);
 
         return _buildMessageBubble(context, message, isMe, showTimestamp);
       },
@@ -249,8 +244,9 @@ class _ChatScreenState extends State<ChatScreen> {
     bool showTimestamp,
   ) {
     return Column(
-      crossAxisAlignment:
-          isMe ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+      crossAxisAlignment: isMe
+          ? CrossAxisAlignment.end
+          : CrossAxisAlignment.start,
       children: [
         if (showTimestamp)
           Padding(
@@ -258,18 +254,16 @@ class _ChatScreenState extends State<ChatScreen> {
             child: Center(
               child: Text(
                 _formatTimestamp(message.sentAt),
-                style: TextStyle(
-                  fontSize: 12,
-                  color: AppColors.textTertiary,
-                ),
+                style: TextStyle(fontSize: 12, color: AppColors.textTertiary),
               ),
             ),
           ),
         Padding(
           padding: const EdgeInsets.only(bottom: 8),
           child: Row(
-            mainAxisAlignment:
-                isMe ? MainAxisAlignment.end : MainAxisAlignment.start,
+            mainAxisAlignment: isMe
+                ? MainAxisAlignment.end
+                : MainAxisAlignment.start,
             children: [
               if (isMe) const Spacer(flex: 1),
               Flexible(
@@ -325,7 +319,7 @@ class _ChatScreenState extends State<ChatScreen> {
   Widget _buildInputBar(BuildContext context, bool isTablet) {
     return Padding(
       padding: EdgeInsets.all(isTablet ? 20 : 16),
-      child: LiquidCard(
+      child: UltraGlassCard(
         borderRadius: 24,
         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
         child: Row(
@@ -393,4 +387,3 @@ class _ChatScreenState extends State<ChatScreen> {
     return '$hour:$minute';
   }
 }
-
