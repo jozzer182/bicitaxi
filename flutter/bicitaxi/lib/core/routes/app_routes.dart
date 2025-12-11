@@ -8,6 +8,7 @@ import '../../features/rides/presentation/client_active_ride_screen.dart';
 import '../../features/rides/presentation/client_history_screen.dart';
 import '../../features/chat/presentation/chat_screen.dart';
 import '../../features/profile/presentation/payment_methods_screen.dart';
+import '../../features/profile/presentation/about_screen.dart';
 import '../providers/app_state.dart';
 
 /// Route names for the Bici Taxi client app.
@@ -21,6 +22,7 @@ abstract final class AppRoutes {
   static const String history = '/history';
   static const String chat = '/chat';
   static const String paymentMethods = '/paymentMethods';
+  static const String about = '/about';
 }
 
 /// Arguments for the chat route.
@@ -62,6 +64,8 @@ class AppRouter {
           ),
           settings,
         );
+      case AppRoutes.about:
+        return _buildRoute(const AboutScreen(), settings);
       case AppRoutes.paymentMethods:
         return _buildRoute(const PaymentMethodsScreen(), settings);
       default:

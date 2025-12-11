@@ -89,7 +89,7 @@ class ClientProfileScreen extends StatelessWidget {
             context,
             icon: Icons.info_outline_rounded,
             label: 'Acerca de',
-            onTap: () {},
+            onTap: () => Navigator.pushNamed(context, '/about'),
           ),
         ],
       ),

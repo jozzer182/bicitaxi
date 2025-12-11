@@ -78,6 +78,21 @@
                 "Modified: flutter/bicitaxi_conductor/lib/features/auth/presentation/login_screen.dart - replaced text with Image.asset icon",
                 "Modified: flutter/bicitaxi_conductor/lib/features/auth/presentation/register_screen.dart - replaced text with Image.asset icon"
             ]
+        },
+        {
+            "date": "2025-12-11T05:10:00-05:00",
+            "prompt": "Add 'Acerca de' (About) screen to both apps showing app icon, 'Desarrollado por JOSE ZARABANDA', and contact link zarabanda-dev.web.app",
+            "summary": "Created About screen for both bicitaxi and bicitaxi_conductor apps with Liquid Glass styling. Screen displays: app icon (Icon-512.png) with shadow, app name and version, developer card with 'Desarrollado por JOSE ZARABANDA', and clickable contact button that opens zarabanda-dev.web.app. Added url_launcher dependency, /about route, and navigation from profile 'Acerca de' menu item. Both apps pass flutter analyze.",
+            "changes": [
+                "Created: flutter/bicitaxi/lib/features/profile/presentation/about_screen.dart",
+                "Created: flutter/bicitaxi_conductor/lib/features/profile/presentation/about_screen.dart",
+                "Modified: flutter/bicitaxi/lib/core/routes/app_routes.dart - added about route",
+                "Modified: flutter/bicitaxi_conductor/lib/core/routes/app_routes.dart - added about route",
+                "Modified: flutter/bicitaxi/lib/features/profile/presentation/client_profile_screen.dart - navigation to /about",
+                "Modified: flutter/bicitaxi_conductor/lib/features/profile/presentation/driver_profile_screen.dart - navigation to /about",
+                "Modified: flutter/bicitaxi/pubspec.yaml - added url_launcher dependency",
+                "Modified: flutter/bicitaxi_conductor/pubspec.yaml - added url_launcher dependency"
+            ]
         }
     ]
 }
