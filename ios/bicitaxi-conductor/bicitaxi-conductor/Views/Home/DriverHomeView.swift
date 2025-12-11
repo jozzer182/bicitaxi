@@ -84,8 +84,7 @@ struct DriverHomeView: View {
         }
         .mapStyle(.standard(elevation: .realistic, showsTraffic: true))
         .mapControls {
-            MapUserLocationButton()
-            MapCompass()
+            // Hide default controls - custom ones below greeting button
         }
         .ignoresSafeArea()
     }
@@ -93,68 +92,116 @@ struct DriverHomeView: View {
     // MARK: - Welcome Greeting
     
     private var welcomeGreeting: some View {
-        HStack {
-            Spacer()
-            
-            if isWelcomeCollapsed {
-                // Collapsed: Circular Liquid Glass button with white hand wave icon
-                Button {
-                    withAnimation(.spring(response: 0.4, dampingFraction: 0.75)) {
-                        isWelcomeCollapsed = false
+        VStack(spacing: 0) {
+            // Greeting message (expanded or collapsed)
+            HStack {
+                if isWelcomeCollapsed {
+                    Spacer()
+                    // Collapsed: Circular Liquid Glass button with white hand wave icon
+                    Button {
+                        withAnimation(.spring(response: 0.4, dampingFraction: 0.75)) {
+                            isWelcomeCollapsed = false
+                        }
+                        // Re-collapse after 5 seconds
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 5) {
+                            withAnimation(.spring(response: 0.5, dampingFraction: 0.8)) {
+                                isWelcomeCollapsed = true
+                            }
+                        }
+                    } label: {
+                        Image(systemName: "hand.wave.fill")
+                            .font(.title2)
+                            .foregroundColor(.black)
+                            .frame(width: 50, height: 50)
                     }
-                    // Re-collapse after 5 seconds
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 5) {
+                    .glassEffect(.clear.interactive())
+                    .clipShape(Circle())
+                    .transition(.asymmetric(
+                        insertion: .scale.combined(with: .opacity),
+                        removal: .scale.combined(with: .opacity)
+                    ))
+                    .padding(.trailing, 16)
+                } else {
+                    // Expanded: Full welcome message
+                    HStack(spacing: 12) {
+                        Image(systemName: "hand.wave.fill")
+                            .font(.title2)
+                            .foregroundStyle(BiciTaxiTheme.accentGradient)
+                        
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text("¡Bienvenido, Conductor!")
+                                .font(.headline.weight(.bold))
+                                .foregroundColor(.primary)
+                            
+                            Text("Listo para aceptar viajes")
+                                .font(.caption.weight(.medium))
+                                .foregroundColor(.secondary)
+                        }
+                        
+                        Spacer()
+                    }
+                    .padding(.horizontal, 20)
+                    .padding(.vertical, 14)
+                    .glassCard(cornerRadius: 20)
+                    .padding(.horizontal, 16)
+                    .transition(.asymmetric(
+                        insertion: .move(edge: .trailing).combined(with: .opacity),
+                        removal: .move(edge: .trailing).combined(with: .opacity)
+                    ))
+                    .onTapGesture {
+                        // Allow tapping to manually collapse
                         withAnimation(.spring(response: 0.5, dampingFraction: 0.8)) {
                             isWelcomeCollapsed = true
                         }
                     }
-                } label: {
-                    Image(systemName: "hand.wave.fill")
-                        .font(.title2)
-                        .foregroundColor(.black)
-                        .frame(width: 50, height: 50)
                 }
-                .glassEffect(.clear.interactive())
-                .clipShape(Circle())
-//                .shadow(color: .black.opacity(0.15), radius: 8, x: 0, y: 4)
-                .transition(.asymmetric(
-                    insertion: .scale.combined(with: .opacity),
-                    removal: .scale.combined(with: .opacity)
-                ))
-                .padding(.trailing, 16)
-            } else {
-                // Expanded: Full welcome message
-                HStack(spacing: 12) {
-                    Image(systemName: "hand.wave.fill")
-                        .font(.title2)
-                        .foregroundStyle(BiciTaxiTheme.accentGradient)
-                    
-                    VStack(alignment: .leading, spacing: 2) {
-                        Text("¡Bienvenido, Conductor!")
-                            .font(.headline.weight(.bold))
+            }
+            
+            // Custom map controls - always aligned to the right
+            HStack {
+                Spacer()
+                VStack(spacing: 8) {
+                    // User location button
+                    Button {
+                        if let coordinate = locationManager.currentCoordinate {
+                            withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
+                                cameraPosition = .region(MKCoordinateRegion(
+                                    center: coordinate,
+                                    span: MKCoordinateSpan(latitudeDelta: 0.015, longitudeDelta: 0.015)
+                                ))
+                            }
+                        }
+                    } label: {
+                        Image(systemName: "location.fill")
+                            .font(.system(size: 16, weight: .medium))
                             .foregroundColor(.primary)
-                        
-                        Text("Listo para aceptar viajes")
-                            .font(.caption.weight(.medium))
-                            .foregroundColor(.secondary)
+                            .frame(width: 44, height: 44)
                     }
+                    .glassEffect(.clear.interactive())
+                    .clipShape(Circle())
                     
-                    Spacer()
-                }
-                .padding(.horizontal, 20)
-                .padding(.vertical, 14)
-                .glassCard(cornerRadius: 20)
-                .padding(.horizontal, 16)
-                .transition(.asymmetric(
-                    insertion: .move(edge: .trailing).combined(with: .opacity),
-                    removal: .move(edge: .trailing).combined(with: .opacity)
-                ))
-                .onTapGesture {
-                    // Allow tapping to manually collapse
-                    withAnimation(.spring(response: 0.5, dampingFraction: 0.8)) {
-                        isWelcomeCollapsed = true
+                    // Compass button (reset view)
+                    Button {
+                        // Reset camera to a slightly zoomed out view
+                        if let coordinate = locationManager.currentCoordinate {
+                            withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
+                                cameraPosition = .region(MKCoordinateRegion(
+                                    center: coordinate,
+                                    span: MKCoordinateSpan(latitudeDelta: 0.012, longitudeDelta: 0.012)
+                                ))
+                            }
+                        }
+                    } label: {
+                        Image(systemName: "safari")
+                            .font(.system(size: 16, weight: .medium))
+                            .foregroundColor(.primary)
+                            .frame(width: 44, height: 44)
                     }
+                    .glassEffect(.clear.interactive())
+                    .clipShape(Circle())
                 }
+                .padding(.trailing, 16)
+                .padding(.top, 12)
             }
         }
     }

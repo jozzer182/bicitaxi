@@ -87,8 +87,7 @@ struct DriverMapView: View {
         }
         .mapStyle(.standard(elevation: .realistic))
         .mapControls {
-            MapUserLocationButton()
-            MapCompass()
+            // Hide default controls - we'll add custom ones in the overlay
             MapScaleView()
         }
         .ignoresSafeArea(edges: .top)
