@@ -1,14 +1,22 @@
 import 'package:latlong2/latlong.dart';
 
-/// Ride data models for Bici Taxi.
-/// These models will be used with Firebase Firestore in future implementations.
-///
-/// TODO: Add JSON serialization with json_annotation
-/// TODO: Connect with Firebase Firestore
-/// TODO: Add real-time ride status updates
+/// DEPRECATED: Legacy ride data models.
+/// 
+/// ⚠️ DO NOT USE THESE MODELS FOR NEW CODE ⚠️
+/// 
+/// Use the canonical models instead:
+/// - `ride.dart` for [Ride]
+/// - `ride_status.dart` for [RideStatus]
+/// - `ride_location_point.dart` for location data
+/// - `user_basic.dart` for user references
+/// 
+/// These legacy models will be removed in a future version.
+/// They have different enum values and field structures that are
+/// not compatible with the Firebase backend schema.
 
+@Deprecated('Use ride_status.dart instead. This has different enum values.')
 /// Represents the status of a ride.
-enum RideStatus {
+enum LegacyRideStatus {
   /// Ride has been requested, waiting for a driver.
   requested,
 
@@ -31,6 +39,7 @@ enum RideStatus {
   cancelled,
 }
 
+@Deprecated('Use RideLocationPoint from ride_location_point.dart instead.')
 /// Represents a location with coordinates and an optional address.
 class RideLocation {
   const RideLocation({
@@ -47,10 +56,9 @@ class RideLocation {
 
   /// Converts to LatLng for use with flutter_map.
   LatLng toLatLng() => LatLng(latitude, longitude);
-
-  // TODO: Add fromJson and toJson for Firebase serialization
 }
 
+@Deprecated('Use UserBasic from user_basic.dart instead.')
 /// Represents a user (client or driver).
 class RideUser {
   const RideUser({
@@ -66,13 +74,12 @@ class RideUser {
   final String? phoneNumber;
   final String? photoUrl;
   final double? rating;
-
-  // TODO: Add fromJson and toJson for Firebase serialization
 }
 
-/// Represents a complete ride.
-class Ride {
-  const Ride({
+@Deprecated('Use Ride from ride.dart instead. This has different field structure.')
+/// Represents a complete ride (legacy).
+class LegacyRide {
+  const LegacyRide({
     required this.id,
     required this.client,
     required this.pickupLocation,
@@ -95,7 +102,7 @@ class Ride {
   final RideUser? driver;
   final RideLocation pickupLocation;
   final RideLocation dropoffLocation;
-  final RideStatus status;
+  final LegacyRideStatus status;
   final DateTime requestedAt;
   final DateTime? acceptedAt;
   final DateTime? startedAt;
@@ -108,18 +115,15 @@ class Ride {
 
   /// Returns true if the ride is currently active.
   bool get isActive =>
-      status == RideStatus.requested ||
-      status == RideStatus.accepted ||
-      status == RideStatus.driverEnRoute ||
-      status == RideStatus.driverArrived ||
-      status == RideStatus.inProgress;
+      status == LegacyRideStatus.requested ||
+      status == LegacyRideStatus.accepted ||
+      status == LegacyRideStatus.driverEnRoute ||
+      status == LegacyRideStatus.driverArrived ||
+      status == LegacyRideStatus.inProgress;
 
   /// Returns true if the ride has ended (completed or cancelled).
   bool get hasEnded =>
-      status == RideStatus.completed || status == RideStatus.cancelled;
-
-  // TODO: Add fromJson and toJson for Firebase serialization
-  // TODO: Add copyWith method for state updates
+      status == LegacyRideStatus.completed || status == LegacyRideStatus.cancelled;
 }
 
 /// Represents a fare estimate for a ride.
@@ -138,7 +142,5 @@ class FareEstimate {
 
   /// Returns the average of min and max fare.
   double get averageFare => (minFare + maxFare) / 2;
-
-  // TODO: Add fare calculation logic
 }
 

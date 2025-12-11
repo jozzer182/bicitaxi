@@ -1,4 +1,7 @@
 /// Status of a ride throughout its lifecycle.
+/// 
+/// Canonical status values for Firebase/backend synchronization.
+/// All platforms (Flutter & iOS) use the same string values.
 enum RideStatus {
   /// Client has requested a ride.
   requested,
@@ -22,8 +25,50 @@ enum RideStatus {
   cancelled,
 }
 
-/// Extension to provide display names for ride statuses.
+/// Extension to provide serialization and display names for ride statuses.
 extension RideStatusExtension on RideStatus {
+  /// Canonical string value for Firebase/backend serialization.
+  /// Must match iOS app values exactly.
+  String get value {
+    switch (this) {
+      case RideStatus.requested:
+        return 'requested';
+      case RideStatus.searchingDriver:
+        return 'searchingDriver';
+      case RideStatus.driverAssigned:
+        return 'driverAssigned';
+      case RideStatus.driverArriving:
+        return 'driverArriving';
+      case RideStatus.inProgress:
+        return 'inProgress';
+      case RideStatus.completed:
+        return 'completed';
+      case RideStatus.cancelled:
+        return 'cancelled';
+    }
+  }
+
+  /// Creates a RideStatus from its canonical string value.
+  static RideStatus fromValue(String value) {
+    switch (value) {
+      case 'requested':
+        return RideStatus.requested;
+      case 'searchingDriver':
+        return RideStatus.searchingDriver;
+      case 'driverAssigned':
+        return RideStatus.driverAssigned;
+      case 'driverArriving':
+        return RideStatus.driverArriving;
+      case 'inProgress':
+        return RideStatus.inProgress;
+      case 'completed':
+        return RideStatus.completed;
+      case 'cancelled':
+        return RideStatus.cancelled;
+      default:
+        return RideStatus.requested;
+    }
+  }
   String get displayName {
     switch (this) {
       case RideStatus.requested:

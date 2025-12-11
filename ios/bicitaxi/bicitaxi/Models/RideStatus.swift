@@ -3,17 +3,20 @@
 //  bicitaxi
 //
 //  Ride lifecycle status enum
+//  Canonical values for Firebase/backend synchronization.
+//  All platforms (Flutter & iOS) use the same string values.
 //
 
 import Foundation
 
 /// Represents the lifecycle status of a ride
+/// Raw values match Flutter app for cross-platform Firebase compatibility.
 enum RideStatus: String, Codable, CaseIterable {
     case requested = "requested"
-    case searchingDriver = "searching_driver"
-    case driverAssigned = "driver_assigned"
-    case driverArriving = "driver_arriving"
-    case inProgress = "in_progress"
+    case searchingDriver = "searchingDriver"
+    case driverAssigned = "driverAssigned"
+    case driverArriving = "driverArriving"
+    case inProgress = "inProgress"
     case completed = "completed"
     case cancelled = "cancelled"
     

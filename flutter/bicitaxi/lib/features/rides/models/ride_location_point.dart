@@ -1,6 +1,9 @@
 import '../../../core/utils/coordinate_formatter.dart';
 
 /// A geographic point for ride pickup or dropoff.
+/// 
+/// Uses canonical field names (lat, lng) that match iOS app
+/// for Firebase/backend consistency.
 class RideLocationPoint {
   const RideLocationPoint({required this.lat, required this.lng, this.address});
 
@@ -8,16 +11,29 @@ class RideLocationPoint {
   final double lng;
   final String? address;
 
+  /// Converts to a map for Firestore storage.
   Map<String, dynamic> toMap() {
     return {'lat': lat, 'lng': lng, 'address': address};
   }
 
+  /// Creates from a map (e.g., from Firestore).
   factory RideLocationPoint.fromMap(Map<String, dynamic> map) {
     return RideLocationPoint(
       lat: (map['lat'] as num).toDouble(),
       lng: (map['lng'] as num).toDouble(),
       address: map['address'] as String?,
     );
+  }
+
+  // MARK: - Firebase Helpers
+  // TODO: These methods will be used when Firebase is integrated.
+
+  /// Converts to Firestore document data.
+  Map<String, dynamic> toFirestore() => toMap();
+
+  /// Creates from Firestore document data.
+  factory RideLocationPoint.fromFirestore(Map<String, dynamic> data) {
+    return RideLocationPoint.fromMap(data);
   }
 
   RideLocationPoint copyWith({double? lat, double? lng, String? address}) {

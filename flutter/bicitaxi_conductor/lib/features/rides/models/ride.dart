@@ -1,7 +1,15 @@
 import 'ride_status.dart';
 import 'ride_location_point.dart';
 
+/// Firebase collection name for rides.
+/// Use this constant when integrating with Firestore.
+const String kRidesCollection = 'rides';
+
 /// A ride request in the Bici Taxi system.
+/// 
+/// This model is designed to be compatible with Firebase Firestore.
+/// The toMap/fromMap methods use canonical field names that match
+/// the iOS native app for cross-platform consistency.
 class Ride {
   Ride({
     required this.id,
@@ -24,6 +32,7 @@ class Ride {
   final DateTime updatedAt;
 
   /// Converts to a map suitable for Firestore storage.
+  /// Uses canonical field names matching iOS app.
   Map<String, dynamic> toMap() {
     return {
       'id': id,
@@ -31,7 +40,7 @@ class Ride {
       'driverId': driverId,
       'pickup': pickup.toMap(),
       'dropoff': dropoff?.toMap(),
-      'status': status.index,
+      'status': status.value,
       'createdAt': createdAt.millisecondsSinceEpoch,
       'updatedAt': updatedAt.millisecondsSinceEpoch,
     };
@@ -47,10 +56,27 @@ class Ride {
       dropoff: map['dropoff'] != null
           ? RideLocationPoint.fromMap(map['dropoff'] as Map<String, dynamic>)
           : null,
-      status: RideStatus.values[map['status'] as int],
+      status: RideStatusExtension.fromValue(map['status'] as String),
       createdAt: DateTime.fromMillisecondsSinceEpoch(map['createdAt'] as int),
       updatedAt: DateTime.fromMillisecondsSinceEpoch(map['updatedAt'] as int),
     );
+  }
+
+  // MARK: - Firebase Helpers
+  // TODO: These methods will be used when Firebase is integrated.
+
+  /// Converts to Firestore document data.
+  /// Alias for toMap() - use this explicitly for Firebase operations.
+  Map<String, dynamic> toFirestore() => toMap();
+
+  /// Creates a Ride from Firestore document data.
+  /// TODO: Update to handle Firestore Timestamp types when Firebase is added.
+  factory Ride.fromFirestore(Map<String, dynamic> data, {String? documentId}) {
+    final map = Map<String, dynamic>.from(data);
+    if (documentId != null) {
+      map['id'] = documentId;
+    }
+    return Ride.fromMap(map);
   }
 
   /// Creates a copy of this ride with the given fields replaced.

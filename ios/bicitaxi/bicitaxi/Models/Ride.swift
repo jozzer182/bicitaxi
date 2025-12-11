@@ -56,21 +56,18 @@ struct Ride: Identifiable, Codable, Equatable {
     }
     
     // MARK: - Serialization Helpers
-    // TODO: Map to Firestore/REST payload when backend is added.
+    // Uses canonical field names matching Flutter app for Firebase compatibility.
     
-    /// Convert to dictionary for network requests
+    /// Convert to dictionary for Firestore/network requests.
+    /// Uses canonical field names (lat, lng) matching Flutter app.
     func toDictionary() -> [String: Any] {
         var dict: [String: Any] = [
             "id": id,
             "clientId": clientId,
-            "pickup": [
-                "latitude": pickup.latitude,
-                "longitude": pickup.longitude,
-                "address": pickup.address as Any
-            ],
+            "pickup": pickup.toDictionary(),
             "status": status.rawValue,
-            "createdAt": createdAt.timeIntervalSince1970 * 1000,
-            "updatedAt": updatedAt.timeIntervalSince1970 * 1000
+            "createdAt": Int(createdAt.timeIntervalSince1970 * 1000),
+            "updatedAt": Int(updatedAt.timeIntervalSince1970 * 1000)
         ]
         
         if let driverId = driverId {
@@ -78,14 +75,49 @@ struct Ride: Identifiable, Codable, Equatable {
         }
         
         if let dropoff = dropoff {
-            dict["dropoff"] = [
-                "latitude": dropoff.latitude,
-                "longitude": dropoff.longitude,
-                "address": dropoff.address as Any
-            ]
+            dict["dropoff"] = dropoff.toDictionary()
         }
         
         return dict
+    }
+    
+    /// Alias for toDictionary() - use this explicitly for Firebase operations.
+    func toFirestore() -> [String: Any] {
+        return toDictionary()
+    }
+    
+    /// Create from Firestore document data.
+    /// TODO: Update to handle Firestore Timestamp types when Firebase is added.
+    static func fromFirestore(_ dict: [String: Any], id documentId: String? = nil) -> Ride? {
+        guard let clientId = dict["clientId"] as? String,
+              let pickupDict = dict["pickup"] as? [String: Any],
+              let pickup = RideLocationPoint.fromDictionary(pickupDict),
+              let statusString = dict["status"] as? String,
+              let status = RideStatus(rawValue: statusString) else {
+            return nil
+        }
+        
+        let rideId = documentId ?? (dict["id"] as? String) ?? ""
+        let driverId = dict["driverId"] as? String
+        
+        var dropoff: RideLocationPoint? = nil
+        if let dropoffDict = dict["dropoff"] as? [String: Any] {
+            dropoff = RideLocationPoint.fromDictionary(dropoffDict)
+        }
+        
+        let createdAtMs = dict["createdAt"] as? Double ?? Date().timeIntervalSince1970 * 1000
+        let updatedAtMs = dict["updatedAt"] as? Double ?? Date().timeIntervalSince1970 * 1000
+        
+        return Ride(
+            id: rideId,
+            clientId: clientId,
+            driverId: driverId,
+            pickup: pickup,
+            dropoff: dropoff,
+            status: status,
+            createdAt: Date(timeIntervalSince1970: createdAtMs / 1000),
+            updatedAt: Date(timeIntervalSince1970: updatedAtMs / 1000)
+        )
     }
     
     /// Estimated fare in Colombian Pesos (demo calculation)
@@ -100,6 +132,13 @@ struct Ride: Identifiable, Codable, Equatable {
         
         return max(5000, Int(distance * 4000)) // $5,000 minimum, ~$4,000/km
     }
+}
+
+// MARK: - Firebase Constants
+
+extension Ride {
+    /// Firebase collection name for rides.
+    static let collectionName = "rides"
 }
 
 // MARK: - Demo Data
