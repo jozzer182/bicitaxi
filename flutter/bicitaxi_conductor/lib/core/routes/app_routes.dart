@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../features/auth/presentation/login_screen.dart';
+import '../../features/auth/presentation/register_screen.dart';
 import '../../features/home/presentation/home_shell.dart';
 import '../../features/map/presentation/map_screen.dart';
 import '../../features/profile/presentation/driver_profile_screen.dart';
@@ -12,6 +13,7 @@ import '../providers/app_state.dart';
 /// Route names for the Bici Taxi Conductor app.
 abstract final class AppRoutes {
   static const String login = '/login';
+  static const String register = '/register';
   static const String homeShell = '/homeShell';
   static const String map = '/map';
   static const String profile = '/profile';
@@ -34,6 +36,8 @@ class AppRouter {
     switch (settings.name) {
       case AppRoutes.login:
         return _buildRoute(const LoginScreen(), settings);
+      case AppRoutes.register:
+        return _buildRoute(const RegisterScreen(), settings);
       case AppRoutes.homeShell:
         return _buildRoute(const HomeShell(), settings);
       case AppRoutes.map:

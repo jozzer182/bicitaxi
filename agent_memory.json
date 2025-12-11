@@ -54,6 +54,30 @@
                 "Modified: flutter/bicitaxi/lib/features/profile/presentation/client_profile_screen.dart - removed stats, simplified menu",
                 "Modified: flutter/bicitaxi_conductor/lib/features/profile/presentation/driver_profile_screen.dart - removed stats, bike card, simplified menu"
             ]
+        },
+        {
+            "date": "2025-12-10T19:45:00-05:00",
+            "prompt": "Add email/password login and registration screens to both apps. Registration requires: name, email, password, confirm password (no phone or address).",
+            "summary": "Added email/password authentication and registration screens to both Flutter apps with Liquid Glass styling. Login screens now show email/password fields at the top, followed by register link, then social login buttons (Google/Apple/Guest). Registration screens include name, email, password, confirm password fields with validation. Both apps use consistent styling - client app uses brightBlue accent, driver app uses driverAccent.",
+            "changes": [
+                "Created: flutter/bicitaxi/lib/features/auth/presentation/register_screen.dart",
+                "Modified: flutter/bicitaxi/lib/features/auth/presentation/login_screen.dart - added email/password fields, form validation, register link",
+                "Modified: flutter/bicitaxi/lib/core/routes/app_routes.dart - added register route",
+                "Created: flutter/bicitaxi_conductor/lib/features/auth/presentation/register_screen.dart",
+                "Modified: flutter/bicitaxi_conductor/lib/features/auth/presentation/login_screen.dart - added email/password fields, form validation, register link",
+                "Modified: flutter/bicitaxi_conductor/lib/core/routes/app_routes.dart - added register route"
+            ]
+        },
+        {
+            "date": "2025-12-11T05:00:00-05:00",
+            "prompt": "Replace 'Bici Taxi' text with app icon on login and register screens for both apps.",
+            "summary": "Replaced the 'Bici Taxi' text heading with the app icon (icons/Android/Icon-192.png) on all login and registration screens in both client and conductor apps. The icon is displayed at 100x100 pixels. For the conductor app, the 'Conductor' label below the icon was preserved with the driverAccent green color.",
+            "changes": [
+                "Modified: flutter/bicitaxi/lib/features/auth/presentation/login_screen.dart - replaced text with Image.asset icon",
+                "Modified: flutter/bicitaxi/lib/features/auth/presentation/register_screen.dart - replaced text with Image.asset icon",
+                "Modified: flutter/bicitaxi_conductor/lib/features/auth/presentation/login_screen.dart - replaced text with Image.asset icon",
+                "Modified: flutter/bicitaxi_conductor/lib/features/auth/presentation/register_screen.dart - replaced text with Image.asset icon"
+            ]
         }
     ]
 }
