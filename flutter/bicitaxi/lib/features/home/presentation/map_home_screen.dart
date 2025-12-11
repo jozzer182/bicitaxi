@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:math';
 
 import 'package:flutter/material.dart';
@@ -45,6 +46,10 @@ class _MapHomeScreenState extends State<MapHomeScreen>
   bool _isRequesting = false;
   LocationErrorType? _locationError;
 
+  // Greeting collapse state
+  bool _isGreetingCollapsed = false;
+  Timer? _collapseTimer;
+
   // Edit mode state - when not none, next tap updates that specific point
   EditingPoint _editingPoint = EditingPoint.none;
 
@@ -67,6 +72,14 @@ class _MapHomeScreenState extends State<MapHomeScreen>
     _breathingController.repeat(reverse: true);
 
     _initializeLocation();
+
+    // Start greeting collapse timer
+    _collapseTimer = Timer(const Duration(seconds: 5), () {
+      if (mounted) {
+        setState(() => _isGreetingCollapsed = true);
+      }
+    });
+
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.rideController.addListener(_onControllerChange);
     });
@@ -74,6 +87,7 @@ class _MapHomeScreenState extends State<MapHomeScreen>
 
   @override
   void dispose() {
+    _collapseTimer?.cancel();
     _breathingController.dispose();
     try {
       context.rideController.removeListener(_onControllerChange);
@@ -720,8 +734,35 @@ class _MapHomeScreenState extends State<MapHomeScreen>
                     ),
                   ),
                 )
+              else if (_isGreetingCollapsed)
+                // Collapsed greeting button
+                Align(
+                  alignment: Alignment.topRight,
+                  child: Container(
+                    width: 48,
+                    height: 48,
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: 0.7),
+                      shape: BoxShape.circle,
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.1),
+                          blurRadius: 8,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
+                    ),
+                    child: const Center(
+                      child: Icon(
+                        Icons.waving_hand_rounded,
+                        color: AppColors.electricBlue,
+                        size: 24,
+                      ),
+                    ),
+                  ),
+                )
               else
-                // Welcome card
+                // Welcome card (expanded)
                 UltraGlassCard(
                   borderRadius: 16,
                   padding: const EdgeInsets.symmetric(

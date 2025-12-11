@@ -130,6 +130,15 @@
                 "Modified: flutter/bicitaxi/lib/features/profile/presentation/edit_profile_screen.dart - white background",
                 "Modified: flutter/bicitaxi_conductor/lib/features/profile/presentation/edit_profile_screen.dart - white background"
             ]
+        },
+        {
+            "date": "2025-12-11T08:32:00-05:00",
+            "prompt": "Make 'Hola' greeting in client and 'Desconectado' status in conductor collapse to circular icon buttons after 5 seconds.",
+            "summary": "Implemented auto-collapsing greeting/status banners. Client app: added Timer that collapses '¡Hola!' greeting card to circular button with waving hand icon after 5 seconds. Conductor app: extended existing collapse logic to also work when offline - 'Desconectado' banner now collapses to circular button with wifi_off icon after 5 seconds, matching the existing online behavior.",
+            "changes": [
+                "Modified: flutter/bicitaxi/lib/features/home/presentation/map_home_screen.dart - added dart:async import, _isGreetingCollapsed state, Timer in initState, collapsed greeting UI",
+                "Modified: flutter/bicitaxi_conductor/lib/features/home/presentation/driver_map_home_screen.dart - Timer in initState, unified collapse timer for both states, dynamic icon/color in collapsed button"
+            ]
         }
     ]
 }

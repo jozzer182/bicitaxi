@@ -40,6 +40,14 @@ class _DriverMapHomeScreenState extends State<DriverMapHomeScreen> {
   void initState() {
     super.initState();
     _initializeLocation();
+
+    // Start collapse timer for initial state
+    _collapseTimer = Timer(const Duration(seconds: 5), () {
+      if (mounted) {
+        setState(() => _isStatusCollapsed = true);
+      }
+    });
+
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.rideController.addListener(_onControllerChange);
     });
@@ -93,21 +101,14 @@ class _DriverMapHomeScreenState extends State<DriverMapHomeScreen> {
     context.rideController.toggleOnlineStatus();
     final isOnline = context.rideController.isOnline;
 
-    // Handle collapse timer
-    if (isOnline) {
-      // Reset collapse state and start timer
-      setState(() => _isStatusCollapsed = false);
-      _collapseTimer?.cancel();
-      _collapseTimer = Timer(const Duration(seconds: 5), () {
-        if (mounted && context.rideController.isOnline) {
-          setState(() => _isStatusCollapsed = true);
-        }
-      });
-    } else {
-      // Cancel timer and reset when going offline
-      _collapseTimer?.cancel();
-      setState(() => _isStatusCollapsed = false);
-    }
+    // Handle collapse timer - start timer for both online and offline states
+    setState(() => _isStatusCollapsed = false);
+    _collapseTimer?.cancel();
+    _collapseTimer = Timer(const Duration(seconds: 5), () {
+      if (mounted) {
+        setState(() => _isStatusCollapsed = true);
+      }
+    });
 
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
@@ -370,8 +371,8 @@ class _DriverMapHomeScreenState extends State<DriverMapHomeScreen> {
                     ),
                   ),
                 )
-              else if (isOnline && _isStatusCollapsed)
-                // Collapsed WiFi button (shown after 5 seconds when online)
+              else if (_isStatusCollapsed)
+                // Collapsed status button (shown after 5 seconds)
                 Align(
                   alignment: Alignment.topRight,
                   child: GestureDetector(
@@ -380,17 +381,24 @@ class _DriverMapHomeScreenState extends State<DriverMapHomeScreen> {
                       width: 48,
                       height: 48,
                       decoration: BoxDecoration(
-                        color: Colors.white.withValues(alpha: 0.05),
+                        color: Colors.white.withValues(alpha: 0.7),
                         shape: BoxShape.circle,
-                        border: Border.all(
-                          color: Colors.white.withValues(alpha: 0.1),
-                          width: 1,
-                        ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.1),
+                            blurRadius: 8,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
                       ),
-                      child: const Center(
+                      child: Center(
                         child: Icon(
-                          Icons.wifi_rounded,
-                          color: AppColors.success,
+                          isOnline
+                              ? Icons.wifi_rounded
+                              : Icons.wifi_off_rounded,
+                          color: isOnline
+                              ? AppColors.success
+                              : AppColors.steelBlue,
                           size: 24,
                         ),
                       ),
