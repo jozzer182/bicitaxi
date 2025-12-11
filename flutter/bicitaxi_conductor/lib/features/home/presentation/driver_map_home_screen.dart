@@ -139,6 +139,17 @@ class _DriverMapHomeScreenState extends State<DriverMapHomeScreen> {
         // Full-screen map
         _buildMap(context, pendingRides),
 
+        // Status bar background overlay
+        Positioned(
+          top: 0,
+          left: 0,
+          right: 0,
+          child: Container(
+            height: MediaQuery.of(context).padding.top,
+            color: Colors.white.withValues(alpha: 0.9),
+          ),
+        ),
+
         // Top status bar
         Positioned(
           top: 0,
@@ -174,7 +185,7 @@ class _DriverMapHomeScreenState extends State<DriverMapHomeScreen> {
         // Loading overlay
         if (_isLoading)
           Container(
-            color: AppColors.primary.withValues(alpha: 0.7),
+            color: Colors.white.withValues(alpha: 0.85),
             child: const Center(
               child: CircularProgressIndicator(color: AppColors.driverAccent),
             ),
@@ -286,175 +297,187 @@ class _DriverMapHomeScreenState extends State<DriverMapHomeScreen> {
   }
 
   Widget _buildTopBar(BuildContext context, bool isOnline, bool hasActiveRide) {
-    return SafeArea(
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          children: [
-            // Active ride banner
-            if (hasActiveRide)
-              GestureDetector(
-                onTap: () => Navigator.pushNamed(context, AppRoutes.activeRide),
-                child: LiquidCard(
-                  borderRadius: 16,
-                  color: AppColors.driverAccent.withValues(alpha: 0.2),
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 12,
-                  ),
-                  child: Row(
-                    children: [
-                      Container(
-                        width: 40,
-                        height: 40,
-                        decoration: BoxDecoration(
-                          color: AppColors.driverAccent.withValues(alpha: 0.2),
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                        child: const Icon(
-                          Icons.directions_bike_rounded,
-                          color: AppColors.driverAccent,
-                          size: 22,
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      const Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              'Viaje en curso',
-                              style: TextStyle(
-                                fontWeight: FontWeight.bold,
-                                fontSize: 14,
-                              ),
-                            ),
-                            Text(
-                              'Toca para ver detalles',
-                              style: TextStyle(
-                                fontSize: 12,
-                                color: AppColors.textSecondary,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      const Icon(
-                        Icons.arrow_forward_ios_rounded,
-                        color: AppColors.driverAccent,
-                        size: 16,
-                      ),
-                    ],
-                  ),
-                ),
-              )
-            else if (isOnline && _isStatusCollapsed)
-              // Collapsed WiFi button (shown after 5 seconds when online)
-              Align(
-                alignment: Alignment.topRight,
-                child: GestureDetector(
-                  onTap: _toggleOnlineStatus,
-                  child: Container(
-                    width: 48,
-                    height: 48,
-                    decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: 0.05),
-                      shape: BoxShape.circle,
-                      border: Border.all(
-                        color: Colors.white.withValues(alpha: 0.1),
-                        width: 1,
-                      ),
-                    ),
-                    child: const Center(
-                      child: Icon(
-                        Icons.wifi_rounded,
-                        color: AppColors.success,
-                        size: 24,
-                      ),
-                    ),
-                  ),
-                ),
-              )
-            else
-              // Status toggle bar (expanded view)
-              GestureDetector(
-                onTap: _toggleOnlineStatus,
-                child: UltraGlassCard(
-                  borderRadius: 16,
-                  color: isOnline
-                      ? AppColors.success.withValues(alpha: 0.15)
-                      : null,
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 12,
-                  ),
-                  child: Row(
-                    children: [
-                      Container(
-                        width: 40,
-                        height: 40,
-                        decoration: BoxDecoration(
-                          color:
-                              (isOnline
-                                      ? AppColors.success
-                                      : AppColors.steelBlue)
-                                  .withValues(alpha: 0.2),
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                        child: Icon(
-                          isOnline
-                              ? Icons.wifi_rounded
-                              : Icons.wifi_off_rounded,
-                          color: isOnline
-                              ? AppColors.success
-                              : AppColors.steelBlue,
-                          size: 22,
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              isOnline ? 'Conectado' : 'Desconectado',
-                              style: TextStyle(
-                                fontWeight: FontWeight.bold,
-                                fontSize: 14,
-                                color: isOnline
-                                    ? AppColors.success
-                                    : AppColors.textDark,
-                              ),
-                            ),
-                            Text(
-                              isOnline
-                                  ? 'Recibiendo solicitudes'
-                                  : 'Toca para conectarte',
-                              style: TextStyle(
-                                fontSize: 12,
-                                color: AppColors.textDarkSecondary,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      Container(
-                        width: 12,
-                        height: 12,
-                        decoration: BoxDecoration(
-                          color: isOnline
-                              ? AppColors.success
-                              : AppColors.steelBlue,
-                          shape: BoxShape.circle,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-          ],
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        // Status bar background
+        Container(
+          height: MediaQuery.of(context).padding.top,
+          color: Colors.white.withValues(alpha: 0.92),
         ),
-      ),
+        // Content below status bar
+        Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            children: [
+              // Active ride banner
+              if (hasActiveRide)
+                GestureDetector(
+                  onTap: () =>
+                      Navigator.pushNamed(context, AppRoutes.activeRide),
+                  child: LiquidCard(
+                    borderRadius: 16,
+                    color: AppColors.driverAccent.withValues(alpha: 0.2),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 12,
+                    ),
+                    child: Row(
+                      children: [
+                        Container(
+                          width: 40,
+                          height: 40,
+                          decoration: BoxDecoration(
+                            color: AppColors.driverAccent.withValues(
+                              alpha: 0.2,
+                            ),
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: const Icon(
+                            Icons.directions_bike_rounded,
+                            color: AppColors.driverAccent,
+                            size: 22,
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        const Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Viaje en curso',
+                                style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 14,
+                                ),
+                              ),
+                              Text(
+                                'Toca para ver detalles',
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: AppColors.textSecondary,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const Icon(
+                          Icons.arrow_forward_ios_rounded,
+                          color: AppColors.driverAccent,
+                          size: 16,
+                        ),
+                      ],
+                    ),
+                  ),
+                )
+              else if (isOnline && _isStatusCollapsed)
+                // Collapsed WiFi button (shown after 5 seconds when online)
+                Align(
+                  alignment: Alignment.topRight,
+                  child: GestureDetector(
+                    onTap: _toggleOnlineStatus,
+                    child: Container(
+                      width: 48,
+                      height: 48,
+                      decoration: BoxDecoration(
+                        color: Colors.white.withValues(alpha: 0.05),
+                        shape: BoxShape.circle,
+                        border: Border.all(
+                          color: Colors.white.withValues(alpha: 0.1),
+                          width: 1,
+                        ),
+                      ),
+                      child: const Center(
+                        child: Icon(
+                          Icons.wifi_rounded,
+                          color: AppColors.success,
+                          size: 24,
+                        ),
+                      ),
+                    ),
+                  ),
+                )
+              else
+                // Status toggle bar (expanded view)
+                GestureDetector(
+                  onTap: _toggleOnlineStatus,
+                  child: UltraGlassCard(
+                    borderRadius: 16,
+                    color: isOnline
+                        ? AppColors.success.withValues(alpha: 0.15)
+                        : null,
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 12,
+                    ),
+                    child: Row(
+                      children: [
+                        Container(
+                          width: 40,
+                          height: 40,
+                          decoration: BoxDecoration(
+                            color:
+                                (isOnline
+                                        ? AppColors.success
+                                        : AppColors.steelBlue)
+                                    .withValues(alpha: 0.2),
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: Icon(
+                            isOnline
+                                ? Icons.wifi_rounded
+                                : Icons.wifi_off_rounded,
+                            color: isOnline
+                                ? AppColors.success
+                                : AppColors.steelBlue,
+                            size: 22,
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                isOnline ? 'Conectado' : 'Desconectado',
+                                style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 14,
+                                  color: isOnline
+                                      ? AppColors.success
+                                      : AppColors.textDark,
+                                ),
+                              ),
+                              Text(
+                                isOnline
+                                    ? 'Recibiendo solicitudes'
+                                    : 'Toca para conectarte',
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: AppColors.textDarkSecondary,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        Container(
+                          width: 12,
+                          height: 12,
+                          decoration: BoxDecoration(
+                            color: isOnline
+                                ? AppColors.success
+                                : AppColors.steelBlue,
+                            shape: BoxShape.circle,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+            ],
+          ),
+        ),
+      ],
     );
   }
 

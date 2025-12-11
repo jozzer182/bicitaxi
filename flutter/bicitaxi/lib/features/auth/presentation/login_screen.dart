@@ -130,7 +130,7 @@ class LoginScreen extends StatelessWidget {
             icon: const Icon(
               Icons.apple_rounded,
               size: 24,
-              color: AppColors.white,
+              color: Colors.black87,
             ),
             label: 'Continuar con Apple',
           ),
@@ -169,7 +169,7 @@ class LoginScreen extends StatelessWidget {
                 style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.w600,
-                  color: AppColors.white,
+                  color: Colors.black87,
                 ),
               ),
             ),
@@ -244,7 +244,7 @@ class _AuthButton extends StatelessWidget {
               style: const TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.w500,
-                color: AppColors.white,
+                color: Colors.black87,
               ),
             ),
           ],

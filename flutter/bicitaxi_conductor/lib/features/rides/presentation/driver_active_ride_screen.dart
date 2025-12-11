@@ -162,7 +162,7 @@ class _DriverActiveRideScreenState extends State<DriverActiveRideScreen> {
                     padding: const EdgeInsets.all(12),
                     child: const Icon(
                       Icons.arrow_back_rounded,
-                      color: AppColors.white,
+                      color: Colors.black87,
                       size: 24,
                     ),
                   ),
@@ -678,19 +678,20 @@ class _DriverActiveRideScreenState extends State<DriverActiveRideScreen> {
     showDialog(
       context: context,
       builder: (dialogContext) => AlertDialog(
-        backgroundColor: AppColors.primary,
+        backgroundColor: Colors.white,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: const Text('¿Cancelar viaje?'),
+        title: const Text(
+          '¿Cancelar viaje?',
+          style: TextStyle(color: Colors.black87),
+        ),
         content: const Text(
           'Si cancelas después de aceptar, puede afectar tu calificación.',
+          style: TextStyle(color: Colors.black54),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(dialogContext),
-            child: Text(
-              'Volver',
-              style: TextStyle(color: AppColors.textSecondary),
-            ),
+            child: Text('Volver', style: TextStyle(color: Colors.black54)),
           ),
           TextButton(
             onPressed: () async {

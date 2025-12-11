@@ -605,19 +605,20 @@ class _ClientActiveRideScreenState extends State<ClientActiveRideScreen> {
     showDialog(
       context: context,
       builder: (dialogContext) => AlertDialog(
-        backgroundColor: AppColors.primary,
+        backgroundColor: Colors.white,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: const Text('¿Cancelar viaje?'),
+        title: const Text(
+          '¿Cancelar viaje?',
+          style: TextStyle(color: Colors.black87),
+        ),
         content: const Text(
           'Si cancelas, puede que se apliquen cargos según el progreso del viaje.',
+          style: TextStyle(color: Colors.black54),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(dialogContext),
-            child: Text(
-              'Volver',
-              style: TextStyle(color: AppColors.textSecondary),
-            ),
+            child: Text('Volver', style: TextStyle(color: Colors.black54)),
           ),
           TextButton(
             onPressed: () async {

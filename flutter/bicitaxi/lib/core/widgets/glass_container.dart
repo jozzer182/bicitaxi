@@ -1,7 +1,6 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:liquid_glass_ui_design/liquid_glass_ui.dart';
-import '../theme/app_colors.dart';
 
 /// Ultra transparent glass card with customizable blur and opacity.
 /// Uses 5% opacity and sigma 5 blur by default per user preference.
@@ -158,15 +157,13 @@ class GlassScaffold extends StatelessWidget {
       decoration: BoxDecoration(
         gradient:
             backgroundGradient ??
-            const LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
+            LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
               colors: [
-                AppColors.primary,
-                Color(0xFF1A0A2E),
-                AppColors.deepBlue,
+                Colors.white.withValues(alpha: 0.95),
+                Colors.white.withValues(alpha: 0.90),
               ],
-              stops: [0.0, 0.5, 1.0],
             ),
       ),
       child: Scaffold(

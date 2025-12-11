@@ -72,7 +72,7 @@ class _HomeShellState extends State<HomeShell> {
     final isWideScreen = ResponsiveUtils.isTabletOrLarger(context);
 
     return Scaffold(
-      backgroundColor: Colors.transparent,
+      backgroundColor: Colors.white,
       extendBody: true, // Allow body to extend behind bottom nav
       body: SafeArea(
         bottom: false, // Don't add padding for bottom nav

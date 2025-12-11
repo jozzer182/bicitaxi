@@ -336,6 +336,17 @@ class _MapHomeScreenState extends State<MapHomeScreen>
         // Full-screen map
         _buildMap(context),
 
+        // Status bar background overlay
+        Positioned(
+          top: 0,
+          left: 0,
+          right: 0,
+          child: Container(
+            height: MediaQuery.of(context).padding.top,
+            color: Colors.white.withValues(alpha: 0.9),
+          ),
+        ),
+
         // Top welcome bar
         Positioned(
           top: 0,
@@ -367,7 +378,7 @@ class _MapHomeScreenState extends State<MapHomeScreen>
         // Loading overlay
         if (_isLoading || _isRequesting)
           Container(
-            color: AppColors.primary.withValues(alpha: 0.7),
+            color: Colors.white.withValues(alpha: 0.85),
             child: Center(
               child: Column(
                 mainAxisSize: MainAxisSize.min,
@@ -379,7 +390,7 @@ class _MapHomeScreenState extends State<MapHomeScreen>
                     const SizedBox(height: 16),
                     const Text(
                       'Solicitando viaje...',
-                      style: TextStyle(color: AppColors.white),
+                      style: TextStyle(color: AppColors.textPrimary),
                     ),
                   ],
                 ],
@@ -638,18 +649,81 @@ class _MapHomeScreenState extends State<MapHomeScreen>
   }
 
   Widget _buildTopBar(BuildContext context, bool hasActiveRide) {
-    return SafeArea(
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          children: [
-            // Active ride banner
-            if (hasActiveRide)
-              GestureDetector(
-                onTap: () => Navigator.pushNamed(context, AppRoutes.activeRide),
-                child: LiquidCard(
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        // Status bar background
+        Container(
+          height: MediaQuery.of(context).padding.top,
+          color: Colors.white.withValues(alpha: 0.92),
+        ),
+        // Content below status bar
+        Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            children: [
+              // Active ride banner
+              if (hasActiveRide)
+                GestureDetector(
+                  onTap: () =>
+                      Navigator.pushNamed(context, AppRoutes.activeRide),
+                  child: LiquidCard(
+                    borderRadius: 16,
+                    color: AppColors.brightBlue.withValues(alpha: 0.2),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 12,
+                    ),
+                    child: Row(
+                      children: [
+                        Container(
+                          width: 40,
+                          height: 40,
+                          decoration: BoxDecoration(
+                            color: AppColors.brightBlue.withValues(alpha: 0.2),
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: const Icon(
+                            Icons.directions_bike_rounded,
+                            color: AppColors.brightBlue,
+                            size: 22,
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        const Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Viaje en curso',
+                                style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 14,
+                                ),
+                              ),
+                              Text(
+                                'Toca para ver detalles',
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: AppColors.textSecondary,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const Icon(
+                          Icons.arrow_forward_ios_rounded,
+                          color: AppColors.brightBlue,
+                          size: 16,
+                        ),
+                      ],
+                    ),
+                  ),
+                )
+              else
+                // Welcome card
+                UltraGlassCard(
                   borderRadius: 16,
-                  color: AppColors.brightBlue.withValues(alpha: 0.2),
                   padding: const EdgeInsets.symmetric(
                     horizontal: 16,
                     vertical: 12,
@@ -660,98 +734,45 @@ class _MapHomeScreenState extends State<MapHomeScreen>
                         width: 40,
                         height: 40,
                         decoration: BoxDecoration(
-                          color: AppColors.brightBlue.withValues(alpha: 0.2),
+                          color: AppColors.electricBlue.withValues(alpha: 0.2),
                           borderRadius: BorderRadius.circular(10),
                         ),
                         child: const Icon(
-                          Icons.directions_bike_rounded,
-                          color: AppColors.brightBlue,
+                          Icons.waving_hand_rounded,
+                          color: AppColors.electricBlue,
                           size: 22,
                         ),
                       ),
                       const SizedBox(width: 12),
-                      const Expanded(
+                      Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              'Viaje en curso',
-                              style: TextStyle(
-                                fontWeight: FontWeight.bold,
-                                fontSize: 14,
-                              ),
+                              '¡Hola!',
+                              style: Theme.of(context).textTheme.titleMedium
+                                  ?.copyWith(
+                                    fontWeight: FontWeight.bold,
+                                    color: AppColors.textDark,
+                                  ),
                             ),
                             Text(
-                              'Toca para ver detalles',
+                              '¿A dónde quieres ir hoy?',
                               style: TextStyle(
-                                fontSize: 12,
-                                color: AppColors.textSecondary,
+                                fontSize: 13,
+                                color: AppColors.textDarkSecondary,
                               ),
                             ),
                           ],
                         ),
                       ),
-                      const Icon(
-                        Icons.arrow_forward_ios_rounded,
-                        color: AppColors.brightBlue,
-                        size: 16,
-                      ),
                     ],
                   ),
                 ),
-              )
-            else
-              // Welcome card
-              UltraGlassCard(
-                borderRadius: 16,
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 12,
-                ),
-                child: Row(
-                  children: [
-                    Container(
-                      width: 40,
-                      height: 40,
-                      decoration: BoxDecoration(
-                        color: AppColors.electricBlue.withValues(alpha: 0.2),
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: const Icon(
-                        Icons.waving_hand_rounded,
-                        color: AppColors.electricBlue,
-                        size: 22,
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            '¡Hola!',
-                            style: Theme.of(context).textTheme.titleMedium
-                                ?.copyWith(
-                                  fontWeight: FontWeight.bold,
-                                  color: AppColors.textDark,
-                                ),
-                          ),
-                          Text(
-                            '¿A dónde quieres ir hoy?',
-                            style: TextStyle(
-                              fontSize: 13,
-                              color: AppColors.textDarkSecondary,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-          ],
+            ],
+          ),
         ),
-      ),
+      ],
     );
   }
 

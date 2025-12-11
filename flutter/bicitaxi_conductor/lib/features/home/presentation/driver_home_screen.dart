@@ -264,7 +264,7 @@ class _DriverHomeScreenState extends State<DriverHomeScreen> {
                 crossAxisAlignment: CrossAxisAlignment.center,
                 mainAxisSize: MainAxisSize.min,
                 children: const [
-                  Icon(Icons.map_outlined, color: AppColors.white, size: 28),
+                  Icon(Icons.map_outlined, color: Colors.black87, size: 28),
                   SizedBox(height: 8),
                   Text(
                     'Ver mapa',
@@ -272,7 +272,7 @@ class _DriverHomeScreenState extends State<DriverHomeScreen> {
                     style: TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.w500,
-                      color: AppColors.white,
+                      color: Colors.black87,
                     ),
                   ),
                 ],
@@ -294,11 +294,7 @@ class _DriverHomeScreenState extends State<DriverHomeScreen> {
                 crossAxisAlignment: CrossAxisAlignment.center,
                 mainAxisSize: MainAxisSize.min,
                 children: const [
-                  Icon(
-                    Icons.insights_rounded,
-                    color: AppColors.white,
-                    size: 28,
-                  ),
+                  Icon(Icons.insights_rounded, color: Colors.black87, size: 28),
                   SizedBox(height: 8),
                   Text(
                     'Estadísticas',
@@ -306,7 +302,7 @@ class _DriverHomeScreenState extends State<DriverHomeScreen> {
                     style: TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.w500,
-                      color: AppColors.white,
+                      color: Colors.black87,
                     ),
                   ),
                 ],

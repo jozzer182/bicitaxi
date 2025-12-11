@@ -9,13 +9,13 @@ import 'core/providers/app_state.dart';
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // Set system UI overlay style for immersive dark experience
+  // Set system UI overlay style for light theme
   SystemChrome.setSystemUIOverlayStyle(
     const SystemUiOverlayStyle(
-      statusBarColor: Colors.transparent,
-      statusBarIconBrightness: Brightness.light,
-      systemNavigationBarColor: AppColors.primary,
-      systemNavigationBarIconBrightness: Brightness.light,
+      statusBarColor: Color(0xCCFFFFFF), // White semi-transparent
+      statusBarIconBrightness: Brightness.dark,
+      systemNavigationBarColor: Colors.white,
+      systemNavigationBarIconBrightness: Brightness.dark,
     ),
   );
 
@@ -49,7 +49,7 @@ class BiciTaxiConductorApp extends StatelessWidget {
         child: MaterialApp(
           title: 'Bici Taxi Conductor',
           debugShowCheckedModeBanner: false,
-          theme: AppTheme.darkTheme,
+          theme: AppTheme.lightTheme,
           initialRoute: AppRoutes.login,
           onGenerateRoute: AppRouter.onGenerateRoute,
           builder: (context, child) {
@@ -61,7 +61,15 @@ class BiciTaxiConductorApp extends StatelessWidget {
                   MediaQuery.of(context).textScaler.scale(1.0).clamp(0.8, 1.3),
                 ),
               ),
-              child: _AppBackground(child: child ?? const SizedBox.shrink()),
+              child: AnnotatedRegion<SystemUiOverlayStyle>(
+                value: const SystemUiOverlayStyle(
+                  statusBarColor: Color(0xDDFFFFFF), // White 87% opacity
+                  statusBarIconBrightness: Brightness.dark,
+                  systemNavigationBarColor: Colors.white,
+                  systemNavigationBarIconBrightness: Brightness.dark,
+                ),
+                child: _AppBackground(child: child ?? const SizedBox.shrink()),
+              ),
             );
           },
         ),
@@ -78,20 +86,7 @@ class _AppBackground extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      decoration: const BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            AppColors.primary,
-            Color(0xFF1A0A2E),
-            Color(0xFF0D1B2A),
-          ],
-          stops: [0.0, 0.5, 1.0],
-        ),
-      ),
-      child: child,
-    );
+    // Light transparent background - map shows through
+    return Container(color: Colors.transparent, child: child);
   }
 }

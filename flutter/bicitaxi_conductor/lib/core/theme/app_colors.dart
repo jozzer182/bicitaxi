@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 
 /// Bici Taxi Conductor color palette.
-/// Primary: Deep purple-black (#0B0016)
+/// Light theme with blue accents.
 /// Accent blues: Electric blue (#4BB3FD), Steel blue (#3E6680),
 /// Bright blue (#0496FF), Deep blue (#027BCE)
 abstract final class AppColors {
-  // Primary color
+  // Primary color (kept for reference/accents)
   static const Color primary = Color(0xFF0B0016);
 
   // Blue accent palette
@@ -18,17 +18,22 @@ abstract final class AppColors {
   static const Color white = Color(0xFFFFFFFF);
   static const Color black = Color(0xFF000000);
 
-  // Surface colors for glass effects
-  static const Color surfaceLight = Color(0x1AFFFFFF);
-  static const Color surfaceMedium = Color(0x33FFFFFF);
-  static const Color surfaceDark = Color(0x0DFFFFFF);
+  // Surface colors for glass effects (light theme - use semi-transparent dark/gray)
+  static const Color surfaceLight = Color(0x0A000000);
+  static const Color surfaceMedium = Color(0x14000000);
+  static const Color surfaceDark = Color(0x1F000000);
 
-  // Text colors (for dark backgrounds)
-  static const Color textPrimary = Color(0xFFFFFFFF);
-  static const Color textSecondary = Color(0xB3FFFFFF);
-  static const Color textTertiary = Color(0x80FFFFFF);
+  // Text colors (default - for light backgrounds)
+  static const Color textPrimary = Color(0xFF1A1A2E);
+  static const Color textSecondary = Color(0xFF4A4A5A);
+  static const Color textTertiary = Color(0xFF7A7A8A);
 
-  // Text colors (for light/glass backgrounds)
+  // Text colors (for dark backgrounds / colored buttons)
+  static const Color textOnDark = Color(0xFFFFFFFF);
+  static const Color textOnDarkSecondary = Color(0xB3FFFFFF);
+  static const Color textOnDarkTertiary = Color(0x80FFFFFF);
+
+  // Legacy aliases for light/glass backgrounds (same as textPrimary/Secondary/Tertiary now)
   static const Color textDark = Color(0xFF1A1A2E);
   static const Color textDarkSecondary = Color(0xFF4A4A5A);
   static const Color textDarkTertiary = Color(0xFF7A7A8A);
