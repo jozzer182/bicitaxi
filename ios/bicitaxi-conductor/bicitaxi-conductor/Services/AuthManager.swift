@@ -9,6 +9,8 @@ import SwiftUI
 import Combine
 import AuthenticationServices
 
+// Driver model is defined in Models/Driver.swift
+
 /// User authentication state
 enum AuthState: Equatable {
     case unauthenticated
@@ -16,19 +18,6 @@ enum AuthState: Equatable {
     case authenticated(Driver)
 }
 
-/// Driver model for authentication
-struct Driver: Equatable, Identifiable {
-    let id: String
-    let name: String
-    let email: String
-    let photoURL: URL?
-    var licenseNumber: String?
-    var vehicleInfo: String?
-    
-    static func == (lhs: Driver, rhs: Driver) -> Bool {
-        lhs.id == rhs.id
-    }
-}
 
 /// Manages authentication state for the conductor app
 @MainActor
@@ -58,7 +47,8 @@ class AuthManager: ObservableObject {
                     id: userId,
                     name: displayName.isEmpty ? "Conductor Apple" : displayName,
                     email: email,
-                    photoURL: nil
+                    photoURL: nil,
+                    isOnline: true
                 )
                 
                 withAnimation {
@@ -102,7 +92,8 @@ class AuthManager: ObservableObject {
                 id: UUID().uuidString,
                 name: "Conductor",
                 email: email,
-                photoURL: nil
+                photoURL: nil,
+                isOnline: true
             )
             
             withAnimation {
@@ -130,7 +121,8 @@ class AuthManager: ObservableObject {
                 name: name,
                 email: email,
                 photoURL: nil,
-                licenseNumber: licenseNumber
+                licenseNumber: licenseNumber,
+                isOnline: false
             )
             
             withAnimation {

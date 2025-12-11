@@ -43,13 +43,13 @@ struct HomeView: View {
     
     private var welcomeHeader: some View {
         VStack(alignment: .leading, spacing: 8) {
-            Text("Welcome back!")
+            Text("¡Bienvenido!")
                 .font(.title.weight(.bold))
-                .foregroundColor(.white)
+                .foregroundColor(.primary)
             
-            Text("Ready for your next ride?")
+            Text("¿Listo para tu próximo viaje?")
                 .font(.subheadline)
-                .foregroundColor(.white.opacity(0.7))
+                .foregroundColor(.secondary)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
     }
@@ -64,24 +64,24 @@ struct HomeView: View {
                 
                 Text(ride.status.displayText)
                     .font(.headline)
-                    .foregroundColor(.white)
+                    .foregroundColor(.primary)
                 
                 Spacer()
             }
             
             Divider()
-                .background(Color.white.opacity(0.2))
+                .background(Color.secondary.opacity(0.2))
             
             HStack {
                 VStack(alignment: .leading, spacing: 4) {
                     Label(ride.pickup.shortDescription, systemImage: "figure.wave")
                         .font(.caption)
-                        .foregroundColor(.white.opacity(0.8))
+                        .foregroundColor(.secondary)
                     
                     if let dropoff = ride.dropoff {
                         Label(dropoff.shortDescription, systemImage: "flag.fill")
                             .font(.caption)
-                            .foregroundColor(.white.opacity(0.8))
+                            .foregroundColor(.secondary)
                     }
                 }
                 
@@ -104,13 +104,13 @@ struct HomeView: View {
                 .font(.system(size: 40))
                 .foregroundStyle(BiciTaxiTheme.accentGradient)
             
-            Text("Request a Ride")
+            Text("Solicitar Viaje")
                 .font(.headline)
-                .foregroundColor(.white)
+                .foregroundColor(.primary)
             
-            Text("Tap the Map tab to select your pickup and dropoff locations")
+            Text("Toca la pestaña Mapa para seleccionar tu recogida y destino")
                 .font(.caption)
-                .foregroundColor(.white.opacity(0.7))
+                .foregroundColor(.secondary)
                 .multilineTextAlignment(.center)
         }
         .padding(24)
@@ -122,30 +122,30 @@ struct HomeView: View {
     
     private var recentRidesSection: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Text("Recent Rides")
+            Text("Viajes Recientes")
                 .font(.headline)
-                .foregroundColor(.white)
+                .foregroundColor(.primary)
             
             ForEach(rideViewModel.history.prefix(3)) { ride in
                 HStack {
                     VStack(alignment: .leading, spacing: 4) {
                         Text(ride.pickup.shortDescription)
                             .font(.subheadline)
-                            .foregroundColor(.white)
+                            .foregroundColor(.primary)
                         
                         Text(ride.createdAt, style: .relative)
                             .font(.caption)
-                            .foregroundColor(.white.opacity(0.6))
+                            .foregroundColor(.secondary)
                     }
                     
                     Spacer()
                     
                     Text(BiciTaxiTheme.formatCOP(ride.estimatedFare))
                         .font(.subheadline.weight(.medium))
-                        .foregroundColor(.white.opacity(0.8))
+                        .foregroundColor(.secondary)
                 }
                 .padding(12)
-                .background(Color.white.opacity(0.05))
+                .background(Color.secondary.opacity(0.1))
                 .clipShape(RoundedRectangle(cornerRadius: 12))
             }
         }

@@ -9,6 +9,8 @@ import SwiftUI
 import Combine
 import AuthenticationServices
 
+// User model is defined in Models/User.swift
+
 /// User authentication state
 enum AuthState: Equatable {
     case unauthenticated
@@ -16,17 +18,6 @@ enum AuthState: Equatable {
     case authenticated(User)
 }
 
-/// Simple User model for authentication
-struct User: Equatable, Identifiable {
-    let id: String
-    let name: String
-    let email: String
-    let photoURL: URL?
-    
-    static func == (lhs: User, rhs: User) -> Bool {
-        lhs.id == rhs.id
-    }
-}
 
 /// Manages authentication state for the app
 @MainActor
