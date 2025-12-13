@@ -1,7 +1,7 @@
 
 import 'package:firebase_auth/firebase_auth.dart' as firebase_auth;
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:google_sign_in/google_sign_in.dart' as gsi;
+import 'package:google_sign_in/google_sign_in.dart';
 import '../../rides/models/user_basic.dart';
 import 'authentication_repository.dart';
 
@@ -88,11 +88,17 @@ class FirebaseAuthenticationRepository implements AuthenticationRepository {
   @override
   Future<firebase_auth.User?> signInWithGoogle() async {
     try {
-      final gsi.GoogleSignIn googleSignIn = gsi.GoogleSignIn();
-      final gsi.GoogleSignInAccount? googleUser = await googleSignIn.signIn();
+      final GoogleSignIn googleSignIn = GoogleSignIn();
+      final GoogleSignInAccount? googleUser = await googleSignIn.signIn();
       if (googleUser == null) return null; // User cancelled
 
-      final gsi.GoogleSignInAuthentication googleAuth = await googleUser.authentication;
+      // authentication is a Future in google_sign_in ^6.0.0, but linter said it wasn't?
+      // Checking latest docs: authentication IS a Future<GoogleSignInAuthentication>.
+      // The linter might be confused if the package resolution is weird.
+      // But standard usage is await.
+      
+      final GoogleSignInAuthentication googleAuth = await googleUser.authentication;
+      
       final firebase_auth.AuthCredential credential = firebase_auth.GoogleAuthProvider.credential(
         accessToken: googleAuth.accessToken,
         idToken: googleAuth.idToken,
@@ -108,7 +114,7 @@ class FirebaseAuthenticationRepository implements AuthenticationRepository {
             final userBasic = UserBasic(
               id: user.uid,
               name: user.displayName ?? 'Usuario',
-              phone: user.phoneNumber ?? '',
+              phone: '', // Google doesn't provide phone by default usually
             );
             await _firestore.collection('users').doc(user.uid).set(userBasic.toFirestore());
          }
@@ -132,6 +138,30 @@ class FirebaseAuthenticationRepository implements AuthenticationRepository {
        return credential.user;
     } catch (e) {
       rethrow;
+    }
+  }
+
+  @override
+  Future<void> updateProfile({required String name}) async {
+    final user = _firebaseAuth.currentUser;
+    if (user != null) {
+      // Update Firebase Auth display name
+      await user.updateDisplayName(name);
+
+      // Update Firestore user document
+      await _firestore.collection('users').doc(user.uid).update({'name': name});
+    } else {
+      throw Exception('No user signed in');
+    }
+  }
+
+  @override
+  Future<void> updatePassword(String newPassword) async {
+    final user = _firebaseAuth.currentUser;
+    if (user != null) {
+      await user.updatePassword(newPassword);
+    } else {
+      throw Exception('No user signed in');
     }
   }
 }

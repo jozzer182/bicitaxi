@@ -3,6 +3,7 @@ import 'package:liquid_glass_ui_design/liquid_glass_ui.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/widgets/responsive_layout.dart';
 import '../../../core/widgets/glass_container.dart';
+import '../../../core/providers/app_state.dart';
 
 /// Edit profile screen for the Bici Taxi Conductor app.
 /// Allows editing name, viewing email (read-only), and changing password.
@@ -15,8 +16,16 @@ class EditProfileScreen extends StatefulWidget {
 
 class _EditProfileScreenState extends State<EditProfileScreen> {
   final _formKey = GlobalKey<FormState>();
-  final _nameController = TextEditingController(text: 'Conductor Demo');
-  final _emailController = TextEditingController(text: 'conductor@ejemplo.com');
+  late final TextEditingController _nameController;
+  late final TextEditingController _emailController;
+
+  @override
+  void initState() {
+    super.initState();
+    final user = context.appState.authRepository.currentUser;
+    _nameController = TextEditingController(text: user?.displayName ?? '');
+    _emailController = TextEditingController(text: user?.email ?? '');
+  }
 
   bool _isLoading = false;
 
@@ -31,8 +40,10 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     if (_formKey.currentState?.validate() ?? false) {
       setState(() => _isLoading = true);
 
-      // TODO: Implement actual profile save with backend
-      Future.delayed(const Duration(seconds: 1), () {
+      // Real profile save
+      context.appState.authRepository
+          .updateProfile(name: _nameController.text.trim())
+          .then((_) {
         if (!mounted) return;
         setState(() => _isLoading = false);
 
@@ -48,6 +59,16 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         );
 
         Navigator.pop(context);
+      }).catchError((error) {
+        if (!mounted) return;
+        setState(() => _isLoading = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error al actualizar: $error'),
+            backgroundColor: AppColors.error,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
       });
     }
   }
@@ -331,18 +352,15 @@ class _ChangePasswordDialog extends StatefulWidget {
 
 class _ChangePasswordDialogState extends State<_ChangePasswordDialog> {
   final _formKey = GlobalKey<FormState>();
-  final _currentPasswordController = TextEditingController();
   final _newPasswordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
 
-  bool _obscureCurrentPassword = true;
   bool _obscureNewPassword = true;
   bool _obscureConfirmPassword = true;
   bool _isLoading = false;
 
   @override
   void dispose() {
-    _currentPasswordController.dispose();
     _newPasswordController.dispose();
     _confirmPasswordController.dispose();
     super.dispose();
@@ -352,10 +370,12 @@ class _ChangePasswordDialogState extends State<_ChangePasswordDialog> {
     if (_formKey.currentState?.validate() ?? false) {
       setState(() => _isLoading = true);
 
-      // TODO: Implement actual password change with backend
-      Future.delayed(const Duration(seconds: 1), () {
+      // Real password change
+      context.appState.authRepository
+          .updatePassword(_newPasswordController.text)
+          .then((_) {
         if (!mounted) return;
-
+        setState(() => _isLoading = false);
         Navigator.pop(context);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -365,6 +385,22 @@ class _ChangePasswordDialogState extends State<_ChangePasswordDialog> {
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(12),
             ),
+          ),
+        );
+      }).catchError((error) {
+        if (!mounted) return;
+        setState(() => _isLoading = false);
+        
+        String errorMessage = 'Error al cambiar contraseña';
+        if (error.toString().contains('requires-recent-login')) {
+          errorMessage = 'Por seguridad, inicia sesión nuevamente para cambiar tu contraseña';
+        }
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(errorMessage),
+            backgroundColor: AppColors.error,
+            behavior: SnackBarBehavior.floating,
           ),
         );
       });
@@ -396,22 +432,7 @@ class _ChangePasswordDialogState extends State<_ChangePasswordDialog> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              _buildPasswordField(
-                controller: _currentPasswordController,
-                label: 'Contraseña actual',
-                obscure: _obscureCurrentPassword,
-                onToggleObscure: () {
-                  setState(
-                    () => _obscureCurrentPassword = !_obscureCurrentPassword,
-                  );
-                },
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Ingresa tu contraseña actual';
-                  }
-                  return null;
-                },
-              ),
+              // Current password field removed
               const SizedBox(height: 16),
               _buildPasswordField(
                 controller: _newPasswordController,

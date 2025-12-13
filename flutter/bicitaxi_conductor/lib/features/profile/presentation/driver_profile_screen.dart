@@ -57,13 +57,20 @@ class _DriverProfileScreenState extends State<DriverProfileScreen> {
   }
 
   Widget _buildProfileHeader(BuildContext context, bool isDemoMode) {
+    // Get user from repository
+    final user = context.appState.authRepository.currentUser;
+    // Show "Conductor Demo" in demo mode, otherwise show display name or "Conductor"
+    final displayName = isDemoMode
+        ? 'Conductor Demo'
+        : (user?.displayName ?? 'Conductor');
+
     return UltraGlassCard(
       borderRadius: 24,
       padding: const EdgeInsets.all(24),
       child: Column(
         children: [
           Text(
-            isDemoMode ? 'Conductor Demo' : '',
+            displayName,
             style: Theme.of(context).textTheme.headlineSmall?.copyWith(
               fontWeight: FontWeight.bold,
               color: Colors.black87,

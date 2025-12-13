@@ -29,4 +29,10 @@ abstract class AuthenticationRepository {
 
   /// Signs in anonymously.
   Future<User?> signInAnonymously();
+
+  /// Updates the user's profile information.
+  Future<void> updateProfile({required String name});
+
+  /// Updates the user's password.
+  Future<void> updatePassword(String newPassword);
 }

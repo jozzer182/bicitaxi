@@ -137,4 +137,28 @@ class FirebaseAuthenticationRepository implements AuthenticationRepository {
       rethrow;
     }
   }
+
+  @override
+  Future<void> updateProfile({required String name}) async {
+    final user = _firebaseAuth.currentUser;
+    if (user != null) {
+      // Update Firebase Auth display name
+      await user.updateDisplayName(name);
+
+      // Update Firestore user document
+      await _firestore.collection('users').doc(user.uid).update({'name': name});
+    } else {
+      throw Exception('No user signed in');
+    }
+  }
+
+  @override
+  Future<void> updatePassword(String newPassword) async {
+    final user = _firebaseAuth.currentUser;
+    if (user != null) {
+      await user.updatePassword(newPassword);
+    } else {
+      throw Exception('No user signed in');
+    }
+  }
 }

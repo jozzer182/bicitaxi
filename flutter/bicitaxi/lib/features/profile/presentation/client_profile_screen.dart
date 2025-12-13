@@ -57,13 +57,20 @@ class _ClientProfileScreenState extends State<ClientProfileScreen> {
   }
 
   Widget _buildProfileHeader(BuildContext context, bool isDemoMode) {
+    // Get user from repository
+    final user = context.appState.authRepository.currentUser;
+    // Show "Usuario Invitado" in demo mode, otherwise show display name or "Usuario"
+    final displayName = isDemoMode
+        ? 'Usuario Invitado'
+        : (user?.displayName ?? 'Usuario');
+
     return UltraGlassCard(
       borderRadius: 24,
       padding: const EdgeInsets.all(24),
       child: Column(
         children: [
           Text(
-            isDemoMode ? 'Usuario Invitado' : '',
+            displayName,
             style: Theme.of(context).textTheme.headlineSmall?.copyWith(
               fontWeight: FontWeight.bold,
               color: Colors.black87,

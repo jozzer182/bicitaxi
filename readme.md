@@ -1,289 +1,145 @@
-# Bici Taxi – Dual Flutter App (Client & Driver)
+# Bici Taxi – Hybrid Monorepo (Android & iOS)
 
-Bici Taxi is a minimal, modern ride-hailing experience tailored for bike taxis.  
-Instead of cars and complex options, Bici Taxi focuses on **one thing done well**: connecting riders with local bike-taxi drivers in a clean, fast, and beautiful mobile experience.
+Bici Taxi is a modern, ride-hailing experience tailored for bike taxis.
+This repository follows a **Hybrid Architecture** to leverage the best of both worlds:
 
-This repository contains **two Flutter apps**:
+-   **Android**: Built with **Flutter** for rapid development and consistency across the fragmented Android ecosystem.
+-   **iOS**: Built with **Native SwiftUI** to maximize performance, animations, and integration with Apply system design (iOS 18+).
 
-- **Bici Taxi** – the **client** app (riders)
-- **Bici Taxi Conductor** – the **driver** app (bike-taxi drivers)
-
-Both apps share the same design language, use a Liquid Glass-inspired UI, and are ready to be connected to a Firebase backend.
+Both platforms share the same **Liquid Glass** design language—a clean, white, light-themed aesthetic with translucent glass cards, blurred backgrounds, and high-readability typography.
 
 ---
 
-## Key Features
+## 🏛️ Project Architecture
 
-### 🌌 Liquid Glass UI Design
-- Strong use of **`liquid_glass_renderer`** and **`liquid_glass_ui_design`** (Flutter).
-- Dark primary theme with glass cards and overlays.
-- Carefully tuned for **readability + aesthetics** (no “just another Material app” feeling).
+This monorepo contains four distinct applications organized by platform and role:
 
-### 🍎 Native iOS 26 Liquid Glass (New!)
-The iOS apps feature a **native SwiftUI implementation** using Apple's iOS 26 Liquid Glass design language:
+| Platform | Tech Stack | Client App (Rider) | Driver App (Conductor) |
+| :--- | :--- | :--- | :--- |
+| **Android** | **Flutter** | `bicitaxi/flutter/bicitaxi` | `bicitaxi/flutter/bicitaxi_conductor` |
+| **iOS** | **Native SwiftUI** | `bicitaxi/ios/BiciTaxi` | `bicitaxi/ios/BiciTaxiConductor` |
 
-- **Native TabView**: Uses iOS 26's native `TabView` with automatic Liquid Glass styling
-- **Tab Syntax**: Clean `Tab(title, systemImage:, value:)` API for tab definitions
-- **Automatic Styling**: iOS 26 applies Liquid Glass material to the tab bar automatically
-- **System Animations**: Native tab switching with system-managed transitions
-- **Dynamic Map Styling**: Time-of-day based map appearance
-
-> 📖 See [`ios/README.md`](ios/README.md) for detailed technical documentation on our iOS 26 implementation and API reference.
-
-### 📱 Built for Phones and Tablets
-- First-class support for:
-  - Android phones & tablets
-  - iPhone & iPad
-- Responsive layouts:
-  - Bottom navigation on smaller screens.
-  - Side navigation / wider layouts on tablets.
-  - Constrained content width for a more “app-like” look on large devices.
-
-### 🗺️ OpenStreetMap Integration
-- Map powered by **`flutter_map`** using **OpenStreetMap** tiles.
-- No Google Maps dependency.
-- Location handled via:
-  - `geolocator`
-  - `permission_handler`
-- Behavior:
-  - Client: select pickup and dropoff directly on the map.
-  - Driver: view own position and dummy nearby requests.
-
-### 🚲 Ride Flow (Front-End Logic)
-**Client App (Bici Taxi):**
-- Pick pickup + dropoff on map.
-- Request a ride (front-end only).
-- See an **Active Ride** screen with status changes.
-- View a **History** of completed rides (from an in-memory repository).
-
-**Driver App (Bici Taxi Conductor):**
-- See a list of **pending ride requests** (dummy, generated locally).
-- Accept a ride and move through statuses:
-  - Assign → Arriving → In Progress → Completed.
-- View a simple **earnings summary** based on completed rides.
-
-All ride logic uses **pure Dart models** and repositories designed to be **Firebase-ready** (no backend wired yet).
-
-### 💬 In-Ride Chat (Local / Demo)
-- Simple, structured chat between client and driver, per ride:
-  - Chat messages stored in an in-memory chat repository.
-  - `ChatMessage` model is designed to match a future Firestore schema.
-- Liquid Glass chat screen:
-  - Bubble-based UI (left/right alignment).
-  - Works nicely on both phones and tablets.
-- Currently **local-only**, but structure is ready for real-time backend integration.
-
-### 🔥 Firebase-Ready Models (But No Backend Yet)
-- Ride models, chat models, and repositories are implemented with:
-  - `toMap()` / `fromMap()` using only primitives.
-  - `DateTime` stored as `millisecondsSinceEpoch`.
-- Comments (`TODO`) mark the exact places where:
-  - Firebase Auth
-  - Firestore collections
-  - Real-time streams  
-  can be plugged in without redesigning the app.
+### Backend
+-   **Firebase Auth**: Secure authentication (Email/Password, Google).
+-   **Cloud Firestore**: Real-time database for user profiles, ride requests, and chat.
+-   **Firebase Storage**: (Planned) User avatars and documents.
 
 ---
 
-## Tech Stack
+## ✨ Key Features
 
-- **Framework:** Flutter 3.38.4
-- **Languages:** Dart, Kotlin (minimal Android host), Swift (iOS host if needed)
-- **UI:**
-  - `liquid_glass_renderer`
-  - `liquid_glass_ui_design`
-- **Maps:**
-  - `flutter_map`
-  - `latlong2`
-- **Location & Permissions:**
-  - `geolocator`
-  - `permission_handler`
-- **Icons:**
-  - `flutter_launcher_icons`
-  - Icons stored in each app’s `/icons` folder and generated for Android/iOS.
+### 🌌 Liquid Glass UI (Light Theme)
+Both platforms implement our custom **Liquid Glass** design system:
+-   **Light Mode Only**: A bright, clean aesthetic using white and translucent layers.
+-   **Glassmorphism**: High-quality blur effects (`BackdropFilter` in Flutter, `UltraThinMaterial` in SwiftUI) for cards and overlays.
+-   **Typography**: Modern, bold headings with readable body text.
+-   **Animations**: Fluid transitions and interactive elements.
+
+### � Core Functionality
+-   **Authentication**: Complete flow (Login, Sign Up, Forgot Password, Edit Profile).
+-   **Maps & Location**:
+    -   **Android**: OpenStreetMap via `flutter_map`.
+    -   **iOS**: Native Apple Maps via `MapKit`.
+-   **Ride Logic**:
+    -   **Client**: Select pickup/dropoff, request ride, view driver status.
+    -   **Driver**: Receive requests, accept/reject, navigation, ride completion.
+-   **Profile Management**:
+    -   Real-time name updates.
+    -   Secure password changes.
+    -   Account management (Logout, Delete Account).
 
 ---
 
-## Project Structure
+## 🛠️ Technical Implementation
 
-Repository root (simplified):
+### Android (Flutter)
+-   **State Management**: `Provider` / `ChangeNotifier` (AppState).
+-   **Architecture**: Repository Pattern (`AuthRepository`, `RideRepository`).
+-   **Dependencies**:
+    -   `firebase_auth`, `cloud_firestore` (Backend).
+    -   `google_sign_in` (Social Auth).
+    -   `flutter_map` (Maps).
+    -   `liquid_glass_ui` (Custom UI package).
+
+### iOS (Native)
+-   **Framework**: SwiftUI + Combine.
+-   **Architecture**: MVVM (Model-View-ViewModel).
+-   **Dependencies**:
+    -   `FirebaseAuth`, `FirebaseFirestore` (Swift Package Manager).
+    -   `MapKit` (Native Maps).
+-   **Design**: Custom ViewModifiers for "Glass" effects and "Liquid Buttons".
+
+---
+
+## 🚀 Getting Started
+
+### Prerequisites
+-   **Flutter SDK**: 3.27+ (for Android).
+-   **Xcode**: 16+ (for iOS).
+-   **CocoaPods**: (If required for specific Flutter plugins).
+-   **Google Services**:
+    -   `google-services.json` (Android) placed in `android/app`.
+    -   `GoogleService-Info.plist` (iOS) placed in `ios/Runner` (Flutter) and root of Native iOS projects.
+
+### 🤖 Running Android (Flutter)
+
+1.  **Client App**:
+    ```bash
+    cd flutter/bicitaxi
+    flutter pub get
+    flutter run
+    ```
+
+2.  **Driver App**:
+    ```bash
+    cd flutter/bicitaxi_conductor
+    flutter pub get
+    flutter run
+    ```
+
+### 🍎 Running iOS (Native)
+
+1.  Open the workspace or project in Xcode:
+    -   `ios/BiciTaxi.xcodeproj` (Client)
+    -   `ios/BiciTaxiConductor.xcodeproj` (Driver)
+2.  Select your target simulator or device.
+3.  Hit **Run (Cmd+R)**.
+
+---
+
+## 📂 Directory Structure
 
 ```text
 .
-├─ README.md
-├─ bicitaxi/                  # Client app (riders)
-│  ├─ android/
-│  ├─ ios/
-│  ├─ lib/
-│  │  ├─ core/
-│  │  │  ├─ theme/
-│  │  │  └─ widgets/
-│  │  ├─ features/
-│  │  │  ├─ auth/
-│  │  │  ├─ home/
-│  │  │  ├─ map/
-│  │  │  ├─ rides/
-│  │  │  └─ chat/
-│  └─ icons/
-└─ bicitaxi_conductor/        # Driver app (bike-taxi drivers)
-   ├─ android/
-   ├─ ios/
-   ├─ lib/
-   │  ├─ core/
-   │  ├─ features/
-   │  │  ├─ auth/
-   │  │  ├─ home/
-   │  │  ├─ map/
-   │  │  ├─ rides/
-   │  │  └─ chat/
-   └─ icons/
-```
-
-Each app has its own:
-
-- `main.dart`
-- Theme configuration
-- Routes
-- Features (auth, map, rides, chat), mirrored but with role-specific behavior.
-
----
-
-## Getting Started
-
-### Prerequisites
-
-- **Flutter 3.38.4** installed and configured.
-- **Android Studio / SDK** set up for Android builds.
-- **Xcode** (if you want to run on iOS).
-- A device or emulator (Android or iOS).
-
-### 1. Clone the repo
-
-```bash
-git clone https://github.com/<your-user>/bici-taxi.git
-cd bici-taxi
-```
-
-### 2. Run the Client App (Bici Taxi)
-
-```bash
-cd bicitaxi
-flutter pub get
-flutter run
-```
-
-> This will launch the **client** app (rider side) on the connected device/emulator.
-
-### 3. Run the Driver App (Bici Taxi Conductor)
-
-In another terminal:
-
-```bash
-cd bicitaxi_conductor
-flutter pub get
-flutter run
-```
-
-> This launches the **driver** app so you can test flows in parallel.
-
----
-
-## Building Android APKs
-
-From each app’s root:
-
-### Client APK
-
-```bash
-cd bicitaxi
-flutter clean
-flutter pub get
-flutter analyze
-flutter build apk --release
-```
-
-APK path:
-
-```text
-bicitaxi/build/app/outputs/flutter-apk/app-release.apk
-```
-
-### Driver APK
-
-```bash
-cd bicitaxi_conductor
-flutter clean
-flutter pub get
-flutter analyze
-flutter build apk --release
-```
-
-APK path:
-
-```text
-bicitaxi_conductor/build/app/outputs/flutter-apk/app-release.apk
-```
-
-You can rename them as:
-
-- `bicitaxi_client.apk`
-- `bicitaxi_conductor.apk`
-
-for easier sharing and testing.
-
----
-
-## Roadmap
-
-Planned next steps:
-
-- 🔐 **Firebase Auth**  
-  - Sign in with Google & Apple.
-  - Proper user accounts for client and driver.
-
-- ☁️ **Firestore Backend**
-  - Persist rides (creation, assignment, status updates).
-  - Persist chat messages per ride.
-  - Real-time updates for driver availability and ride status.
-
-- 💸 **Payment & Rating (Future)**
-  - Basic rating system for rides.
-  - Payment integration (if required by the product scope).
-
-- 🌎 **Production Hardening**
-  - Better error handling and empty states.
-  - Analytics events (start ride, cancel, completed, etc.).
-  - Theming variations for different markets.
-
----
-
-## Why Bici Taxi?
-
-Most ride-hailing apps are heavy, complex, and tuned for cars.  
-**Bici Taxi** is intentionally:
-
-- **Lightweight** – fast to open, easy to understand.
-- **Focused** – no unnecessary clutter or endless options.
-- **Designed for bikes** – short-distance, urban, human-scale transportation.
-
-It’s a solid starting point if you want to:
-
-- Launch a local bike-taxi service.
-- Prototype mobility ideas.
-- Learn real-world Flutter architecture with dual apps (client + driver) sharing concepts but with different flows.
-
----
-
-## License
-
-You can adapt this section based on how you want to license the project (MIT, Apache 2.0, proprietary, etc.).
-
-```text
-Copyright (c) <Your Name>
-
-All rights reserved.
+├── flutter/                        # ANDROID (Flutter Projects)
+│   ├── bicitaxi/                   # 🟢 Client App
+│   │   ├── lib/
+│   │   │   ├── features/           # Auth, Profile, Rides, Map
+│   │   │   ├── core/               # Theme, Repositories, Widgets
+│   │   └── ...
+│   └── bicitaxi_conductor/         # 🔵 Driver App
+│       ├── lib/
+│       └── ...
+│
+├── ios/                            # iOS (Native Projects)
+│   ├── BiciTaxi/                   # 🟢 Client App (SwiftUI)
+│   │   ├── App/
+│   │   ├── Core/
+│   │   ├── Features/
+│   │   └── ...
+│   └── BiciTaxiConductor/          # 🔵 Driver App (SwiftUI)
+│       └── ...
+│
+└── README.md
 ```
 
 ---
 
-If you build something cool on top of Bici Taxi or ship it to production, feel free to mention it in your docs or portfolio – this project is meant to be both a **real product seed** and a **showcase of Flutter capabilities**.
+### 📝 Roadmap / Pending
+-   [ ] **Real-time Ride Matching**: Connect Firestore streams to map logic.
+-   [ ] **Push Notifications**: FCM integration for ride alerts.
+-   [ ] **Chat**: Implement real-time chat using Firestore subcollections.
+
+---
+
+**Developed with ❤️ by the Bici Taxi Team.**
