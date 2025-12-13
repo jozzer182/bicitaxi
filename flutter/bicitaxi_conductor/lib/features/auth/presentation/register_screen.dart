@@ -4,6 +4,7 @@ import '../../../core/theme/app_colors.dart';
 import '../../../core/widgets/responsive_layout.dart';
 import '../../../core/widgets/glass_container.dart';
 import '../../../core/routes/app_routes.dart';
+import '../../../core/providers/app_state.dart';
 
 /// Registration screen for Bici Taxi Conductor.
 /// Displays a form to create a new driver account with liquid glass aesthetic.
@@ -224,17 +225,26 @@ class _RegisterScreenState extends State<RegisterScreen> {
             LiquidButton(
               borderRadius: 16,
               color: AppColors.driverAccent,
-              onTap: _handleRegister,
-              child: const Padding(
-                padding: EdgeInsets.symmetric(vertical: 4),
-                child: Text(
-                  'Registrarse',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.black87,
-                  ),
-                ),
+              onTap: _isLoading ? null : _handleRegister,
+              child: Padding(
+                padding: const EdgeInsets.symmetric(vertical: 4),
+                child: _isLoading
+                    ? const SizedBox(
+                        height: 24,
+                        width: 24,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: Colors.white,
+                        ),
+                      )
+                    : const Text(
+                        'Registrarse',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.black87,
+                        ),
+                      ),
               ),
             ),
             const SizedBox(height: 24),
@@ -313,10 +323,31 @@ class _RegisterScreenState extends State<RegisterScreen> {
     );
   }
 
-  void _handleRegister() {
+  bool _isLoading = false;
+
+  void _handleRegister() async {
     if (_formKey.currentState?.validate() ?? false) {
-      // TODO: Implement Firebase Auth registration
-      Navigator.pushReplacementNamed(context, AppRoutes.homeShell);
+      setState(() => _isLoading = true);
+      try {
+        await context.appState.authRepository.createUserWithEmailAndPassword(
+          _emailController.text.trim(),
+          _passwordController.text,
+          _nameController.text.trim(),
+        );
+        if (mounted) {
+          Navigator.pushReplacementNamed(context, AppRoutes.homeShell);
+        }
+      } catch (e) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Error al registrarse: ${e.toString()}')),
+          );
+        }
+      } finally {
+        if (mounted) {
+          setState(() => _isLoading = false);
+        }
+      }
     }
   }
 }

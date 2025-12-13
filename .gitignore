@@ -233,3 +233,9 @@ agent_ios_memory.json
 agent_*_memory.json
 # Agent workflows folder
 #.agent/
+
+# Local Debug Files
+debugconsole.txt
+agent_memory.json
+*.mp4
+*.trace

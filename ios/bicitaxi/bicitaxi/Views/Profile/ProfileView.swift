@@ -9,7 +9,7 @@ import SwiftUI
 
 struct ProfileView: View {
     @ObservedObject var rideViewModel: ClientRideViewModel
-    var authManager: AuthManager?
+    @EnvironmentObject var authManager: AuthManager
     
     // MARK: - MockData Manager
     @StateObject private var mockDataManager = MockDataManager.shared
@@ -76,6 +76,34 @@ struct ProfileView: View {
         }
     }
     
+    // MARK: - Helpers
+    
+    private var displayedName: String {
+        if mockDataManager.isMockDataEnabled {
+            return mockDataManager.userName
+        }
+        
+        switch authManager.authState {
+        case .authenticated(let user):
+            return user.name
+        case .guest:
+            return "Invitado"
+        default:
+            return "Sin Usuario"
+        }
+    }
+    
+    private var displayedHandle: String {
+        if mockDataManager.isMockDataEnabled {
+            return mockDataManager.userHandle
+        }
+        // Could generate handle from email or just hide it
+        if case .authenticated(let user) = authManager.authState {
+            return user.email
+        }
+        return ""
+    }
+    
     // MARK: - Name Header
     
     private var nameHeader: some View {
@@ -83,12 +111,12 @@ struct ProfileView: View {
             showEditAccount = true
         } label: {
             VStack(spacing: 12) {
-                Text(mockDataManager.userName.isEmpty ? "Sin Usuario" : mockDataManager.userName)
+                Text(displayedName)
                     .font(.title.weight(.bold))
                     .foregroundColor(.primary)
                 
-                if !mockDataManager.userHandle.isEmpty {
-                    Text(mockDataManager.userHandle)
+                if !displayedHandle.isEmpty {
+                    Text(displayedHandle)
                         .font(.caption)
                         .foregroundColor(.secondary)
                 }
@@ -96,7 +124,7 @@ struct ProfileView: View {
                 // Edit hint
                 HStack(spacing: 4) {
                     Image(systemName: "pencil")
-                        .font(.caption2)
+                    .font(.caption2)
                     Text("Toca para editar")
                         .font(.caption2)
                 }
@@ -342,7 +370,7 @@ struct ProfileView: View {
     }
     
     private func handleLogout() {
-        authManager?.signOut()
+        authManager.signOut()
     }
     
     private func handleDeleteAccount() {
@@ -355,7 +383,8 @@ struct ProfileView: View {
 #Preview {
     ZStack {
         BiciTaxiTheme.background.ignoresSafeArea()
-        ProfileView(rideViewModel: ClientRideViewModel(repo: InMemoryRideRepository()), authManager: nil)
+        ProfileView(rideViewModel: ClientRideViewModel(repo: InMemoryRideRepository()))
+            .environmentObject(AuthManager())
     }
     .preferredColorScheme(.light)
 }

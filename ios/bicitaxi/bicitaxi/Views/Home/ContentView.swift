@@ -17,23 +17,10 @@ struct ContentView: View {
                 AuthContainerView(authManager: authManager)
             case .guest, .authenticated:
                 MainTabView()
-                    .environment(\.authManager, authManager)
+                    .environmentObject(authManager)
             }
         }
         .animation(.easeInOut, value: authManager.authState)
-    }
-}
-
-// MARK: - Environment Key for AuthManager
-
-private struct AuthManagerKey: EnvironmentKey {
-    static let defaultValue: AuthManager? = nil
-}
-
-extension EnvironmentValues {
-    var authManager: AuthManager? {
-        get { self[AuthManagerKey.self] }
-        set { self[AuthManagerKey.self] = newValue }
     }
 }
 

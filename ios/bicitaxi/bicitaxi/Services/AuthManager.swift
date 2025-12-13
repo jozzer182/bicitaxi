@@ -8,6 +8,9 @@
 import SwiftUI
 import Combine
 import AuthenticationServices
+import FirebaseAuth
+import FirebaseFirestore
+
 
 // User model is defined in Models/User.swift
 
@@ -26,6 +29,50 @@ class AuthManager: ObservableObject {
     @Published var isLoading = false
     @Published var errorMessage: String?
     
+    private var db = Firestore.firestore()
+    
+    init() {
+        // Listen to Auth state changes
+        _ = Auth.auth().addStateDidChangeListener { [weak self] _, user in
+            Task { @MainActor in
+                guard let self = self else { return }
+                if let user = user {
+                    if user.isAnonymous {
+                         self.authState = .guest
+                    } else {
+                        // Fetch user details from Firestore
+                        self.fetchUser(userId: user.uid)
+                    }
+                } else {
+                    self.authState = .unauthenticated
+                }
+            }
+        }
+    }
+    
+    private func fetchUser(userId: String) {
+        db.collection("users").document(userId).getDocument { [weak self] snapshot, error in
+            guard let self = self else { return }
+            if let data = snapshot?.data(),
+               let id = data["id"] as? String,
+               let name = data["name"] as? String,
+               let email = data["email"] as? String {
+                
+                let user = User(id: id, name: name, email: email, photoURL: nil)
+                withAnimation {
+                    self.authState = .authenticated(user)
+                }
+            } else {
+                // Fallback if user doc doesn't exist (shouldn't happen if registered correctly)
+                // Or maybe create one? using basic info
+                 let user = User(id: userId, name: "Usuario", email: Auth.auth().currentUser?.email ?? "", photoURL: nil)
+                 withAnimation {
+                     self.authState = .authenticated(user)
+                 }
+            }
+        }
+    }
+    
     // MARK: - Sign In with Apple
     
     func signInWithApple(result: Result<ASAuthorization, Error>) {
@@ -34,42 +81,24 @@ class AuthManager: ObservableObject {
         
         switch result {
         case .success(let authorization):
-            if let appleIDCredential = authorization.credential as? ASAuthorizationAppleIDCredential {
-                let userId = appleIDCredential.user
-                let fullName = appleIDCredential.fullName
-                let email = appleIDCredential.email ?? "apple@user.com"
-                
-                let displayName = [fullName?.givenName, fullName?.familyName]
-                    .compactMap { $0 }
-                    .joined(separator: " ")
-                
-                let user = User(
-                    id: userId,
-                    name: displayName.isEmpty ? "Usuario Apple" : displayName,
-                    email: email,
-                    photoURL: nil
-                )
-                
-                withAnimation {
-                    authState = .authenticated(user)
-                }
+            if let _ = authorization.credential as? ASAuthorizationAppleIDCredential {
+                // TODO: Implement proper Firebase Apple Sign-In
+                // This requires nonce handling and sending token to Firebase
+                self.errorMessage = "Inicio de sesión con Apple requiere configuración backend adicional."
             }
         case .failure(let error):
             errorMessage = "Error al iniciar sesión con Apple: \(error.localizedDescription)"
         }
-        
         isLoading = false
     }
     
-    // MARK: - Sign In with Google (Stub)
+    // MARK: - Sign In with Google
     
     func signInWithGoogle() {
         isLoading = true
         errorMessage = nil
-        
-        // TODO: Implement Google Sign-In SDK integration
-        // For now, show a message
-        DispatchQueue.main.asyncAfter(deadline: .now() + 1) { [weak self] in
+        // TODO: Requires GoogleSignIn-iOS SDK
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { [weak self] in
             self?.errorMessage = "Google Sign-In próximamente"
             self?.isLoading = false
         }
@@ -86,20 +115,15 @@ class AuthManager: ObservableObject {
         isLoading = true
         errorMessage = nil
         
-        // TODO: Implement Firebase Auth or backend authentication
-        // For now, simulate authentication
-        DispatchQueue.main.asyncAfter(deadline: .now() + 1) { [weak self] in
-            let user = User(
-                id: UUID().uuidString,
-                name: "Usuario",
-                email: email,
-                photoURL: nil
-            )
-            
-            withAnimation {
-                self?.authState = .authenticated(user)
-            }
-            self?.isLoading = false
+        Auth.auth().signIn(withEmail: email, password: password) { [weak self] result, error in
+             Task { @MainActor in
+                 self?.isLoading = false
+                 if let error = error {
+                     self?.errorMessage = error.localizedDescription
+                     return
+                 }
+                 // AuthState listener will handle the update
+             }
         }
     }
     
@@ -107,43 +131,131 @@ class AuthManager: ObservableObject {
     
     func register(name: String, email: String, password: String, phone: String) {
         guard !name.isEmpty, !email.isEmpty, !password.isEmpty else {
-            errorMessage = "Por favor completa todos los campos"
-            return
+             errorMessage = "Por favor completa todos los campos"
+             return
         }
         
         isLoading = true
         errorMessage = nil
         
-        // TODO: Implement Firebase Auth or backend registration
-        // For now, simulate registration
-        DispatchQueue.main.asyncAfter(deadline: .now() + 1) { [weak self] in
-            let user = User(
-                id: UUID().uuidString,
-                name: name,
-                email: email,
-                photoURL: nil
-            )
-            
-            withAnimation {
-                self?.authState = .authenticated(user)
+        Auth.auth().createUser(withEmail: email, password: password) { [weak self] result, error in
+            Task { @MainActor in
+                if let error = error {
+                    print("❌ DEBUG: Auth Error: \(error)")
+                    if let nsError = error as NSError? {
+                         print("❌ DEBUG: Domain: \(nsError.domain), Code: \(nsError.code), UserInfo: \(nsError.userInfo)")
+                    }
+                    self?.isLoading = false
+                    self?.errorMessage = error.localizedDescription
+                    return
+                }
+                
+                guard let userId = result?.user.uid else {
+                    self?.isLoading = false
+                    return
+                }
+                
+                // Create User Document
+                let userData: [String: Any] = [
+                    "id": userId,
+                    "name": name,
+                    "email": email,
+                    "phone": phone,
+                    "role": "client",
+                    "createdAt": FieldValue.serverTimestamp()
+                ]
+                
+                self?.db.collection("users").document(userId).setData(userData) { error in
+                    Task { @MainActor in
+                        self?.isLoading = false
+                        if let error = error {
+                            self?.errorMessage = "Error al guardar perfil: \(error.localizedDescription)"
+                        }
+                        // AuthState listener will pick up the user
+                    }
+                }
             }
-            self?.isLoading = false
         }
     }
     
     // MARK: - Continue as Guest
     
     func continueAsGuest() {
-        withAnimation {
-            authState = .guest
+        isLoading = true
+        Auth.auth().signInAnonymously { [weak self] result, error in
+            Task { @MainActor in
+                self?.isLoading = false
+                if let error = error {
+                    self?.errorMessage = "Error anónimo: \(error.localizedDescription)"
+                }
+            }
+        }
+    }
+    
+    // MARK: - Profile Management
+    
+    func updateProfile(name: String, completion: @escaping (Result<Void, Error>) -> Void) {
+        guard let userId = Auth.auth().currentUser?.uid else {
+            completion(.failure(NSError(domain: "Auth", code: 401, userInfo: [NSLocalizedDescriptionKey: "No hay usuario autenticado"])))
+            return
+        }
+        
+        isLoading = true
+        
+        let updateData: [String: Any] = ["name": name]
+        
+        db.collection("users").document(userId).updateData(updateData) { [weak self] error in
+            Task { @MainActor in
+                self?.isLoading = false
+                if let error = error {
+                    completion(.failure(error))
+                    return
+                }
+                
+                // Update local state if authenticated
+                if case .authenticated(let user) = self?.authState {
+                    let updatedUser = User(id: user.id, name: name, email: user.email, photoURL: user.photoURL)
+                    self?.authState = .authenticated(updatedUser)
+                }
+                
+                completion(.success(()))
+            }
+        }
+    }
+    
+    // MARK: - Password Management
+    
+    func changePassword(new: String, completion: @escaping (Result<Void, Error>) -> Void) {
+        guard let user = Auth.auth().currentUser else {
+            completion(.failure(NSError(domain: "Auth", code: 401, userInfo: [NSLocalizedDescriptionKey: "No hay usuario autenticado"])))
+            return
+        }
+        
+        isLoading = true
+        
+        // Update Password directly (requires recent login)
+        user.updatePassword(to: new) { error in
+            Task { @MainActor in
+                self.isLoading = false
+                if let error = error {
+                    // Check for "requires recent login" error specifically to give better feedback?
+                    // For now, just pass the error.
+                    completion(.failure(error))
+                } else {
+                    completion(.success(()))
+                }
+            }
         }
     }
     
     // MARK: - Sign Out
     
     func signOut() {
-        withAnimation {
-            authState = .unauthenticated
+        do {
+            try Auth.auth().signOut()
+            // AuthState listener will handle unauthenticated
+        } catch {
+            errorMessage = "Error al cerrar sesión: \(error.localizedDescription)"
         }
     }
 }

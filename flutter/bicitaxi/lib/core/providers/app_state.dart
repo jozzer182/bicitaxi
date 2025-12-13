@@ -4,11 +4,14 @@ import '../../features/rides/repository/ride_repository.dart';
 import '../../features/rides/repository/in_memory_ride_repository.dart';
 import '../../features/chat/repository/chat_repository.dart';
 import '../../features/chat/repository/in_memory_chat_repository.dart';
+import '../../features/auth/repository/authentication_repository.dart';
+import '../../features/auth/repository/firebase_authentication_repository.dart';
 
 /// Global singleton instances for app state.
 /// TODO: Swap InMemoryRideRepository and InMemoryChatRepository for Firebase implementation and proper DI.
 final _sharedRideRepo = InMemoryRideRepository();
 final _sharedChatRepo = InMemoryChatRepository();
+final _sharedAuthRepo = FirebaseAuthenticationRepository();
 final _sharedController = ClientRideController(repo: _sharedRideRepo);
 
 /// Provides app-wide state to the widget tree.
@@ -23,6 +26,9 @@ class AppState extends InheritedWidget {
 
   /// Gets the shared chat repository.
   ChatRepository get chatRepository => _sharedChatRepo;
+
+  /// Gets the shared authentication repository.
+  AuthenticationRepository get authRepository => _sharedAuthRepo;
 
   /// Gets the shared ride controller.
   ClientRideController get rideController => _sharedController;
@@ -47,4 +53,5 @@ extension AppStateExtension on BuildContext {
   ClientRideController get rideController => _sharedController;
   RideRepository get rideRepository => _sharedRideRepo;
   ChatRepository get chatRepository => _sharedChatRepo;
+  AuthenticationRepository get authRepository => _sharedAuthRepo;
 }

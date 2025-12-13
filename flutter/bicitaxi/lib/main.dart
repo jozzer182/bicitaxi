@@ -7,8 +7,13 @@ import 'core/routes/app_routes.dart';
 import 'core/providers/app_state.dart';
 import 'core/services/demo_mode_service.dart';
 
+import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp();
 
   // Initialize demo mode service
   await DemoModeService().init();
@@ -54,7 +59,10 @@ class BiciTaxiApp extends StatelessWidget {
           title: 'Bici Taxi',
           debugShowCheckedModeBanner: false,
           theme: AppTheme.lightTheme,
-          initialRoute: AppRoutes.login,
+          initialRoute: FirebaseAuth.instance.currentUser != null 
+              ? AppRoutes.homeShell 
+              : AppRoutes.login,
+
           onGenerateRoute: AppRouter.onGenerateRoute,
           builder: (context, child) {
             // Apply responsive constraints and ensure proper text scaling

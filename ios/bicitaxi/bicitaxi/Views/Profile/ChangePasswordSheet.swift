@@ -9,9 +9,9 @@ import SwiftUI
 
 struct ChangePasswordSheet: View {
     @Environment(\.dismiss) private var dismiss
+    @EnvironmentObject var authManager: AuthManager
     
     // MARK: - State
-    @State private var currentPassword: String = ""
     @State private var newPassword: String = ""
     @State private var confirmPassword: String = ""
     @State private var showCurrentPassword = false
@@ -26,7 +26,7 @@ struct ChangePasswordSheet: View {
     }
     
     private var isFormValid: Bool {
-        !currentPassword.isEmpty && !newPassword.isEmpty && passwordsMatch && newPassword.count >= 6
+        return newPassword.count >= 6 && passwordsMatch
     }
     
     var body: some View {
@@ -35,14 +35,6 @@ struct ChangePasswordSheet: View {
                 VStack(spacing: 24) {
                     // Header icon
                     headerIcon
-                    
-                    // Current password field
-                    passwordField(
-                        title: "Contraseña Actual",
-                        text: $currentPassword,
-                        isVisible: $showCurrentPassword,
-                        icon: "key.fill"
-                    )
                     
                     // New password field
                     passwordField(
@@ -168,7 +160,7 @@ struct ChangePasswordSheet: View {
             )
             
             validationRow(
-                isValid: passwordsMatch && !newPassword.isEmpty,
+                isValid: passwordsMatch,
                 message: "Las contraseñas coinciden"
             )
         }
@@ -219,16 +211,20 @@ struct ChangePasswordSheet: View {
         errorMessage = nil
         isSaving = true
         
-        // TODO: Implement actual password change with backend
-        DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
+        authManager.changePassword(new: newPassword) { result in
             isSaving = false
-            showSuccessAlert = true
-            print("Password changed successfully")
+            switch result {
+            case .success:
+                showSuccessAlert = true
+            case .failure(let error):
+                errorMessage = error.localizedDescription
+            }
         }
     }
 }
 
 #Preview {
     ChangePasswordSheet()
+        .environmentObject(AuthManager())
         .preferredColorScheme(.light)
 }

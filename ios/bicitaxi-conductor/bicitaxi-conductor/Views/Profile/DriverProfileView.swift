@@ -9,7 +9,7 @@ import SwiftUI
 
 struct DriverProfileView: View {
     @ObservedObject var rideViewModel: DriverRideViewModel
-    var authManager: AuthManager?
+    @EnvironmentObject var authManager: AuthManager
     
     // MARK: - MockData Manager
     @StateObject private var mockDataManager = MockDataManager.shared
@@ -76,6 +76,23 @@ struct DriverProfileView: View {
         }
     }
     
+    // MARK: - Helpers
+    
+    private var displayedName: String {
+        if mockDataManager.isMockDataEnabled {
+            return mockDataManager.userName
+        }
+        
+        switch authManager.authState {
+        case .authenticated(let driver):
+            return driver.name
+        case .guest:
+            return "Invitado"
+        default:
+            return "Sin Usuario"
+        }
+    }
+    
     // MARK: - Name Header
     
     private var nameHeader: some View {
@@ -83,7 +100,7 @@ struct DriverProfileView: View {
             showEditAccount = true
         } label: {
             VStack(spacing: 16) {
-                Text(mockDataManager.userName.isEmpty ? "Sin Usuario" : mockDataManager.userName)
+                Text(displayedName)
                     .font(.title.weight(.bold))
                     .foregroundColor(.primary)
                 
@@ -351,7 +368,7 @@ struct DriverProfileView: View {
     }
     
     private func handleLogout() {
-        authManager?.signOut()
+        authManager.signOut()
     }
     
     private func handleDeleteAccount() {
@@ -364,7 +381,8 @@ struct DriverProfileView: View {
 #Preview {
     ZStack {
         BiciTaxiTheme.background.ignoresSafeArea()
-        DriverProfileView(rideViewModel: DriverRideViewModel(repo: InMemoryRideRepository()), authManager: nil)
+        DriverProfileView(rideViewModel: DriverRideViewModel(repo: InMemoryRideRepository()))
+            .environmentObject(AuthManager())
     }
     .preferredColorScheme(.light)
 }

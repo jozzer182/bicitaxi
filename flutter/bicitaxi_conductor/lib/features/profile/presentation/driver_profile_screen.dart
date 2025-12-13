@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:liquid_glass_ui_design/liquid_glass_ui.dart';
+import '../../../core/providers/app_state.dart';
+
 import '../../../core/theme/app_colors.dart';
 import '../../../core/widgets/responsive_layout.dart';
 import '../../../core/widgets/glass_container.dart';
@@ -258,14 +260,16 @@ class _DriverProfileScreenState extends State<DriverProfileScreen> {
             child: Text('Cancelar', style: TextStyle(color: Colors.black54)),
           ),
           TextButton(
-            onPressed: () {
+            onPressed: () async {
               Navigator.pop(context);
-              // Navigate back to login
-              Navigator.pushNamedAndRemoveUntil(
-                context,
-                AppRoutes.login,
-                (route) => false,
-              );
+              await context.appState.authRepository.signOut();
+              if (context.mounted) {
+                Navigator.pushNamedAndRemoveUntil(
+                  context,
+                  AppRoutes.login,
+                  (route) => false,
+                );
+              }
             },
             child: Text(
               'Cerrar sesión',
@@ -377,25 +381,34 @@ class _DeleteAccountDialogState extends State<_DeleteAccountDialog> {
         ),
         TextButton(
           onPressed: _canConfirm
-              ? () {
+              ? () async {
                   Navigator.pop(context);
-                  // TODO: Implement actual account deletion
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: const Text('Cuenta eliminada'),
-                      backgroundColor: AppColors.error,
-                      behavior: SnackBarBehavior.floating,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                    ),
-                  );
-                  // Navigate back to login
-                  Navigator.pushNamedAndRemoveUntil(
-                    context,
-                    AppRoutes.login,
-                    (route) => false,
-                  );
+                  try {
+                    await context.appState.authRepository.deleteUser();
+                    if (context.mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: const Text('Cuenta eliminada'),
+                          backgroundColor: AppColors.error,
+                          behavior: SnackBarBehavior.floating,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                      );
+                      Navigator.pushNamedAndRemoveUntil(
+                        context,
+                        AppRoutes.login,
+                        (route) => false,
+                      );
+                    }
+                  } catch (e) {
+                    if (context.mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text('Error al eliminar cuenta: $e')),
+                      );
+                    }
+                  }
                 }
               : null,
           child: Text(

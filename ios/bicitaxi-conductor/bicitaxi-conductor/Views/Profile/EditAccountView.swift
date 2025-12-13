@@ -10,6 +10,8 @@ import SwiftUI
 struct EditAccountView: View {
     @Environment(\.dismiss) private var dismiss
     
+    @EnvironmentObject var authManager: AuthManager
+    
     // MARK: - MockData Manager
     @StateObject private var mockDataManager = MockDataManager.shared
     
@@ -55,6 +57,7 @@ struct EditAccountView: View {
             }
             .sheet(isPresented: $showChangePassword) {
                 ChangePasswordSheet()
+                    .environmentObject(authManager)
             }
             .alert("Cambios Guardados", isPresented: $showSaveConfirmation) {
                 Button("OK") {
@@ -64,8 +67,13 @@ struct EditAccountView: View {
                 Text("Tu información ha sido actualizada correctamente.")
             }
             .onAppear {
-                userName = mockDataManager.userName
-                userEmail = mockDataManager.userEmail
+                if mockDataManager.isMockDataEnabled {
+                    userName = mockDataManager.userName
+                    userEmail = mockDataManager.userEmail
+                } else if case .authenticated(let driver) = authManager.authState {
+                    userName = driver.name
+                    userEmail = driver.email
+                }
             }
         }
     }
@@ -188,18 +196,28 @@ struct EditAccountView: View {
     // MARK: - Actions
     
     private func saveChanges() {
-        isSaving = true
-        
-        // TODO: Implement actual save logic with backend
-        DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
-            isSaving = false
-            showSaveConfirmation = true
-            print("Driver name updated to: \(userName)")
+        if mockDataManager.isMockDataEnabled {
+            isSaving = true
+            DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
+                isSaving = false
+                showSaveConfirmation = true
+                print("Driver name updated to: \(userName)")
+            }
+        } else {
+             authManager.updateDriverProfile(name: userName) { result in
+                 switch result {
+                 case .success:
+                     self.showSaveConfirmation = true
+                 case .failure(let error):
+                     print("Error updating profile: \(error)")
+                 }
+             }
         }
     }
 }
 
 #Preview {
     EditAccountView()
+         .environmentObject(AuthManager())
         .preferredColorScheme(.light)
 }

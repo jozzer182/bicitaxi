@@ -9,9 +9,9 @@ import SwiftUI
 
 struct ChangePasswordSheet: View {
     @Environment(\.dismiss) private var dismiss
+    @EnvironmentObject var authManager: AuthManager
     
     // MARK: - State
-    @State private var currentPassword: String = ""
     @State private var newPassword: String = ""
     @State private var confirmPassword: String = ""
     @State private var showCurrentPassword = false
@@ -26,7 +26,7 @@ struct ChangePasswordSheet: View {
     }
     
     private var isFormValid: Bool {
-        !currentPassword.isEmpty && !newPassword.isEmpty && passwordsMatch && newPassword.count >= 6
+        return newPassword.count >= 6 && newPassword == confirmPassword
     }
     
     var body: some View {
@@ -35,14 +35,6 @@ struct ChangePasswordSheet: View {
                 VStack(spacing: 24) {
                     // Header icon
                     headerIcon
-                    
-                    // Current password field
-                    passwordField(
-                        title: "Contraseña Actual",
-                        text: $currentPassword,
-                        isVisible: $showCurrentPassword,
-                        icon: "key.fill"
-                    )
                     
                     // New password field
                     passwordField(
@@ -168,12 +160,13 @@ struct ChangePasswordSheet: View {
             )
             
             validationRow(
-                isValid: passwordsMatch && !newPassword.isEmpty,
+                isValid: !newPassword.isEmpty && newPassword == confirmPassword,
                 message: "Las contraseñas coinciden"
             )
         }
-        .padding(16)
-        .glassCard(cornerRadius: 16)
+        .padding()
+        .background(Color.white.opacity(0.6))
+        .cornerRadius(12)
     }
     
     private func validationRow(isValid: Bool, message: String) -> some View {
@@ -190,25 +183,21 @@ struct ChangePasswordSheet: View {
     // MARK: - Save Button
     
     private var saveButton: some View {
-        Button {
-            savePassword()
-        } label: {
-            HStack {
-                if isSaving {
-                    ProgressView()
-                        .progressViewStyle(CircularProgressViewStyle(tint: .white))
-                        .scaleEffect(0.8)
-                } else {
-                    Text("Actualizar Contraseña")
-                        .font(.headline)
-                }
+        Button(action: savePassword) {
+            if isSaving {
+                ProgressView()
+                    .progressViewStyle(CircularProgressViewStyle(tint: .white))
+            } else {
+                Text("Actualizar Contraseña")
+                    .font(.custom("Inter-Bold", size: 16))
+                    .foregroundColor(.white)
             }
-            .foregroundColor(.white)
-            .frame(maxWidth: .infinity)
-            .padding(16)
-            .background(isFormValid ? BiciTaxiTheme.accentPrimary : Color.gray)
-            .clipShape(RoundedRectangle(cornerRadius: 16))
         }
+        .frame(maxWidth: .infinity)
+        .padding()
+        .background(isFormValid ? Color("LiquidPrimary") : Color.gray)
+        .cornerRadius(15)
+        .shadow(color: isFormValid ? Color("LiquidPrimary").opacity(0.3) : Color.clear, radius: 10, x: 0, y: 5)
         .disabled(!isFormValid || isSaving)
         .padding(.top, 8)
     }
@@ -219,16 +208,20 @@ struct ChangePasswordSheet: View {
         errorMessage = nil
         isSaving = true
         
-        // TODO: Implement actual password change with backend
-        DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
-            isSaving = false
-            showSuccessAlert = true
-            print("Driver password changed successfully")
-        }
+        authManager.changePassword(new: newPassword) { result in
+             isSaving = false
+             switch result {
+             case .success:
+                 showSuccessAlert = true
+             case .failure(let error):
+                 errorMessage = error.localizedDescription
+             }
+         }
     }
 }
 
 #Preview {
     ChangePasswordSheet()
+        .environmentObject(AuthManager())
         .preferredColorScheme(.light)
 }

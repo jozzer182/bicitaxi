@@ -10,11 +10,10 @@ import SwiftUI
 /// Main tab container for the Bici Taxi client app
 /// Uses custom Liquid Glass navigation with water-drop transitions
 struct MainTabView: View {
-    @Environment(\.authManager) var authManager
     private let repo = InMemoryRideRepository()
     
     var body: some View {
-        LiquidGlassTabShell(repo: repo, authManager: authManager)
+        LiquidGlassTabShell(repo: repo)
     }
 }
 

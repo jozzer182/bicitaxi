@@ -413,39 +413,43 @@ struct ClientMapView: View {
     }
     
     /// Reverse geocode a coordinate to get the address (free via Apple's CLGeocoder)
+    /// Reverse geocode a coordinate to get the address (modern async/await)
     private func reverseGeocode(_ coordinate: CLLocationCoordinate2D, isPickup: Bool) {
         let location = CLLocation(latitude: coordinate.latitude, longitude: coordinate.longitude)
         
-        geocoder.reverseGeocodeLocation(location) { placemarks, error in
-            guard let placemark = placemarks?.first, error == nil else {
-                return
-            }
-            
-            // Build a short address string
-            var addressParts: [String] = []
-            
-            if let name = placemark.name, !name.isEmpty {
-                addressParts.append(name)
-            } else if let street = placemark.thoroughfare {
-                if let number = placemark.subThoroughfare {
-                    addressParts.append("\(number) \(street)")
-                } else {
-                    addressParts.append(street)
+        Task {
+            do {
+                let placemarks = try await geocoder.reverseGeocodeLocation(location)
+                guard let placemark = placemarks.first else { return }
+                
+                // Build a short address string
+                var addressParts: [String] = []
+                
+                if let name = placemark.name, !name.isEmpty {
+                    addressParts.append(name)
+                } else if let street = placemark.thoroughfare {
+                    if let number = placemark.subThoroughfare {
+                        addressParts.append("\(number) \(street)")
+                    } else {
+                        addressParts.append(street)
+                    }
                 }
-            }
-            
-            if let locality = placemark.locality {
-                addressParts.append(locality)
-            }
-            
-            let address = addressParts.joined(separator: ", ")
-            
-            DispatchQueue.main.async {
-                if isPickup {
-                    pickupAddress = address.isEmpty ? nil : address
-                } else {
-                    dropoffAddress = address.isEmpty ? nil : address
+                
+                if let locality = placemark.locality {
+                    addressParts.append(locality)
                 }
+                
+                let address = addressParts.joined(separator: ", ")
+                
+                await MainActor.run {
+                    if isPickup {
+                        pickupAddress = address.isEmpty ? nil : address
+                    } else {
+                        dropoffAddress = address.isEmpty ? nil : address
+                    }
+                }
+            } catch {
+                print("Reverse geocoding failed: \(error.localizedDescription)")
             }
         }
     }

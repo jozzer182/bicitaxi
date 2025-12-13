@@ -4,6 +4,7 @@ import '../../../core/theme/app_colors.dart';
 import '../../../core/widgets/responsive_layout.dart';
 import '../../../core/widgets/glass_container.dart';
 import '../../../core/routes/app_routes.dart';
+import '../../../core/providers/app_state.dart';
 
 /// Login screen for Bici Taxi Conductor.
 /// Displays authentication options with a liquid glass aesthetic.
@@ -171,17 +172,26 @@ class _LoginScreenState extends State<LoginScreen> {
             LiquidButton(
               borderRadius: 16,
               color: AppColors.driverAccent,
-              onTap: _handleLogin,
-              child: const Padding(
-                padding: EdgeInsets.symmetric(vertical: 4),
-                child: Text(
-                  'Iniciar sesión',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.black87,
-                  ),
-                ),
+              onTap: _isLoading ? null : _handleLogin,
+              child: Padding(
+                padding: const EdgeInsets.symmetric(vertical: 4),
+                child: _isLoading
+                    ? const SizedBox(
+                        height: 24,
+                        width: 24,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: Colors.white,
+                        ),
+                      )
+                    : const Text(
+                        'Iniciar sesión',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.black87,
+                        ),
+                      ),
               ),
             ),
             const SizedBox(height: 16),
@@ -230,10 +240,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
             // Google Sign In Button
             _AuthButton(
-              onPressed: () {
-                // TODO: Implement Google Sign In with Firebase Auth
-                _navigateToHome(context);
-              },
+              onPressed: _isLoading ? () {} : _handleGoogleLogin,
               icon: _buildGoogleIcon(),
               label: 'Continuar con Google',
             ),
@@ -241,10 +248,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
             // Apple Sign In Button
             _AuthButton(
-              onPressed: () {
-                // TODO: Implement Apple Sign In with Firebase Auth
-                _navigateToHome(context);
-              },
+              onPressed: _isLoading ? () {} : _handleAppleLogin,
               icon: const Icon(
                 Icons.apple_rounded,
                 size: 24,
@@ -256,10 +260,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
             // Guest Button
             _AuthButton(
-              onPressed: () {
-                // TODO: Implement guest mode with anonymous Firebase Auth
-                _navigateToHome(context);
-              },
+              onPressed: _isLoading ? () {} : _handleGuestLogin,
               icon: const Icon(
                 Icons.person_outline,
                 size: 24,
@@ -351,10 +352,90 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
-  void _handleLogin() {
+  bool _isLoading = false;
+
+  void _handleLogin() async {
     if (_formKey.currentState?.validate() ?? false) {
-      // TODO: Implement Firebase Auth login with email/password
-      _navigateToHome(context);
+      setState(() => _isLoading = true);
+      try {
+        await context.appState.authRepository.signInWithEmailAndPassword(
+          _emailController.text.trim(),
+          _passwordController.text,
+        );
+        if (mounted) {
+          _navigateToHome(context);
+        }
+      } catch (e) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Error al iniciar sesión: ${e.toString()}')),
+          );
+        }
+      } finally {
+        if (mounted) {
+          setState(() => _isLoading = false);
+        }
+      }
+    }
+  }
+
+  void _handleGoogleLogin() async {
+    setState(() => _isLoading = true);
+    try {
+      final user = await context.appState.authRepository.signInWithGoogle();
+      if (user != null && mounted) {
+        _navigateToHome(context);
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error en Google Sign In: ${e.toString()}')),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
+    }
+  }
+
+  void _handleAppleLogin() async {
+    setState(() => _isLoading = true);
+    try {
+      await context.appState.authRepository.signInWithApple();
+       if (mounted) _navigateToHome(context);
+    } catch (e) {
+       if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Apple Sign In no implementado: ${e.toString()}')),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
+    }
+  }
+
+  void _handleGuestLogin() async {
+    setState(() => _isLoading = true);
+    try {
+      // Allow Guest Login for Driver for testing, but typically drivers need account
+      // For now, we allow it.
+      await context.appState.authRepository.signInAnonymously();
+      if (mounted) {
+        _navigateToHome(context);
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error al entrar como invitado: ${e.toString()}')),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
     }
   }
 
