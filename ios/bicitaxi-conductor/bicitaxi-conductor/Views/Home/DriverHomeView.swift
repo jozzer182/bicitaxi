@@ -12,11 +12,30 @@ struct DriverHomeView: View {
     @ObservedObject var rideViewModel: DriverRideViewModel
     @StateObject private var locationManager = LocationManager()
     @StateObject private var mockDataManager = MockDataManager.shared
+    @StateObject private var requestService = RequestService() // Firebase requests
     @State private var cameraPosition: MapCameraPosition = .automatic
     @State private var hasInitialized = false
     
     /// Whether the welcome greeting is collapsed to a button
     @State private var isWelcomeCollapsed = false
+    
+    /// Active Firebase request (after conductor accepts)
+    @State private var activeFirebaseRequest: RideRequest?
+    
+    /// Timer for updating driver location during active ride
+    @State private var driverLocationTimer: Timer?
+    
+    /// Show pickup confirmed alert
+    @State private var showPickupConfirmedAlert = false
+    
+    /// Who confirmed the pickup ("conductor" or "pasajero")
+    @State private var confirmedBy: String = ""
+    
+    /// Whether the ride info panel is collapsed
+    @State private var isRideInfoCollapsed = false
+    
+    /// Calculated route for active ride
+    @State private var calculatedRoute: MKRoute?
     
     @Environment(\.horizontalSizeClass) var horizontalSizeClass
     
@@ -43,6 +62,16 @@ struct DriverHomeView: View {
         .onAppear {
             locationManager.requestPermission()
             
+            // Setup location callbacks for presence updates
+            rideViewModel.setLocationCallbacks(
+                getLatitude: { [weak locationManager] in
+                    locationManager?.currentCoordinate?.latitude ?? 0
+                },
+                getLongitude: { [weak locationManager] in
+                    locationManager?.currentCoordinate?.longitude ?? 0
+                }
+            )
+            
             // Auto-collapse welcome greeting after 5 seconds
             DispatchQueue.main.asyncAfter(deadline: .now() + 5) {
                 withAnimation(.spring(response: 0.5, dampingFraction: 0.8)) {
@@ -57,9 +86,18 @@ struct DriverHomeView: View {
                     span: MKCoordinateSpan(latitudeDelta: 0.015, longitudeDelta: 0.015)
                 ))
                 
-                // Initialize pending rides around driver location (only with mock data enabled)
+                // Start watching Firebase requests when location is available
                 if !hasInitialized {
                     hasInitialized = true
+                    
+                    // Always watch Firebase requests for real-time updates
+                    requestService.watchOpenRequestsWithExpansion(
+                        lat: coordinate.latitude,
+                        lng: coordinate.longitude,
+                        expandDelay: 20
+                    )
+                    
+                    // Initialize dummy rides only with mock data enabled
                     if mockDataManager.isMockDataEnabled {
                         Task {
                             let centerPoint = RideLocationPoint(coordinate: coordinate)
@@ -83,6 +121,36 @@ struct DriverHomeView: View {
                 }
             }
         }
+        .onChange(of: requestService.activeRequest?.status) { _, newStatus in
+            // If request was cancelled or completed externally, show confirmation or clean up
+            if let status = newStatus {
+                if status == .completed {
+                    // If we didn't confirm ourselves, the pasajero confirmed
+                    if !showPickupConfirmedAlert {
+                        confirmedBy = "pasajero"
+                        showPickupConfirmedAlert = true
+                    }
+                } else if status == .cancelled {
+                    stopDriverLocationUpdates()
+                    requestService.stopWatchingRequest()
+                    activeFirebaseRequest = nil
+                }
+            }
+        }
+        .onDisappear {
+            // Clean up timer when view disappears
+            stopDriverLocationUpdates()
+        }
+        .alert("¡Recogida Confirmada!", isPresented: $showPickupConfirmedAlert) {
+            Button("¡Buen Viaje!") {
+                stopDriverLocationUpdates()
+                requestService.stopWatchingRequest()
+                activeFirebaseRequest = nil
+                clearRoute()
+            }
+        } message: {
+            Text("La recogida ha sido confirmada por el \(confirmedBy).\n\n¡Que tengas un excelente viaje! Ya puedes cerrar la app.")
+        }
     }
     
     // MARK: - Map View
@@ -92,10 +160,42 @@ struct DriverHomeView: View {
             // Driver location
             UserAnnotation()
             
-            // Pending ride requests
-            ForEach(rideViewModel.pendingRides) { ride in
-                Annotation(ride.pickup.shortDescription, coordinate: ride.pickup.coordinate) {
-                    PendingRideAnnotationView(ride: ride)
+            // Route polyline (when active ride)
+            if let route = calculatedRoute {
+                MapPolyline(route.polyline)
+                    .stroke(
+                        BiciTaxiTheme.routeColor,
+                        lineWidth: 6
+                    )
+            }
+            
+            // Active ride - show client pickup location
+            if let activeRequest = activeFirebaseRequest ?? requestService.activeRequest {
+                // Client pickup location (where to pick up the passenger)
+                Annotation("Cliente", coordinate: CLLocationCoordinate2D(
+                    latitude: activeRequest.pickup.lat,
+                    longitude: activeRequest.pickup.lng
+                )) {
+                    ClientPickupAnnotationView()
+                }
+                
+                // Client destination (optional, if provided)
+                if let dropoff = activeRequest.dropoff {
+                    Annotation("Destino", coordinate: CLLocationCoordinate2D(
+                        latitude: dropoff.lat,
+                        longitude: dropoff.lng
+                    )) {
+                        DestinationAnnotationView()
+                    }
+                }
+            }
+            
+            // Pending ride requests (only when not on active ride)
+            if activeFirebaseRequest == nil && requestService.activeRequest == nil {
+                ForEach(rideViewModel.pendingRides) { ride in
+                    Annotation(ride.pickup.shortDescription, coordinate: ride.pickup.coordinate) {
+                        PendingRideAnnotationView(ride: ride)
+                    }
                 }
             }
         }
@@ -238,7 +338,12 @@ struct DriverHomeView: View {
             
             // Pending requests info
             if rideViewModel.isOnline {
-                pendingRequestsView
+                // Show active ride if there's one, otherwise show pending requests
+                if let activeRequest = activeFirebaseRequest ?? requestService.activeRequest {
+                    activeRideView(request: activeRequest)
+                } else {
+                    pendingRequestsView
+                }
             } else {
                 offlineView
             }
@@ -262,9 +367,6 @@ struct DriverHomeView: View {
             
             Button {
                 rideViewModel.toggleOnline()
-                if rideViewModel.isOnline {
-                    Task { await rideViewModel.loadPendingRides() }
-                }
             } label: {
                 HStack(spacing: 8) {
                     Circle()
@@ -285,35 +387,481 @@ struct DriverHomeView: View {
     
     // MARK: - Pending Requests
     
+    /// Filter only fresh requests (heartbeat within 3 minutes)
+    private var freshRequests: [RideRequest] {
+        requestService.openRequests.filter { $0.isFresh }
+    }
+    
     private var pendingRequestsView: some View {
         VStack(spacing: 12) {
             HStack {
                 Image(systemName: "bicycle")
                     .foregroundStyle(BiciTaxiTheme.accentGradient)
                 
-                Text("Solicitudes Cercanas: \(rideViewModel.pendingRides.count)")
+                Text("Solicitudes Cercanas: \(freshRequests.count)")
                     .font(.subheadline.weight(.semibold))
                     .foregroundColor(.primary)
+                
+                // Show expanded indicator
+                if requestService.isWatchingExpanded {
+                    Text("(9 celdas)")
+                        .font(.caption2)
+                        .foregroundColor(.secondary)
+                }
                 
                 Spacer()
             }
             
-            if !rideViewModel.pendingRides.isEmpty {
-                // Compact scrollable list of all pending requests
+            if !freshRequests.isEmpty {
+                // Compact scrollable list of Firebase requests
                 ScrollView(.vertical, showsIndicators: false) {
                     VStack(spacing: 8) {
-                        ForEach(rideViewModel.pendingRides) { ride in
-                            compactRideRequest(ride)
+                        ForEach(freshRequests) { request in
+                            compactFirebaseRequest(request)
                         }
                     }
                 }
-                .frame(maxHeight: 200) // Limit height for compact view
+                .frame(maxHeight: 200)
             } else {
                 Text("No hay solicitudes pendientes cerca")
                     .font(.caption.weight(.medium))
                     .foregroundColor(.secondary)
             }
         }
+    }
+    
+    /// Compact Firebase request row
+    private func compactFirebaseRequest(_ request: RideRequest) -> some View {
+        HStack(spacing: 10) {
+            // Age badge
+            VStack(spacing: 2) {
+                Image(systemName: "clock")
+                    .font(.caption2)
+                    .foregroundStyle(BiciTaxiTheme.accentGradient)
+                Text(request.ageString)
+                    .font(.caption2.weight(.bold))
+                    .foregroundColor(.primary)
+            }
+            .frame(width: 50)
+            
+            // Destination info
+            VStack(alignment: .leading, spacing: 2) {
+                // Geocoded name or "Destino"
+                Text(request.dropoff?.address ?? "Solicitud de viaje")
+                    .font(.caption.weight(.semibold))
+                    .foregroundColor(.primary)
+                    .lineLimit(1)
+                
+                // Coordinates in compact DMS format
+                if let dropoff = request.dropoff {
+                    compactDMSText(lat: dropoff.lat, lng: dropoff.lng)
+                }
+            }
+            
+            Spacer()
+            
+            // Distance (if can calculate)
+            if let dropoff = request.dropoff, let driverLoc = locationManager.currentCoordinate {
+                let tripDist = calculateDistance(
+                    lat1: request.pickup.lat, lng1: request.pickup.lng,
+                    lat2: dropoff.lat, lng2: dropoff.lng
+                )
+                Text(formatDistanceMeters(tripDist))
+                    .font(.caption.weight(.bold))
+                    .foregroundStyle(BiciTaxiTheme.accentGradient)
+            }
+            
+            // Accept button
+            Button {
+                acceptFirebaseRequest(request)
+            } label: {
+                Image(systemName: "checkmark.circle.fill")
+                    .font(.title3)
+                    .foregroundStyle(BiciTaxiTheme.accentGradient)
+            }
+        }
+        .padding(.horizontal, 10)
+        .padding(.vertical, 8)
+        .glassCard(cornerRadius: 12)
+    }
+    
+    /// Accept a Firebase request
+    private func acceptFirebaseRequest(_ request: RideRequest) {
+        Task {
+            guard let driverUid = requestService.currentUserId else { return }
+            
+            // Assign driver to the request
+            await requestService.assignDriver(
+                cellId: request.cellId,
+                requestId: request.requestId,
+                driverUid: driverUid
+            )
+            
+            // Store as active request and start watching it
+            await MainActor.run {
+                activeFirebaseRequest = request
+                requestService.watchRequest(cellId: request.cellId, requestId: request.requestId)
+                startDriverLocationUpdates(for: request)
+                calculateRoute(for: request)
+            }
+        }
+    }
+    
+    /// Calculate route from driver's current location to pickup (and optionally to destination)
+    private func calculateRoute(for request: RideRequest) {
+        guard let driverLocation = locationManager.currentCoordinate else { return }
+        
+        let pickupCoord = CLLocationCoordinate2D(
+            latitude: request.pickup.lat,
+            longitude: request.pickup.lng
+        )
+        
+        // Calculate route from driver to pickup
+        let routeRequest = MKDirections.Request()
+        routeRequest.source = MKMapItem(placemark: MKPlacemark(coordinate: driverLocation))
+        routeRequest.destination = MKMapItem(placemark: MKPlacemark(coordinate: pickupCoord))
+        routeRequest.transportType = .walking
+        routeRequest.requestsAlternateRoutes = false
+        
+        let directions = MKDirections(request: routeRequest)
+        
+        Task {
+            do {
+                let response = try await directions.calculate()
+                await MainActor.run {
+                    if let route = response.routes.first {
+                        calculatedRoute = route
+                        // Zoom to show the route
+                        zoomToRoute()
+                    }
+                }
+            } catch {
+                print("⚠️ Route calculation failed: \(error)")
+            }
+        }
+    }
+    
+    /// Zoom camera to show the full route
+    private func zoomToRoute() {
+        guard let route = calculatedRoute else { return }
+        
+        withAnimation(.spring(response: 0.5, dampingFraction: 0.8)) {
+            let rect = route.polyline.boundingMapRect
+            let paddedRect = rect.insetBy(dx: -rect.size.width * 0.3, dy: -rect.size.height * 0.3)
+            cameraPosition = .rect(paddedRect)
+        }
+    }
+    
+    /// Start periodic driver location updates during active ride
+    private func startDriverLocationUpdates(for request: RideRequest) {
+        driverLocationTimer?.invalidate()
+        driverLocationTimer = Timer.scheduledTimer(withTimeInterval: 5, repeats: true) { [weak locationManager] _ in
+            guard let coordinate = locationManager?.currentCoordinate else { return }
+            Task {
+                await requestService.updateDriverLocation(
+                    cellId: request.cellId,
+                    requestId: request.requestId,
+                    lat: coordinate.latitude,
+                    lng: coordinate.longitude
+                )
+            }
+        }
+    }
+    
+    /// Stop driver location updates
+    private func stopDriverLocationUpdates() {
+        driverLocationTimer?.invalidate()
+        driverLocationTimer = nil
+    }
+    
+    /// Clear route and reset map
+    private func clearRoute() {
+        calculatedRoute = nil
+    }
+    
+    /// Complete or cancel the active ride
+    private func finishActiveRide(completed: Bool) {
+        guard let request = activeFirebaseRequest ?? requestService.activeRequest else { return }
+        
+        Task {
+            if completed {
+                await requestService.completeRequest(cellId: request.cellId, requestId: request.requestId)
+                await MainActor.run {
+                    confirmedBy = "conductor"
+                    showPickupConfirmedAlert = true
+                }
+            } else {
+                await requestService.cancelRequest(cellId: request.cellId, requestId: request.requestId)
+                await MainActor.run {
+                    stopDriverLocationUpdates()
+                    requestService.stopWatchingRequest()
+                    activeFirebaseRequest = nil
+                    clearRoute()
+                }
+            }
+        }
+    }
+    
+    // MARK: - Active Ride View
+    
+    /// View shown when conductor has an active ride
+    private func activeRideView(request: RideRequest) -> some View {
+        VStack(spacing: 0) {
+            if isRideInfoCollapsed {
+                // Collapsed view - just a button to expand
+                collapsedRideInfoView(request: request)
+            } else {
+                // Expanded view - full ride info
+                expandedRideInfoView(request: request)
+            }
+        }
+    }
+    
+    /// Collapsed ride info - minimal button
+    private func collapsedRideInfoView(request: RideRequest) -> some View {
+        Button {
+            withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) {
+                isRideInfoCollapsed = false
+            }
+        } label: {
+            HStack(spacing: 12) {
+                Image(systemName: "bicycle")
+                    .font(.title2)
+                    .foregroundStyle(BiciTaxiTheme.accentGradient)
+                
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(request.clientName ?? "Cliente")
+                        .font(.headline.weight(.bold))
+                        .foregroundColor(.primary)
+                    
+                    Text("Toca para ver detalles")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                }
+                
+                Spacer()
+                
+                // Live indicator
+                HStack(spacing: 4) {
+                    Circle()
+                        .fill(Color.green)
+                        .frame(width: 8, height: 8)
+                    Text("ACTIVO")
+                        .font(.caption2.weight(.bold))
+                        .foregroundColor(.green)
+                }
+                .padding(.horizontal, 10)
+                .padding(.vertical, 5)
+                .background(Color.green.opacity(0.15))
+                .clipShape(Capsule())
+                
+                Image(systemName: "chevron.up")
+                    .font(.caption.weight(.bold))
+                    .foregroundColor(.secondary)
+            }
+        }
+        .buttonStyle(.plain)
+    }
+    
+    /// Expanded ride info - full details
+    private func expandedRideInfoView(request: RideRequest) -> some View {
+        VStack(spacing: 16) {
+            // Header - Show passenger name with collapse button
+            HStack {
+                Image(systemName: "bicycle")
+                    .font(.title2)
+                    .foregroundStyle(BiciTaxiTheme.accentGradient)
+                
+                VStack(alignment: .leading, spacing: 2) {
+                    // Show passenger name
+                    Text("Pasajero: \(request.clientName ?? "Cliente")")
+                        .font(.headline.weight(.bold))
+                        .foregroundColor(.primary)
+                    
+                    Text("Dirígete al punto de recogida")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                }
+                
+                Spacer()
+                
+                // Live indicator
+                HStack(spacing: 4) {
+                    Circle()
+                        .fill(Color.green)
+                        .frame(width: 8, height: 8)
+                    Text("ACTIVO")
+                        .font(.caption2.weight(.bold))
+                        .foregroundColor(.green)
+                }
+                .padding(.horizontal, 10)
+                .padding(.vertical, 5)
+                .background(Color.green.opacity(0.15))
+                .clipShape(Capsule())
+                
+                // Collapse button
+                Button {
+                    withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) {
+                        isRideInfoCollapsed = true
+                    }
+                    // Zoom to show the route when collapsed
+                    zoomToRoute()
+                } label: {
+                    Image(systemName: "chevron.down")
+                        .font(.caption.weight(.bold))
+                        .foregroundColor(.secondary)
+                        .padding(8)
+                        .background(Color.gray.opacity(0.15))
+                        .clipShape(Circle())
+                }
+            }
+            
+            Divider()
+                .background(Color.white.opacity(0.2))
+            
+            // Pickup location
+            HStack(spacing: 12) {
+                Image(systemName: "mappin.circle.fill")
+                    .font(.title3)
+                    .foregroundColor(.blue)
+                
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("Punto de recogida")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                    
+                    Text(request.pickup.address ?? "Ubicación del cliente")
+                        .font(.subheadline.weight(.semibold))
+                        .foregroundColor(.primary)
+                        .lineLimit(2)
+                }
+                
+                Spacer()
+            }
+            
+            // Dropoff location (if available)
+            if let dropoff = request.dropoff {
+                HStack(spacing: 12) {
+                    Image(systemName: "flag.checkered")
+                        .font(.title3)
+                        .foregroundColor(.indigo)
+                    
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("Destino")
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                        
+                        Text(dropoff.address ?? "Destino del viaje")
+                            .font(.subheadline.weight(.semibold))
+                            .foregroundColor(.primary)
+                            .lineLimit(2)
+                    }
+                    
+                    Spacer()
+                }
+            }
+            
+            Divider()
+                .background(Color.white.opacity(0.2))
+            
+            // Action buttons
+            HStack(spacing: 12) {
+                // Cancel button
+                Button {
+                    finishActiveRide(completed: false)
+                } label: {
+                    HStack {
+                        Image(systemName: "xmark.circle.fill")
+                        Text("Cancelar")
+                    }
+                    .font(.subheadline.weight(.semibold))
+                    .foregroundColor(.red)
+                    .padding(.horizontal, 20)
+                    .padding(.vertical, 12)
+                    .background(Color.red.opacity(0.15))
+                    .clipShape(Capsule())
+                }
+                
+                Spacer()
+                
+                // Pickup complete button (app finishes intervention here)
+                Button {
+                    finishActiveRide(completed: true)
+                } label: {
+                    HStack {
+                        Image(systemName: "person.fill.checkmark")
+                        Text("Pasajero Recogido")
+                    }
+                    .font(.subheadline.weight(.semibold))
+                    .foregroundColor(.white)
+                    .padding(.horizontal, 20)
+                    .padding(.vertical, 12)
+                    .background(BiciTaxiTheme.accentGradient)
+                    .clipShape(Capsule())
+                }
+            }
+        }
+    }
+    
+    /// Calculate distance using Haversine formula
+    private func calculateDistance(lat1: Double, lng1: Double, lat2: Double, lng2: Double) -> Double {
+        let R = 6371000.0 // Earth radius in meters
+        let lat1Rad = lat1 * .pi / 180
+        let lat2Rad = lat2 * .pi / 180
+        let deltaLat = (lat2 - lat1) * .pi / 180
+        let deltaLng = (lng2 - lng1) * .pi / 180
+        
+        let a = sin(deltaLat/2) * sin(deltaLat/2) +
+                cos(lat1Rad) * cos(lat2Rad) * sin(deltaLng/2) * sin(deltaLng/2)
+        let c = 2 * atan2(sqrt(a), sqrt(1-a))
+        return R * c
+    }
+    
+    /// Format distance in meters/km
+    private func formatDistanceMeters(_ meters: Double) -> String {
+        if meters < 1000 {
+            return String(format: "%.0fm", meters)
+        }
+        return String(format: "%.1fkm", meters / 1000)
+    }
+    
+    /// Compact DMS text with minutes in lighter color, seconds in darker color
+    /// Format: 47'33.6"N, 24'15.8"W (without degrees)
+    private func compactDMSText(lat: Double, lng: Double) -> some View {
+        let latDms = toDMSComponents(abs(lat))
+        let lngDms = toDMSComponents(abs(lng))
+        let latDir = lat >= 0 ? "N" : "S"
+        let lngDir = lng >= 0 ? "E" : "W"
+        
+        let minuteColor = Color.primary.opacity(0.5) // 50% - lighter
+        let secondColor = Color.primary.opacity(0.8) // 80% - darker
+        
+        return HStack(spacing: 0) {
+            // Latitude: minutes (light) + seconds (dark)
+            Text("\(latDms.minutes)'")
+                .foregroundColor(minuteColor)
+            Text(String(format: "%.1f\"%@", latDms.seconds, latDir))
+                .foregroundColor(secondColor)
+            
+            Text(", ")
+                .foregroundColor(minuteColor)
+            
+            // Longitude: minutes (light) + seconds (dark)
+            Text("\(lngDms.minutes)'")
+                .foregroundColor(minuteColor)
+            Text(String(format: "%.1f\"%@", lngDms.seconds, lngDir))
+                .foregroundColor(secondColor)
+        }
+        .font(.caption2.italic())
+    }
+    
+    /// Convert decimal degrees to DMS components
+    private func toDMSComponents(_ decimal: Double) -> (degrees: Int, minutes: Int, seconds: Double) {
+        let degrees = Int(decimal)
+        let minDecimal = (decimal - Double(degrees)) * 60
+        let minutes = Int(minDecimal)
+        let seconds = (minDecimal - Double(minutes)) * 60
+        return (degrees, minutes, seconds)
     }
     
     /// Compact ride request row showing: Distance, Destination, Client, Fare, Accept
@@ -426,6 +974,45 @@ struct PendingRideAnnotationView: View {
                 .shadow(color: Color.orange.opacity(0.5), radius: 8)
             
             Image(systemName: "figure.wave")
+                .foregroundColor(.white)
+                .font(.system(size: 16, weight: .bold))
+        }
+    }
+}
+
+// MARK: - Client Pickup Annotation (Active Ride)
+
+struct ClientPickupAnnotationView: View {
+    var body: some View {
+        ZStack {
+            Circle()
+                .fill(Color.green)
+                .frame(width: 44, height: 44)
+                .shadow(color: Color.green.opacity(0.5), radius: 12)
+            
+            Image(systemName: "person.fill")
+                .foregroundColor(.white)
+                .font(.system(size: 20, weight: .bold))
+        }
+        .overlay(
+            Circle()
+                .stroke(Color.white, lineWidth: 3)
+                .frame(width: 44, height: 44)
+        )
+    }
+}
+
+// MARK: - Destination Annotation (Active Ride)
+
+struct DestinationAnnotationView: View {
+    var body: some View {
+        ZStack {
+            Circle()
+                .fill(Color.indigo)
+                .frame(width: 36, height: 36)
+                .shadow(color: Color.indigo.opacity(0.5), radius: 8)
+            
+            Image(systemName: "flag.fill")
                 .foregroundColor(.white)
                 .font(.system(size: 16, weight: .bold))
         }

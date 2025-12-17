@@ -8,14 +8,6 @@
 import SwiftUI
 import MapKit
 
-/// Represents a nearby ride request
-struct RideRequest: Identifiable {
-    let id = UUID()
-    let coordinate: CLLocationCoordinate2D
-    let title: String
-    let estimatedFare: Int  // Colombian Pesos
-}
-
 /// Driver map view with nearby ride requests
 struct DriverMapView: View {
     @StateObject private var locationManager = LocationManager()

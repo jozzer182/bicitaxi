@@ -558,7 +558,7 @@ class _DriverActiveRideScreenState extends State<DriverActiveRideScreen> {
                     );
                     scaffoldMessenger.showSnackBar(
                       SnackBar(
-                        content: const Text('¡Viaje completado! +\$5,000'),
+                        content: const Text('¡Buen viaje! Viaje completado'),
                         backgroundColor: AppColors.success,
                         behavior: SnackBarBehavior.floating,
                         shape: RoundedRectangleBorder(

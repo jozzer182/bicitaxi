@@ -10,13 +10,16 @@ import 'core/services/demo_mode_service.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
-
 void main() async {
+  print('🚀 main() started');
   WidgetsFlutterBinding.ensureInitialized();
+  print('🚀 WidgetsFlutterBinding initialized');
   await Firebase.initializeApp();
+  print('🚀 Firebase initialized');
 
   // Initialize demo mode service
   await DemoModeService().init();
+  print('🚀 DemoModeService initialized');
 
   // Set system UI overlay style for light theme
   SystemChrome.setSystemUIOverlayStyle(
@@ -36,7 +39,9 @@ void main() async {
     DeviceOrientation.landscapeRight,
   ]);
 
+  print('🚀 About to call runApp()');
   runApp(const BiciTaxiApp());
+  print('🚀 runApp() completed');
 }
 
 /// Main application widget for Bici Taxi client app.
@@ -45,6 +50,16 @@ class BiciTaxiApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    print('🏗️ BiciTaxiApp.build() called');
+
+    final currentUser = FirebaseAuth.instance.currentUser;
+    final initialRoute = currentUser != null
+        ? AppRoutes.homeShell
+        : AppRoutes.login;
+    print(
+      '🏗️ currentUser: ${currentUser?.uid ?? "null"}, initialRoute: $initialRoute',
+    );
+
     // Wrap with AppState to provide repository and controllers
     // TODO: Swap InMemoryRideRepository for Firebase implementation and proper DI.
     return AppState(
@@ -59,12 +74,11 @@ class BiciTaxiApp extends StatelessWidget {
           title: 'Bici Taxi',
           debugShowCheckedModeBanner: false,
           theme: AppTheme.lightTheme,
-          initialRoute: FirebaseAuth.instance.currentUser != null 
-              ? AppRoutes.homeShell 
-              : AppRoutes.login,
+          initialRoute: initialRoute,
 
           onGenerateRoute: AppRouter.onGenerateRoute,
           builder: (context, child) {
+            print('🏗️ MaterialApp.builder called');
             // Apply responsive constraints and ensure proper text scaling
             return MediaQuery(
               data: MediaQuery.of(context).copyWith(

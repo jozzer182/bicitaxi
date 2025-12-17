@@ -154,8 +154,61 @@ class _ClientProfileScreenState extends State<ClientProfileScreen> {
         value: isDemoMode,
         activeTrackColor: AppColors.electricBlue,
         onChanged: (value) {
-          _demoModeService.setDemoMode(value);
+          if (value) {
+            // Show warning dialog before enabling demo mode
+            _showDemoModeWarningDialog(context);
+          } else {
+            // Disable demo mode immediately
+            _demoModeService.setDemoMode(false);
+          }
         },
+      ),
+    );
+  }
+
+  void _showDemoModeWarningDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: Colors.white,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: Row(
+          children: [
+            Icon(Icons.warning_amber_rounded, color: Colors.orange, size: 28),
+            const SizedBox(width: 8),
+            const Text(
+              'Activar Modo Demo',
+              style: TextStyle(color: Colors.black87, fontSize: 18),
+            ),
+          ],
+        ),
+        content: const Text(
+          '⚠️ El modo demo muestra datos ficticios de ejemplo.\n\n'
+          '• Los viajes mostrados no son reales\n'
+          '• El historial será de ejemplo\n'
+          '• No afecta tu cuenta real\n\n'
+          '¿Deseas activar el modo demo?',
+          style: TextStyle(fontSize: 14, color: Colors.black54),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text('Cancelar', style: TextStyle(color: Colors.black54)),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+              _demoModeService.setDemoMode(true);
+            },
+            child: Text(
+              'Activar',
+              style: TextStyle(
+                color: AppColors.electricBlue,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

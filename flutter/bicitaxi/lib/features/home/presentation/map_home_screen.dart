@@ -10,12 +10,23 @@ import '../../../core/widgets/glass_container.dart';
 import '../../../core/widgets/responsive_layout.dart';
 import '../../../core/providers/app_state.dart';
 import '../../../core/routes/app_routes.dart';
+import '../../../core/services/request_service.dart';
 import '../../map/utils/map_constants.dart';
 import '../../map/utils/location_service.dart';
 import '../../map/utils/retry_tile_provider.dart';
 import '../../map/utils/geocoding_service.dart';
 import '../../rides/models/ride_location_point.dart';
 import '../../rides/models/ride_status.dart';
+import '../../../core/widgets/driver_count_overlay.dart';
+
+/// Tracking state for the map screen.
+enum TrackingState {
+  selecting,
+  searching,
+  tracking,
+  driverArrived,
+  tripStarted,
+}
 
 /// Enum to track which point is being edited
 enum EditingPoint { none, pickup, dropoff }
@@ -53,6 +64,15 @@ class _MapHomeScreenState extends State<MapHomeScreen>
   // Edit mode state - when not none, next tap updates that specific point
   EditingPoint _editingPoint = EditingPoint.none;
 
+  // Tracking state
+  TrackingState _trackingState = TrackingState.selecting;
+  final RequestService _requestService = RequestService();
+  RideRequest? _activeRequest;
+  StreamSubscription<RideRequest?>? _requestSubscription;
+  LatLng? _driverPosition;
+  bool _arrivedNotified = false;
+  Timer? _heartbeatTimer; // Heartbeat timer for active requests
+
   // Breathing animation controller
   late AnimationController _breathingController;
   late Animation<double> _breathingAnimation;
@@ -88,6 +108,8 @@ class _MapHomeScreenState extends State<MapHomeScreen>
   @override
   void dispose() {
     _collapseTimer?.cancel();
+    _heartbeatTimer?.cancel();
+    _requestSubscription?.cancel();
     _breathingController.dispose();
     try {
       context.rideController.removeListener(_onControllerChange);
@@ -295,24 +317,31 @@ class _MapHomeScreenState extends State<MapHomeScreen>
     setState(() => _isRequesting = true);
 
     try {
-      final pickup = RideLocationPoint(
-        lat: _pickupPosition!.latitude,
-        lng: _pickupPosition!.longitude,
-        address: _pickupAddress,
+      // Create request via RequestService (Firebase)
+      final request = await _requestService.createRequest(
+        pickupLat: _pickupPosition!.latitude,
+        pickupLng: _pickupPosition!.longitude,
+        dropoffLat: _dropoffPosition?.latitude,
+        dropoffLng: _dropoffPosition?.longitude,
+        pickupAddress: _pickupAddress,
+        dropoffAddress: _dropoffAddress,
       );
 
-      final dropoff = _dropoffPosition != null
-          ? RideLocationPoint(
-              lat: _dropoffPosition!.latitude,
-              lng: _dropoffPosition!.longitude,
-              address: _dropoffAddress,
-            )
-          : null;
+      if (request != null && mounted) {
+        // Transition to searching state - stay on map!
+        setState(() {
+          _trackingState = TrackingState.searching;
+          _activeRequest = request;
+          _isRequesting = false;
+        });
 
-      await context.rideController.requestRide(pickup, dropoff);
+        // Subscribe to request updates for real-time tracking
+        _requestSubscription = _requestService
+            .watchRequest(request.cellId, request.requestId)
+            .listen(_onRequestUpdate);
 
-      if (mounted) {
-        Navigator.pushNamed(context, AppRoutes.activeRide);
+        // Start heartbeat timer (every 30 seconds)
+        _startHeartbeat(request.cellId, request.requestId);
       }
     } catch (e) {
       if (mounted) {
@@ -326,17 +355,436 @@ class _MapHomeScreenState extends State<MapHomeScreen>
             ),
           ),
         );
-      }
-    } finally {
-      if (mounted) {
         setState(() => _isRequesting = false);
       }
     }
   }
 
+  /// Handles real-time request updates from Firebase.
+  void _onRequestUpdate(RideRequest? request) {
+    if (!mounted || request == null) return;
+
+    setState(() {
+      _activeRequest = request;
+
+      // Update driver position if available
+      if (request.driverLat != null && request.driverLng != null) {
+        _driverPosition = LatLng(request.driverLat!, request.driverLng!);
+        _checkDriverProximity();
+      }
+
+      // Update tracking state based on request status
+      switch (request.status) {
+        case RequestStatus.open:
+          _trackingState = TrackingState.searching;
+          break;
+        case RequestStatus.assigned:
+          _trackingState = TrackingState.tracking;
+          break;
+        case RequestStatus.completed:
+          // Conductor confirmed pickup - show confirmation popup
+          _showPickupConfirmedDialog('conductor');
+          break;
+        case RequestStatus.cancelled:
+          _cancelTracking();
+          break;
+      }
+    });
+  }
+
+  /// Check if driver is within 50 meters of pickup
+  void _checkDriverProximity() {
+    if (_driverPosition == null ||
+        _pickupPosition == null ||
+        _arrivedNotified ||
+        _trackingState != TrackingState.tracking)
+      return;
+
+    // Use existing _calculateDistance method
+    final distance = _calculateDistance(_driverPosition!, _pickupPosition!);
+
+    if (distance < 50) {
+      _arrivedNotified = true;
+      setState(() => _trackingState = TrackingState.driverArrived);
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text('¡Tu conductor ha llegado!'),
+          backgroundColor: AppColors.success,
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+        ),
+      );
+    }
+  }
+
+  /// Cancel the active request
+  Future<void> _cancelRequest() async {
+    if (_activeRequest == null) return;
+
+    try {
+      await _requestService.cancelRequest(
+        _activeRequest!.cellId,
+        _activeRequest!.requestId,
+      );
+    } catch (e) {
+      // Request may already be cancelled
+    }
+    _cancelTracking();
+  }
+
+  /// Confirm pickup - complete the request from client side
+  Future<void> _confirmPickup() async {
+    if (_activeRequest == null) return;
+
+    try {
+      await _requestService.completeRequest(
+        _activeRequest!.cellId,
+        _activeRequest!.requestId,
+      );
+
+      // Show confirmation dialog
+      if (mounted) {
+        _showPickupConfirmedDialog('pasajero');
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error al confirmar recogida: $e'),
+            backgroundColor: AppColors.error,
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+          ),
+        );
+      }
+    }
+  }
+
+  /// Show pickup confirmed dialog
+  void _showPickupConfirmedDialog(String confirmedBy) {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: const Row(
+          children: [
+            Icon(Icons.check_circle, color: AppColors.success, size: 28),
+            SizedBox(width: 12),
+            Text('¡Recogida Confirmada!'),
+          ],
+        ),
+        content: Text(
+          'La recogida ha sido confirmada por el $confirmedBy.\n\n¡Que disfrutes tu viaje! Ya puedes cerrar la app.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.of(context).pop();
+              _finishTrip();
+            },
+            child: const Text('¡Buen Viaje!'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// Starts a periodic heartbeat timer for the active request
+  void _startHeartbeat(String cellId, String requestId) {
+    _heartbeatTimer?.cancel();
+    // Send heartbeat every 30 seconds
+    _heartbeatTimer = Timer.periodic(const Duration(seconds: 30), (_) {
+      if (_trackingState == TrackingState.searching ||
+          _trackingState == TrackingState.tracking) {
+        _requestService.updateHeartbeat(cellId, requestId);
+      } else {
+        _heartbeatTimer?.cancel();
+      }
+    });
+  }
+
+  /// Clean up tracking state
+  void _cancelTracking() {
+    _heartbeatTimer?.cancel();
+    _requestSubscription?.cancel();
+    setState(() {
+      _trackingState = TrackingState.selecting;
+      _activeRequest = null;
+      _driverPosition = null;
+      _arrivedNotified = false;
+    });
+  }
+
+  /// Complete the trip flow
+  void _finishTrip() {
+    _heartbeatTimer?.cancel();
+    _requestSubscription?.cancel();
+    setState(() {
+      _trackingState = TrackingState.selecting;
+      _activeRequest = null;
+      _driverPosition = null;
+      _arrivedNotified = false;
+      _pickupPosition = null;
+      _dropoffPosition = null;
+    });
+  }
+
   void _centerOnUser() {
     if (_currentPosition != null) {
       _mapController.move(_currentPosition!, MapConstants.defaultZoom);
+    }
+  }
+
+  /// Builds the tracking panel UI for searching/tracking/arrived states
+  Widget _buildTrackingPanel(bool isTablet, double navBarHeight) {
+    return SafeArea(
+      child: Padding(
+        padding: EdgeInsets.only(
+          left: isTablet ? 48 : 16,
+          right: isTablet ? 48 : 16,
+          top: 8,
+          bottom: navBarHeight + 8,
+        ),
+        child: Center(
+          child: ConstrainedBox(
+            constraints: BoxConstraints(
+              maxWidth: isTablet ? 500 : double.infinity,
+            ),
+            child: UltraGlassCard(
+              borderRadius: 24,
+              padding: const EdgeInsets.all(24),
+              child: _buildTrackingContent(),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// Builds content based on current tracking state
+  Widget _buildTrackingContent() {
+    switch (_trackingState) {
+      case TrackingState.selecting:
+        return const SizedBox.shrink();
+      case TrackingState.searching:
+        return Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            SizedBox(
+              width: 60,
+              height: 60,
+              child: CircularProgressIndicator(
+                strokeWidth: 3,
+                color: AppColors.electricBlue,
+              ),
+            ),
+            const SizedBox(height: 16),
+            const Text(
+              'Buscando conductor...',
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.w600,
+                color: AppColors.textPrimary,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Tu solicitud ha sido enviada',
+              style: TextStyle(fontSize: 14, color: AppColors.textSecondary),
+            ),
+            const SizedBox(height: 20),
+            LiquidButton(
+              borderRadius: 12,
+              color: AppColors.error.withValues(alpha: 0.15),
+              onTap: _cancelRequest,
+              padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 24),
+              child: const Text(
+                'Cancelar solicitud',
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w500,
+                  color: AppColors.error,
+                ),
+              ),
+            ),
+          ],
+        );
+      case TrackingState.tracking:
+        final driverName = _activeRequest?.driverName ?? 'Conductor';
+        return Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 50,
+              height: 50,
+              decoration: BoxDecoration(
+                color: Colors.orange,
+                shape: BoxShape.circle,
+              ),
+              child: const Center(
+                child: Icon(
+                  Icons.directions_bike_rounded,
+                  color: AppColors.white,
+                  size: 28,
+                ),
+              ),
+            ),
+            const SizedBox(height: 12),
+            Text(
+              '¡$driverName en camino!',
+              style: const TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.w600,
+                color: AppColors.textPrimary,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Espera en tu punto de recogida',
+              style: TextStyle(fontSize: 14, color: AppColors.textSecondary),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 20),
+            Row(
+              children: [
+                // Cancel button
+                Expanded(
+                  child: LiquidButton(
+                    borderRadius: 12,
+                    color: AppColors.error.withValues(alpha: 0.15),
+                    onTap: _cancelRequest,
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    child: const Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.close, color: AppColors.error, size: 20),
+                        SizedBox(width: 6),
+                        Text(
+                          'Cancelar',
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                            color: AppColors.error,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                // Confirm pickup button
+                Expanded(
+                  flex: 2,
+                  child: LiquidButton(
+                    borderRadius: 12,
+                    color: AppColors.electricBlue,
+                    onTap: _confirmPickup,
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    child: const Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          Icons.check_circle,
+                          color: AppColors.white,
+                          size: 20,
+                        ),
+                        SizedBox(width: 6),
+                        Text(
+                          'Confirmar',
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                            color: AppColors.white,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        );
+      case TrackingState.driverArrived:
+        return Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 60,
+              height: 60,
+              decoration: BoxDecoration(
+                color: AppColors.success,
+                shape: BoxShape.circle,
+              ),
+              child: const Center(
+                child: Icon(
+                  Icons.check_rounded,
+                  color: AppColors.white,
+                  size: 35,
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
+            const Text(
+              '¡Tu conductor ha llegado!',
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.w700,
+                color: AppColors.success,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Dirígete al punto de recogida',
+              style: TextStyle(fontSize: 14, color: AppColors.textSecondary),
+            ),
+          ],
+        );
+      case TrackingState.tripStarted:
+        return Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 60,
+              height: 60,
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [AppColors.electricBlue, AppColors.brightBlue],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+                shape: BoxShape.circle,
+              ),
+              child: const Center(
+                child: Icon(
+                  Icons.celebration_rounded,
+                  color: AppColors.white,
+                  size: 30,
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
+            const Text(
+              '¡Buen viaje!',
+              style: TextStyle(
+                fontSize: 22,
+                fontWeight: FontWeight.w700,
+                color: AppColors.textPrimary,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Disfruta tu viaje en Bici Taxi',
+              style: TextStyle(fontSize: 14, color: AppColors.textSecondary),
+            ),
+          ],
+        );
     }
   }
 
@@ -376,6 +824,17 @@ class _MapHomeScreenState extends State<MapHomeScreen>
             left: 16,
             right: 16,
             child: _buildGpsErrorBanner(),
+          ),
+
+        // Driver count overlay (shows nearby drivers)
+        if (_currentPosition != null)
+          Positioned(
+            left: 16,
+            bottom: 340,
+            child: DriverCountOverlay(
+              lat: _currentPosition!.latitude,
+              lng: _currentPosition!.longitude,
+            ),
           ),
 
         // Center on user FAB
@@ -564,6 +1023,18 @@ class _MapHomeScreenState extends State<MapHomeScreen>
       );
     }
 
+    // Driver marker (orange) when tracking
+    if (_driverPosition != null && _trackingState != TrackingState.selecting) {
+      markers.add(
+        Marker(
+          point: _driverPosition!,
+          width: MapConstants.markerSize,
+          height: MapConstants.markerSize,
+          child: _buildDriverMarker(),
+        ),
+      );
+    }
+
     if (_pickupPosition != null) {
       markers.add(
         Marker(
@@ -587,6 +1058,24 @@ class _MapHomeScreenState extends State<MapHomeScreen>
     }
 
     return markers;
+  }
+
+  /// Orange driver marker (shows driver location during tracking)
+  Widget _buildDriverMarker() {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.orange.withValues(alpha: 0.3),
+        shape: BoxShape.circle,
+        border: Border.all(color: Colors.orange, width: 3),
+      ),
+      child: const Center(
+        child: Icon(
+          Icons.directions_bike_rounded,
+          color: Colors.orange,
+          size: 24,
+        ),
+      ),
+    );
   }
 
   Widget _buildCurrentPositionMarker() {
@@ -911,6 +1400,11 @@ class _MapHomeScreenState extends State<MapHomeScreen>
     final isTablet = ResponsiveUtils.isTabletOrLarger(context);
     // Extra bottom padding to account for the transparent navigation bar
     const navBarHeight = 80.0;
+
+    // Show tracking UI when not in selecting state
+    if (_trackingState != TrackingState.selecting) {
+      return _buildTrackingPanel(isTablet, navBarHeight);
+    }
 
     return SafeArea(
       child: Padding(

@@ -35,6 +35,9 @@ struct BiciTaxiTheme {
     /// Destination point color - uses deeper blue for contrast
     static let destinationColor = accentQuaternary
     
+    /// Route line color
+    static let routeColor = accentPrimary
+    
     /// Route gradient from pickup to destination
     static let routeGradient = LinearGradient(
         colors: [pickupColor, destinationColor],

@@ -19,8 +19,7 @@ class GeocodingService {
   static const Duration _debounceDelay = Duration(milliseconds: 500);
 
   /// User agent for Nominatim requests (required by their usage policy).
-  static const String _userAgent =
-      'BiciTaxiConductor/1.0 (dev.zarabanda.bicitaxiConductor)';
+  static const String _userAgent = 'BiciTaxi/1.0 (dev.zarabanda.bicitaxi)';
 
   /// Reverse geocodes coordinates to an address.
   /// Returns null if geocoding fails or is unavailable.

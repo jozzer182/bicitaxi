@@ -7,6 +7,16 @@
 
 import SwiftUI
 import MapKit
+import Combine
+
+/// Tracking state for the map screen
+enum TrackingState {
+    case selecting
+    case searching
+    case tracking
+    case driverArrived
+    case tripStarted
+}
 
 /// Client map view with pickup/dropoff selection
 struct ClientMapView: View {
@@ -47,6 +57,35 @@ struct ClientMapView: View {
     /// Whether the welcome greeting is collapsed to a button
     @State private var isWelcomeCollapsed = false
     
+    // MARK: - Tracking State
+    
+    /// Current tracking state
+    @State private var trackingState: TrackingState = .selecting
+    
+    /// Request service for Firebase requests
+    private let requestService = RequestService()
+    
+    /// Active request being tracked
+    @State private var activeRequest: RideRequest?
+    
+    /// Driver's current position
+    @State private var driverPosition: CLLocationCoordinate2D?
+    
+    /// Whether driver arrived notification was shown
+    @State private var arrivedNotified = false
+    
+    /// Heartbeat timer for active requests
+    @State private var heartbeatTimer: Timer?
+    
+    /// Cancellable subscriptions
+    @State private var cancellables = Set<AnyCancellable>()
+    
+    /// Show pickup confirmed alert
+    @State private var showPickupConfirmedAlert = false
+    
+    /// Who confirmed the pickup ("pasajero" or "conductor")
+    @State private var confirmedBy: String = ""
+    
     @Environment(\.horizontalSizeClass) var horizontalSizeClass
     
     var body: some View {
@@ -63,6 +102,23 @@ struct ClientMapView: View {
                         Spacer()
                     }
                     
+                    // Driver count overlay - shows nearby drivers (positioned left, above bottom panel)
+                    // Only show when we have real coordinates (not default fallback)
+                    if let coord = locationManager.currentCoordinate {
+                        VStack {
+                            Spacer()
+                            HStack {
+                                DriverCountOverlay(
+                                    lat: coord.latitude,
+                                    lng: coord.longitude
+                                )
+                                Spacer()
+                            }
+                            .padding(.horizontal, 16)
+                            .padding(.bottom, 340) // Match Flutter's bottom: 340 positioning
+                        }
+                    }
+                    
                     // Liquid Glass overlay panel at bottom
                     VStack {
                         Spacer()
@@ -73,6 +129,7 @@ struct ClientMapView: View {
         }
         .onAppear {
             locationManager.requestPermission()
+            observeRequestUpdates() // Start observing request updates
             
             // Auto-collapse welcome greeting after 5 seconds
             DispatchQueue.main.asyncAfter(deadline: .now() + 5) {
@@ -106,6 +163,13 @@ struct ClientMapView: View {
             }
         } message: {
             Text("¿Solicitar un viaje desde tu ubicación de recogida hasta el destino seleccionado?")
+        }
+        .alert("¡Recogida Confirmada!", isPresented: $showPickupConfirmedAlert) {
+            Button("¡Buen Viaje!") {
+                resetTracking()
+            }
+        } message: {
+            Text("La recogida ha sido confirmada por el \(confirmedBy).\n\n¡Que disfrutes tu viaje! Ya puedes cerrar la app.")
         }
     }
     
@@ -149,6 +213,14 @@ struct ClientMapView: View {
                 if let dropoff = dropoffLocation {
                     Annotation("Destino", coordinate: dropoff) {
                         DropoffAnnotationView()
+                    }
+                }
+                
+                // Driver annotation (when tracking)
+                if let driver = driverPosition,
+                   (trackingState == .tracking || trackingState == .driverArrived) {
+                    Annotation("Conductor", coordinate: driver) {
+                        DriverAnnotationView(isArrived: trackingState == .driverArrived)
                     }
                 }
             }
@@ -293,8 +365,8 @@ struct ClientMapView: View {
             // Status/Instructions
             statusView
             
-            // Action buttons
-            if pickupLocation != nil || dropoffLocation != nil {
+            // Action buttons (only in selecting state)
+            if trackingState == .selecting && (pickupLocation != nil || dropoffLocation != nil) {
                 actionButtons
             }
         }
@@ -309,7 +381,18 @@ struct ClientMapView: View {
     
     @ViewBuilder
     private var statusView: some View {
-        if let error = locationManager.errorMessage {
+        // Priority 1: Show searching/tracking states
+        if trackingState == .searching {
+            searchingView
+        } else if trackingState == .tracking {
+            trackingView
+        } else if trackingState == .driverArrived {
+            driverArrivedView
+        } else if trackingState == .tripStarted {
+            tripStartedView
+        }
+        // Priority 2: Show location/error states when selecting
+        else if let error = locationManager.errorMessage {
             HStack(spacing: 12) {
                 Image(systemName: "location.slash.fill")
                     .foregroundColor(.orange)
@@ -341,6 +424,193 @@ struct ClientMapView: View {
                     .font(.caption)
                 
                 locationRow(title: "Destino", coordinate: dropoffLocation, address: dropoffAddress, color: BiciTaxiTheme.destinationColor)
+            }
+        }
+    }
+    
+    // MARK: - Searching View
+    
+    private var searchingView: some View {
+        VStack(spacing: 16) {
+            // Spinning indicator with message
+            ProgressView()
+                .scaleEffect(1.5)
+                .tint(BiciTaxiTheme.accentPrimary)
+            
+            Text("Buscando conductor...")
+                .font(.headline.weight(.semibold))
+                .foregroundColor(.primary)
+            
+            Text("Tu solicitud ha sido enviada")
+                .font(.subheadline)
+                .foregroundColor(.secondary)
+            
+            // Cancel button
+            Button {
+                cancelRequest()
+            } label: {
+                Text("Cancelar solicitud")
+                    .font(.subheadline.weight(.medium))
+                    .foregroundColor(.red)
+            }
+        }
+        .padding(.vertical, 8)
+    }
+    
+    // MARK: - Tracking View
+    
+    private var trackingView: some View {
+        VStack(spacing: 12) {
+            // Header with driver info
+            HStack {
+                Image(systemName: "bicycle.circle.fill")
+                    .font(.title)
+                    .foregroundStyle(BiciTaxiTheme.accentGradient)
+                
+                VStack(alignment: .leading, spacing: 2) {
+                    // Show driver name if available
+                    let driverName = requestService.activeRequest?.driverName ?? "Conductor"
+                    Text("¡\(driverName) en camino!")
+                        .font(.headline.weight(.semibold))
+                        .foregroundColor(.primary)
+                    
+                    Text("Espera en tu punto de recogida")
+                        .font(.subheadline)
+                        .foregroundColor(.secondary)
+                }
+                
+                Spacer()
+                
+                // Live indicator
+                HStack(spacing: 4) {
+                    Circle()
+                        .fill(Color.green)
+                        .frame(width: 8, height: 8)
+                    Text("EN VIVO")
+                        .font(.caption2.weight(.bold))
+                        .foregroundColor(.green)
+                }
+                .padding(.horizontal, 8)
+                .padding(.vertical, 4)
+                .background(Color.green.opacity(0.15))
+                .clipShape(Capsule())
+            }
+            
+            Divider()
+                .background(Color.white.opacity(0.2))
+            
+            // Action buttons
+            HStack(spacing: 12) {
+                // Cancel button
+                Button {
+                    cancelRequest()
+                } label: {
+                    HStack {
+                        Image(systemName: "xmark.circle.fill")
+                        Text("Cancelar")
+                    }
+                    .font(.subheadline.weight(.semibold))
+                    .foregroundColor(.red)
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 10)
+                    .background(Color.red.opacity(0.15))
+                    .clipShape(Capsule())
+                }
+                
+                Spacer()
+                
+                // Confirm pickup button (passenger confirms they've been picked up)
+                Button {
+                    confirmPickup()
+                } label: {
+                    HStack {
+                        Image(systemName: "person.fill.checkmark")
+                        Text("Confirmar Recogida")
+                    }
+                    .font(.subheadline.weight(.semibold))
+                    .foregroundColor(.white)
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 10)
+                    .background(BiciTaxiTheme.accentGradient)
+                    .clipShape(Capsule())
+                }
+            }
+        }
+    }
+    
+    /// Confirm that the passenger has been picked up (ends app intervention)
+    private func confirmPickup() {
+        guard let request = activeRequest else { return }
+        
+        Task {
+            await requestService.completeRequest(cellId: request.cellId, requestId: request.requestId)
+            await MainActor.run {
+                confirmedBy = "pasajero"
+                showPickupConfirmedAlert = true
+            }
+        }
+    }
+    
+    // MARK: - Driver Arrived View
+    
+    private var driverArrivedView: some View {
+        VStack(spacing: 12) {
+            HStack {
+                Image(systemName: "hand.wave.fill")
+                    .font(.title)
+                    .foregroundColor(.green)
+                
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("¡El conductor ha llegado!")
+                        .font(.headline.weight(.semibold))
+                        .foregroundColor(.primary)
+                    
+                    Text("Busca tu bicitaxi")
+                        .font(.subheadline)
+                        .foregroundColor(.secondary)
+                }
+                
+                Spacer()
+            }
+        }
+    }
+    
+    // MARK: - Trip Started View
+    
+    private var tripStartedView: some View {
+        VStack(spacing: 12) {
+            HStack {
+                Image(systemName: "figure.outdoor.cycle")
+                    .font(.title)
+                    .foregroundStyle(BiciTaxiTheme.accentGradient)
+                
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("Viaje en curso")
+                        .font(.headline.weight(.semibold))
+                        .foregroundColor(.primary)
+                    
+                    Text("Disfruta tu viaje")
+                        .font(.subheadline)
+                        .foregroundColor(.secondary)
+                }
+                
+                Spacer()
+            }
+        }
+    }
+    
+    // MARK: - Cancel Request
+    
+    private func cancelRequest() {
+        guard let request = activeRequest else {
+            resetTracking()
+            return
+        }
+        
+        Task {
+            await requestService.cancelRequest(cellId: request.cellId, requestId: request.requestId)
+            await MainActor.run {
+                resetTracking()
             }
         }
     }
@@ -489,6 +759,9 @@ struct ClientMapView: View {
     // MARK: - Actions
     
     private func handleMapTap(coordinate: CLLocationCoordinate2D) {
+        // Only allow selection in selecting state
+        guard trackingState == .selecting else { return }
+        
         let impact = UIImpactFeedbackGenerator(style: .light)
         impact.impactOccurred()
         
@@ -574,18 +847,118 @@ struct ClientMapView: View {
     private func requestRide() {
         guard let pickup = pickupLocation else { return }
         
-        let pickupPoint = RideLocationPoint(coordinate: pickup)
-        let dropoffPoint = dropoffLocation.map { RideLocationPoint(coordinate: $0) }
+        // Transition to searching state
+        trackingState = .searching
         
         Task {
-            await rideViewModel.requestRide(pickup: pickupPoint, dropoff: dropoffPoint)
+            // Create Firebase request via RequestService
+            let request = await requestService.createRequest(
+                pickupLat: pickup.latitude,
+                pickupLng: pickup.longitude,
+                dropoffLat: dropoffLocation?.latitude,
+                dropoffLng: dropoffLocation?.longitude,
+                pickupAddress: pickupAddress,
+                dropoffAddress: dropoffAddress
+            )
             
-            // Clear selections after request
+            guard let request = request else {
+                await MainActor.run {
+                    trackingState = .selecting
+                }
+                return
+            }
+            
             await MainActor.run {
-                pickupLocation = nil
-                dropoffLocation = nil
+                activeRequest = request
+                // Start watching this request for updates
+                requestService.watchRequest(cellId: request.cellId, requestId: request.requestId)
+                // Start heartbeat timer (every 30 seconds)
+                startHeartbeat(cellId: request.cellId, requestId: request.requestId)
             }
         }
+    }
+    
+    // MARK: - Request Update Handler
+    
+    /// Call this from view lifecycle to observe request changes
+    private func observeRequestUpdates() {
+        // Observe requestService.activeRequest for real-time updates
+        requestService.$activeRequest
+            .receive(on: DispatchQueue.main)
+            .sink { [self] request in
+                guard let request = request else { return }
+                
+                // Update driver position
+                if let lat = request.driverLat, let lng = request.driverLng {
+                    driverPosition = CLLocationCoordinate2D(latitude: lat, longitude: lng)
+                    checkDriverProximity()
+                }
+                
+                // Update tracking state
+                switch request.status {
+                case .open:
+                    trackingState = .searching
+                case .assigned:
+                    trackingState = .tracking
+                case .completed:
+                    // If we didn't confirm ourselves, the conductor confirmed
+                    if !showPickupConfirmedAlert {
+                        confirmedBy = "conductor"
+                        showPickupConfirmedAlert = true
+                    }
+                case .cancelled:
+                    resetTracking()
+                }
+            }
+            .store(in: &cancellables)
+    }
+    
+    /// Check if driver is within 50m of pickup
+    private func checkDriverProximity() {
+        guard let driver = driverPosition,
+              let pickup = pickupLocation,
+              !arrivedNotified,
+              trackingState == .tracking else { return }
+        
+        let pickupLoc = CLLocation(latitude: pickup.latitude, longitude: pickup.longitude)
+        let driverLoc = CLLocation(latitude: driver.latitude, longitude: driver.longitude)
+        let distance = pickupLoc.distance(from: driverLoc)
+        
+        if distance < 50 {
+            trackingState = .driverArrived
+            arrivedNotified = true
+            // Show notification to user
+        }
+    }
+    
+    // MARK: - Heartbeat
+    
+    /// Starts a periodic heartbeat timer for the active request
+    private func startHeartbeat(cellId: String, requestId: String) {
+        heartbeatTimer?.invalidate()
+        // Send heartbeat every 30 seconds
+        heartbeatTimer = Timer.scheduledTimer(withTimeInterval: 30, repeats: true) { [self] _ in
+            if trackingState == .searching || trackingState == .tracking {
+                Task {
+                    await requestService.updateHeartbeat(cellId: cellId, requestId: requestId)
+                }
+            } else {
+                heartbeatTimer?.invalidate()
+                heartbeatTimer = nil
+            }
+        }
+    }
+    
+    /// Reset tracking state
+    private func resetTracking() {
+        heartbeatTimer?.invalidate()
+        heartbeatTimer = nil
+        requestService.stopWatchingRequest()
+        trackingState = .selecting
+        activeRequest = nil
+        driverPosition = nil
+        arrivedNotified = false
+        cancellables.removeAll()
     }
 }
 
@@ -618,6 +991,28 @@ struct DropoffAnnotationView: View {
                 .foregroundColor(.white)
                 .font(.system(size: 14, weight: .bold))
         }
+    }
+}
+
+struct DriverAnnotationView: View {
+    var isArrived: Bool
+    
+    // Use orange for driver to distinguish from blue pickup/destination
+    private let driverColor: Color = .orange
+    
+    var body: some View {
+        ZStack {
+            Circle()
+                .fill(driverColor)
+                .frame(width: 40, height: 40)
+                .shadow(color: driverColor.opacity(0.5), radius: isArrived ? 4 : 12)
+                .scaleEffect(isArrived ? 1.0 : 1.1)
+            
+            Image(systemName: "bicycle")
+                .foregroundColor(.white)
+                .font(.system(size: 18, weight: .bold))
+        }
+        .animation(.easeInOut(duration: 0.8).repeatForever(autoreverses: true), value: isArrived)
     }
 }
 

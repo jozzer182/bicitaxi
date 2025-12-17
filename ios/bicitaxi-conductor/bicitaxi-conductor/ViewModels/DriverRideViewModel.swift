@@ -25,7 +25,7 @@ class DriverRideViewModel: ObservableObject {
     @Published var completedRides: [Ride] = []
     
     /// Driver online status
-    @Published var isOnline: Bool = true
+    @Published var isOnline: Bool = false
     
     /// Loading state
     @Published var isLoading: Bool = false
@@ -36,8 +36,13 @@ class DriverRideViewModel: ObservableObject {
     // MARK: - Private Properties
     
     private let repo: InMemoryRideRepository
+    private let presenceService = PresenceService()
     private let currentDriverId = "driver-demo"
     private var hasGeneratedDummyRides = false
+    
+    /// Callbacks to get current location (set from view)
+    private var getLatitude: (() -> Double)?
+    private var getLongitude: (() -> Double)?
     
     // MARK: - Computed Properties
     
@@ -229,12 +234,56 @@ class DriverRideViewModel: ObservableObject {
         }
     }
     
-    /// Toggle online status
+    // MARK: - Location Callbacks
+    
+    /// Set location callbacks for presence updates
+    func setLocationCallbacks(
+        getLatitude: @escaping () -> Double,
+        getLongitude: @escaping () -> Double
+    ) {
+        self.getLatitude = getLatitude
+        self.getLongitude = getLongitude
+    }
+    
+    /// Toggle online status and manage presence
     func toggleOnline() {
-        isOnline.toggle()
-        if !isOnline {
-            pendingRides = []
+        Task {
+            if isOnline {
+                // Going offline
+                await goOffline()
+            } else {
+                // Going online
+                await goOnline()
+            }
         }
+    }
+    
+    /// Go online and start presence heartbeat
+    private func goOnline() async {
+        guard let getLat = getLatitude, let getLng = getLongitude else {
+            print("⚠️ DriverRideViewModel: Location callbacks not set, cannot go online")
+            errorMessage = "No se pudo obtener tu ubicación"
+            return
+        }
+        
+        isOnline = true
+        
+        // Start presence heartbeat
+        presenceService.startHeartbeat(
+            getLatitude: getLat,
+            getLongitude: getLng,
+            getActiveRideId: { [weak self] in self?.activeRide?.id }
+        )
+        
+        // Load pending rides
+        await loadPendingRidesAsync()
+    }
+    
+    /// Go offline and stop presence
+    private func goOffline() async {
+        isOnline = false
+        pendingRides = []
+        await presenceService.goOffline()
     }
     
     /// Check if there's an active ride
