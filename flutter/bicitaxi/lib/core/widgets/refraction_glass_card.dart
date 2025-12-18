@@ -196,7 +196,7 @@ class _RefractionGlassCardState extends State<RefractionGlassCard>
 }
 
 /// Separate widget to handle painting - needs its own RenderObject access
-class _ShaderPaintWidget extends StatelessWidget {
+class _ShaderPaintWidget extends StatefulWidget {
   const _ShaderPaintWidget({
     required this.shader,
     required this.backgroundImage,
@@ -216,28 +216,66 @@ class _ShaderPaintWidget extends StatelessWidget {
   final Widget child;
 
   @override
+  State<_ShaderPaintWidget> createState() => _ShaderPaintWidgetState();
+}
+
+class _ShaderPaintWidgetState extends State<_ShaderPaintWidget> {
+  final GlobalKey _widgetKey = GlobalKey();
+  Offset _widgetPosition = Offset.zero;
+
+  @override
+  void initState() {
+    super.initState();
+    // Get position after first frame
+    SchedulerBinding.instance.addPostFrameCallback((_) {
+      _updatePosition();
+    });
+  }
+
+  void _updatePosition() {
+    final renderBox =
+        _widgetKey.currentContext?.findRenderObject() as RenderBox?;
+    if (renderBox != null && renderBox.hasSize) {
+      final position = renderBox.localToGlobal(Offset.zero);
+      if (mounted && position != _widgetPosition) {
+        setState(() {
+          _widgetPosition = position;
+        });
+      }
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
+    // Update position on each build (for scrolling/movement)
+    SchedulerBinding.instance.addPostFrameCallback((_) {
+      _updatePosition();
+    });
+
     // Get screen size
     final screenSize = MediaQuery.of(context).size;
 
-    return CustomPaint(
-      painter: _RefractionPainter(
-        shader: shader,
-        backgroundImage: backgroundImage,
-        refractionStrength: refractionStrength,
-        time: time,
-        screenSize: screenSize,
-        backgroundKey: backgroundKey,
-      ),
-      child: Container(
-        decoration: BoxDecoration(
-          border: Border.all(
-            color: Colors.white.withValues(alpha: 0.2),
-            width: 1,
-          ),
-          borderRadius: BorderRadius.circular(borderRadius),
+    return Container(
+      key: _widgetKey,
+      child: CustomPaint(
+        painter: _RefractionPainter(
+          shader: widget.shader,
+          backgroundImage: widget.backgroundImage,
+          refractionStrength: widget.refractionStrength,
+          time: widget.time,
+          screenSize: screenSize,
+          widgetPosition: _widgetPosition,
         ),
-        child: child,
+        child: Container(
+          decoration: BoxDecoration(
+            border: Border.all(
+              color: Colors.white.withValues(alpha: 0.2),
+              width: 1,
+            ),
+            borderRadius: BorderRadius.circular(widget.borderRadius),
+          ),
+          child: widget.child,
+        ),
       ),
     );
   }
@@ -250,7 +288,7 @@ class _RefractionPainter extends CustomPainter {
     required this.refractionStrength,
     required this.time,
     required this.screenSize,
-    required this.backgroundKey,
+    required this.widgetPosition,
   });
 
   final ui.FragmentShader shader;
@@ -258,14 +296,13 @@ class _RefractionPainter extends CustomPainter {
   final double refractionStrength;
   final double time;
   final Size screenSize;
-  final GlobalKey backgroundKey;
+  final Offset widgetPosition;
 
   @override
   void paint(Canvas canvas, Size size) {
-    // Calculate widget position - estimate based on typical nav bar position (bottom of screen)
-    final widgetPosY =
-        screenSize.height - size.height - 5; // 5 = bottom padding
-    final widgetPosX = 5.0; // horizontal padding
+    // Use the actual widget position from the RenderBox
+    final widgetPosX = widgetPosition.dx;
+    final widgetPosY = widgetPosition.dy;
 
     // Set uniforms
     // Index 0: uSize.x (widget width)
@@ -297,6 +334,7 @@ class _RefractionPainter extends CustomPainter {
   bool shouldRepaint(_RefractionPainter oldDelegate) {
     return oldDelegate.time != time ||
         oldDelegate.backgroundImage != backgroundImage ||
-        oldDelegate.refractionStrength != refractionStrength;
+        oldDelegate.refractionStrength != refractionStrength ||
+        oldDelegate.widgetPosition != widgetPosition;
   }
 }

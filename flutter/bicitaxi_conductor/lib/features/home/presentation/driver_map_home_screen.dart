@@ -7,6 +7,7 @@ import 'package:latlong2/latlong.dart';
 import 'package:liquid_glass_ui_design/liquid_glass_ui.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/widgets/glass_container.dart';
+import '../../../core/widgets/refraction_glass_card.dart';
 import '../../../core/widgets/responsive_layout.dart';
 import '../../../core/providers/app_state.dart';
 import '../../../core/routes/app_routes.dart';
@@ -30,6 +31,9 @@ class _DriverMapHomeScreenState extends State<DriverMapHomeScreen> {
   final MapController _mapController = MapController();
   final LocationService _locationService = LocationService();
   final RequestService _requestService = RequestService();
+
+  // Key for background capture (used by refraction shader)
+  final GlobalKey _mapBackgroundKey = GlobalKey();
 
   LatLng? _currentPosition;
   bool _isLoading = true;
@@ -179,8 +183,11 @@ class _DriverMapHomeScreenState extends State<DriverMapHomeScreen> {
 
     return Stack(
       children: [
-        // Full-screen map
-        _buildMap(context, pendingRides),
+        // Full-screen map (wrapped for shader capture)
+        RepaintBoundary(
+          key: _mapBackgroundKey,
+          child: _buildMap(context, pendingRides),
+        ),
 
         // Status bar background overlay
         Positioned(
@@ -727,126 +734,133 @@ class _DriverMapHomeScreenState extends State<DriverMapHomeScreen> {
             constraints: BoxConstraints(
               maxWidth: isTablet ? 500 : double.infinity,
             ),
-            child: UltraGlassCard(
+            child: RefractionGlassCard(
               borderRadius: 24,
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  // Connection button or ride requests
-                  if (!isOnline)
-                    LiquidButton(
-                      borderRadius: 14,
-                      color: AppColors.driverAccent.withValues(alpha: 0.3),
-                      onTap: _toggleOnlineStatus,
-                      padding: const EdgeInsets.symmetric(vertical: 14),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: const [
-                          Icon(
-                            Icons.play_circle_outline_rounded,
-                            color: AppColors.textDark,
-                            size: 22,
-                          ),
-                          SizedBox(width: 8),
-                          Text(
-                            'Empezar a trabajar',
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w600,
-                              color: AppColors.textDark,
-                            ),
-                          ),
-                        ],
-                      ),
-                    )
-                  // Show active ride panel
-                  else if (_activeFirebaseRequest != null)
-                    _buildActiveRidePanel()
-                  else ...[
-                    // Nearby requests section header
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          'Solicitudes cercanas',
-                          style: TextStyle(
-                            fontWeight: FontWeight.w600,
-                            fontSize: 14,
-                            color: AppColors.textDark,
-                          ),
-                        ),
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 10,
-                            vertical: 4,
-                          ),
-                          decoration: BoxDecoration(
-                            color: AppColors.brightBlue.withValues(alpha: 0.2),
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: Text(
-                            '${_firebaseRequests.length}',
-                            style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              color: AppColors.brightBlue,
-                              fontSize: 13,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 12),
-                    if (_firebaseRequests.isEmpty)
-                      Container(
-                        padding: const EdgeInsets.symmetric(vertical: 16),
+              refractionStrength: 0.02,
+              animated: true,
+              backgroundKey: _mapBackgroundKey,
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    // Connection button or ride requests
+                    if (!isOnline)
+                      LiquidButton(
+                        borderRadius: 14,
+                        color: AppColors.driverAccent.withValues(alpha: 0.3),
+                        onTap: _toggleOnlineStatus,
+                        padding: const EdgeInsets.symmetric(vertical: 14),
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
+                          children: const [
                             Icon(
-                              Icons.search_rounded,
-                              color: AppColors.textTertiary,
-                              size: 20,
+                              Icons.play_circle_outline_rounded,
+                              color: AppColors.textDark,
+                              size: 22,
                             ),
-                            const SizedBox(width: 8),
+                            SizedBox(width: 8),
                             Text(
-                              'Buscando solicitudes...',
+                              'Empezar a trabajar',
                               style: TextStyle(
-                                color: AppColors.textSecondary,
-                                fontSize: 14,
+                                fontSize: 16,
+                                fontWeight: FontWeight.w600,
+                                color: AppColors.textDark,
                               ),
                             ),
                           ],
                         ),
                       )
-                    else
-                      // Scrollable list of Firebase ride requests
-                      ConstrainedBox(
-                        constraints: const BoxConstraints(
-                          maxHeight: maxListHeight,
-                        ),
-                        child: ListView.separated(
-                          shrinkWrap: true,
-                          itemCount: _firebaseRequests.length,
-                          separatorBuilder: (context, index) =>
-                              const SizedBox(height: 8),
-                          itemBuilder: (context, index) {
-                            return _buildFirebaseRequestItem(
-                              context,
-                              _firebaseRequests[index],
-                            );
-                          },
-                        ),
+                    // Show active ride panel
+                    else if (_activeFirebaseRequest != null)
+                      _buildActiveRidePanel()
+                    else ...[
+                      // Nearby requests section header
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            'Solicitudes cercanas',
+                            style: TextStyle(
+                              fontWeight: FontWeight.w600,
+                              fontSize: 14,
+                              color: AppColors.textDark,
+                            ),
+                          ),
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 10,
+                              vertical: 4,
+                            ),
+                            decoration: BoxDecoration(
+                              color: AppColors.brightBlue.withValues(
+                                alpha: 0.2,
+                              ),
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Text(
+                              '${_firebaseRequests.length}',
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                color: AppColors.brightBlue,
+                                fontSize: 13,
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
+                      const SizedBox(height: 12),
+                      if (_firebaseRequests.isEmpty)
+                        Container(
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(
+                                Icons.search_rounded,
+                                color: AppColors.textTertiary,
+                                size: 20,
+                              ),
+                              const SizedBox(width: 8),
+                              Text(
+                                'Buscando solicitudes...',
+                                style: TextStyle(
+                                  color: AppColors.textSecondary,
+                                  fontSize: 14,
+                                ),
+                              ),
+                            ],
+                          ),
+                        )
+                      else
+                        // Scrollable list of Firebase ride requests
+                        ConstrainedBox(
+                          constraints: const BoxConstraints(
+                            maxHeight: maxListHeight,
+                          ),
+                          child: ListView.separated(
+                            shrinkWrap: true,
+                            itemCount: _firebaseRequests.length,
+                            separatorBuilder: (context, index) =>
+                                const SizedBox(height: 8),
+                            itemBuilder: (context, index) {
+                              return _buildFirebaseRequestItem(
+                                context,
+                                _firebaseRequests[index],
+                              );
+                            },
+                          ),
+                        ),
+                    ],
                   ],
-                ],
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
+                ),
+              ), // End Padding (inner)
+            ), // End RefractionGlassCard
+          ), // End ConstrainedBox
+        ), // End Center
+      ), // End Padding (outer)
+    ); // End SafeArea
   }
 
   /// Builds the active ride panel (collapsible)

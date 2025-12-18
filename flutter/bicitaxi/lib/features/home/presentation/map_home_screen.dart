@@ -7,6 +7,7 @@ import 'package:latlong2/latlong.dart';
 import 'package:liquid_glass_ui_design/liquid_glass_ui.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/widgets/glass_container.dart';
+import '../../../core/widgets/refraction_glass_card.dart';
 import '../../../core/widgets/responsive_layout.dart';
 import '../../../core/providers/app_state.dart';
 import '../../../core/routes/app_routes.dart';
@@ -45,6 +46,9 @@ class _MapHomeScreenState extends State<MapHomeScreen>
   final MapController _mapController = MapController();
   final LocationService _locationService = LocationService();
   final GeocodingService _geocodingService = GeocodingService();
+
+  // Key for background capture (used by refraction shader)
+  final GlobalKey _mapBackgroundKey = GlobalKey();
 
   LatLng? _currentPosition;
   LatLng? _pickupPosition;
@@ -581,7 +585,6 @@ class _MapHomeScreenState extends State<MapHomeScreen>
     }
   }
 
-  /// Builds the tracking panel UI for searching/tracking/arrived states
   Widget _buildTrackingPanel(bool isTablet, double navBarHeight) {
     return SafeArea(
       child: Padding(
@@ -596,10 +599,15 @@ class _MapHomeScreenState extends State<MapHomeScreen>
             constraints: BoxConstraints(
               maxWidth: isTablet ? 500 : double.infinity,
             ),
-            child: UltraGlassCard(
+            child: RefractionGlassCard(
               borderRadius: 24,
-              padding: const EdgeInsets.all(24),
-              child: _buildTrackingContent(),
+              refractionStrength: 0.02,
+              animated: true,
+              backgroundKey: _mapBackgroundKey,
+              child: Padding(
+                padding: const EdgeInsets.all(24),
+                child: _buildTrackingContent(),
+              ),
             ),
           ),
         ),
@@ -835,8 +843,8 @@ class _MapHomeScreenState extends State<MapHomeScreen>
 
     return Stack(
       children: [
-        // Full-screen map
-        _buildMap(context),
+        // Full-screen map (wrapped for shader capture)
+        RepaintBoundary(key: _mapBackgroundKey, child: _buildMap(context)),
 
         // Status bar background overlay
         Positioned(
@@ -1459,119 +1467,127 @@ class _MapHomeScreenState extends State<MapHomeScreen>
             constraints: BoxConstraints(
               maxWidth: isTablet ? 500 : double.infinity,
             ),
-            child: UltraGlassCard(
+            child: RefractionGlassCard(
               borderRadius: 24,
-              padding: const EdgeInsets.all(20),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  // Location selection info
-                  _buildLocationRow(
-                    icon: Icons.trip_origin_rounded,
-                    iconColor: AppColors.electricBlue,
-                    label: 'Punto de recogida',
-                    value: _pickupPosition != null
-                        ? (_isLoadingPickupAddress
-                              ? 'Buscando dirección...'
-                              : (_pickupAddress ?? 'Ubicación seleccionada'))
-                        : 'Toca el mapa para seleccionar',
-                    isSelected: _pickupPosition != null,
-                    isLoading: _isLoadingPickupAddress,
-                    coordinates: _pickupPosition,
-                    onEdit: _pickupPosition != null ? _editPickup : null,
-                  ),
-                  const SizedBox(height: 12),
-                  _buildLocationRow(
-                    icon: Icons.location_on_rounded,
-                    iconColor: AppColors.deepBlue,
-                    label: 'Destino',
-                    value: _dropoffPosition != null
-                        ? (_isLoadingDropoffAddress
-                              ? 'Buscando dirección...'
-                              : (_dropoffAddress ?? 'Destino seleccionado'))
-                        : _pickupPosition != null
-                        ? 'Toca para seleccionar destino'
-                        : 'Primero selecciona recogida',
-                    isSelected: _dropoffPosition != null,
-                    isLoading: _isLoadingDropoffAddress,
-                    coordinates: _dropoffPosition,
-                    onEdit: _dropoffPosition != null ? _editDropoff : null,
-                  ),
-
-                  // Distance between pickup and dropoff
-                  if (_pickupPosition != null && _dropoffPosition != null) ...[
+              refractionStrength: 0.02,
+              animated: true,
+              backgroundKey: _mapBackgroundKey,
+              child: Padding(
+                padding: const EdgeInsets.all(20),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    // Location selection info
+                    _buildLocationRow(
+                      icon: Icons.trip_origin_rounded,
+                      iconColor: AppColors.electricBlue,
+                      label: 'Punto de recogida',
+                      value: _pickupPosition != null
+                          ? (_isLoadingPickupAddress
+                                ? 'Buscando dirección...'
+                                : (_pickupAddress ?? 'Ubicación seleccionada'))
+                          : 'Toca el mapa para seleccionar',
+                      isSelected: _pickupPosition != null,
+                      isLoading: _isLoadingPickupAddress,
+                      coordinates: _pickupPosition,
+                      onEdit: _pickupPosition != null ? _editPickup : null,
+                    ),
                     const SizedBox(height: 12),
-                    _buildDistanceDisplay(),
-                  ],
+                    _buildLocationRow(
+                      icon: Icons.location_on_rounded,
+                      iconColor: AppColors.deepBlue,
+                      label: 'Destino',
+                      value: _dropoffPosition != null
+                          ? (_isLoadingDropoffAddress
+                                ? 'Buscando dirección...'
+                                : (_dropoffAddress ?? 'Destino seleccionado'))
+                          : _pickupPosition != null
+                          ? 'Toca para seleccionar destino'
+                          : 'Primero selecciona recogida',
+                      isSelected: _dropoffPosition != null,
+                      isLoading: _isLoadingDropoffAddress,
+                      coordinates: _dropoffPosition,
+                      onEdit: _dropoffPosition != null ? _editDropoff : null,
+                    ),
 
-                  const SizedBox(height: 16),
+                    // Distance between pickup and dropoff
+                    if (_pickupPosition != null &&
+                        _dropoffPosition != null) ...[
+                      const SizedBox(height: 12),
+                      _buildDistanceDisplay(),
+                    ],
 
-                  // Action buttons
-                  Row(
-                    children: [
-                      if (_pickupPosition != null || _dropoffPosition != null)
-                        Expanded(
-                          child: LiquidButton(
-                            borderRadius: 12,
-                            onTap: _clearSelections,
-                            padding: const EdgeInsets.symmetric(vertical: 14),
-                            child: const Center(
-                              child: Text(
-                                'Limpiar',
-                                textAlign: TextAlign.center,
-                                style: TextStyle(
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w500,
-                                  color: AppColors.textDarkSecondary,
+                    const SizedBox(height: 16),
+
+                    // Action buttons
+                    Row(
+                      children: [
+                        if (_pickupPosition != null || _dropoffPosition != null)
+                          Expanded(
+                            child: LiquidButton(
+                              borderRadius: 12,
+                              onTap: _clearSelections,
+                              padding: const EdgeInsets.symmetric(vertical: 14),
+                              child: const Center(
+                                child: Text(
+                                  'Limpiar',
+                                  textAlign: TextAlign.center,
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w500,
+                                    color: AppColors.textDarkSecondary,
+                                  ),
                                 ),
                               ),
                             ),
                           ),
-                        ),
-                      if (_pickupPosition != null || _dropoffPosition != null)
-                        const SizedBox(width: 12),
-                      Expanded(
-                        flex: _pickupPosition != null ? 2 : 1,
-                        child: Builder(
-                          builder: (context) {
-                            // Button is only enabled when BOTH pickup and dropoff are selected
-                            final isEnabled =
-                                _pickupPosition != null &&
-                                _dropoffPosition != null;
-                            return LiquidButton(
-                              borderRadius: 12,
-                              color: isEnabled
-                                  ? Colors.white.withValues(alpha: 0.3)
-                                  : Colors.white.withValues(alpha: 0.15),
-                              onTap: isEnabled ? _confirmLocations : null,
-                              padding: const EdgeInsets.symmetric(vertical: 14),
-                              child: Center(
-                                child: Text(
-                                  'Solicitar viaje',
-                                  textAlign: TextAlign.center,
-                                  style: TextStyle(
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.w600,
-                                    color: isEnabled
-                                        ? AppColors.textDark
-                                        : AppColors.textDarkTertiary,
+                        if (_pickupPosition != null || _dropoffPosition != null)
+                          const SizedBox(width: 12),
+                        Expanded(
+                          flex: _pickupPosition != null ? 2 : 1,
+                          child: Builder(
+                            builder: (context) {
+                              // Button is only enabled when BOTH pickup and dropoff are selected
+                              final isEnabled =
+                                  _pickupPosition != null &&
+                                  _dropoffPosition != null;
+                              return LiquidButton(
+                                borderRadius: 12,
+                                color: isEnabled
+                                    ? Colors.white.withValues(alpha: 0.3)
+                                    : Colors.white.withValues(alpha: 0.15),
+                                onTap: isEnabled ? _confirmLocations : null,
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 14,
+                                ),
+                                child: Center(
+                                  child: Text(
+                                    'Solicitar viaje',
+                                    textAlign: TextAlign.center,
+                                    style: TextStyle(
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w600,
+                                      color: isEnabled
+                                          ? AppColors.textDark
+                                          : AppColors.textDarkTertiary,
+                                    ),
                                   ),
                                 ),
-                              ),
-                            );
-                          },
+                              );
+                            },
+                          ),
                         ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
+                      ],
+                    ),
+                  ],
+                ), // End Column
+              ), // End Padding
+            ), // End RefractionGlassCard
+          ), // End ConstrainedBox
+        ), // End Center
+      ), // End Padding
+    ); // End SafeArea
   }
 
   Widget _buildLocationRow({
