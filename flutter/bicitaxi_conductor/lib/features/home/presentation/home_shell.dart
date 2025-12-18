@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/widgets/responsive_layout.dart';
 import '../../../core/widgets/glass_container.dart';
+import '../../../core/widgets/refraction_glass_card.dart';
 import 'driver_map_home_screen.dart';
 import '../../rides/presentation/driver_history_screen.dart';
 import '../../profile/presentation/driver_profile_screen.dart';
@@ -24,6 +25,9 @@ class _HomeShellState extends State<HomeShell> {
 
   // Key for persistent map widget
   final GlobalKey<PersistentMapWidgetState> _mapKey = GlobalKey();
+
+  // Key for background capture (used by refraction shader)
+  final GlobalKey _backgroundKey = GlobalKey();
 
   final List<_NavDestination> _destinations = const [
     _NavDestination(
@@ -84,7 +88,12 @@ class _HomeShellState extends State<HomeShell> {
         // When on home tab (0), use DriverMapHomeScreen with its own map
         // When on other tabs, show the persistent map with blur
         if (_selectedIndex == 0)
-          const Positioned.fill(child: DriverMapHomeScreen())
+          Positioned.fill(
+            child: RepaintBoundary(
+              key: _backgroundKey,
+              child: const DriverMapHomeScreen(),
+            ),
+          )
         else ...[
           // Persistent map in background for blur effect
           Positioned.fill(child: PersistentMapWidget(key: _mapKey)),
@@ -152,35 +161,23 @@ class _HomeShellState extends State<HomeShell> {
         padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 5),
         child: SizedBox(
           height: 75, // Fixed height for nav bar
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(40),
-            child: BackdropFilter(
-              // Blur 5% = sigma ~2.5 para un efecto sutil
-              filter: ImageFilter.blur(sigmaX: 2.5, sigmaY: 2.5),
-              child: Container(
-                decoration: BoxDecoration(
-                  // Tinte blanco 5% de opacidad
-                  color: Colors.white.withValues(alpha: 0.05),
-                  borderRadius: BorderRadius.circular(40),
-                  border: Border.all(
-                    color: Colors.white.withValues(alpha: 0.15),
-                    width: 1,
-                  ),
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: List.generate(_destinations.length, (index) {
-                    final dest = _destinations[index];
-                    final isSelected = _selectedIndex == index;
-                    return _NavBarItem(
-                      icon: isSelected ? dest.selectedIcon : dest.icon,
-                      label: dest.label,
-                      isSelected: isSelected,
-                      onTap: () => _onTabChanged(index),
-                    );
-                  }),
-                ),
-              ),
+          child: RefractionGlassCard(
+            borderRadius: 40,
+            refractionStrength: 0.025,
+            animated: true,
+            backgroundKey: _backgroundKey,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: List.generate(_destinations.length, (index) {
+                final dest = _destinations[index];
+                final isSelected = _selectedIndex == index;
+                return _NavBarItem(
+                  icon: isSelected ? dest.selectedIcon : dest.icon,
+                  label: dest.label,
+                  isSelected: isSelected,
+                  onTap: () => _onTabChanged(index),
+                );
+              }),
             ),
           ),
         ),
