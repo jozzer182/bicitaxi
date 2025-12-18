@@ -24,12 +24,13 @@ class DriverCountOverlay extends StatefulWidget {
 
 class _DriverCountOverlayState extends State<DriverCountOverlay> {
   late PresenceService _presenceService;
+  DriverCountWatcher? _watcher;
   StreamSubscription<int>? _countSubscription;
   Timer? _refreshTimer;
   int _driverCount = 0;
   bool _isLoading = true;
 
-  /// Refresh interval - re-evaluates stale drivers periodically
+  /// Refresh interval - re-evaluates stale drivers locally (no new reads)
   static const Duration _refreshInterval = Duration(seconds: 30);
 
   @override
@@ -38,13 +39,12 @@ class _DriverCountOverlayState extends State<DriverCountOverlay> {
     _presenceService =
         widget.presenceService ??
         PresenceService(appName: 'bicitaxi', role: PresenceRole.client);
-    _startWatching();
+    _createWatcher();
 
-    // Periodic refresh to re-evaluate stale drivers
-    // This is needed because Firestore only emits when documents change
+    // Periodic refresh - just re-evaluates cached data locally, no new Firestore reads!
     _refreshTimer = Timer.periodic(_refreshInterval, (_) {
       if (mounted) {
-        _startWatching();
+        _watcher?.refresh(); // Local re-evaluation only
       }
     });
   }
@@ -52,45 +52,50 @@ class _DriverCountOverlayState extends State<DriverCountOverlay> {
   @override
   void didUpdateWidget(DriverCountOverlay oldWidget) {
     super.didUpdateWidget(oldWidget);
-    // If location changed significantly, restart watching
+    // If location changed significantly, recreate watcher with new cells
     if ((oldWidget.lat - widget.lat).abs() > 0.001 ||
         (oldWidget.lng - widget.lng).abs() > 0.001) {
-      _startWatching();
+      _disposeWatcher();
+      _createWatcher();
     }
   }
 
-  void _startWatching() {
-    _countSubscription?.cancel();
-    // Don't show loading indicator on periodic refresh
-    if (_driverCount == 0 && _isLoading) {
-      setState(() => _isLoading = true);
-    }
+  void _createWatcher() {
+    _watcher = _presenceService.createDriverCountWatcher(
+      widget.lat,
+      widget.lng,
+    );
 
-    _countSubscription = _presenceService
-        .watchDriverCount(widget.lat, widget.lng)
-        .listen(
-          (count) {
-            if (mounted) {
-              setState(() {
-                _driverCount = count;
-                _isLoading = false;
-              });
-            }
-          },
-          onError: (error) {
-            print('❌ Error watching driver count: $error');
-            if (mounted) {
-              setState(() {
-                _isLoading = false;
-              });
-            }
-          },
-        );
+    _countSubscription = _watcher!.countStream.listen(
+      (count) {
+        if (mounted) {
+          setState(() {
+            _driverCount = count;
+            _isLoading = false;
+          });
+        }
+      },
+      onError: (error) {
+        print('❌ Error watching driver count: $error');
+        if (mounted) {
+          setState(() {
+            _isLoading = false;
+          });
+        }
+      },
+    );
+  }
+
+  void _disposeWatcher() {
+    _countSubscription?.cancel();
+    _countSubscription = null;
+    _watcher?.dispose();
+    _watcher = null;
   }
 
   @override
   void dispose() {
-    _countSubscription?.cancel();
+    _disposeWatcher();
     _refreshTimer?.cancel();
     super.dispose();
   }

@@ -213,155 +213,157 @@ class PresenceService {
     print('📴 User went offline');
   }
 
-  /// Counts active drivers in the given cells (current + 8 neighbors).
-  /// Uses a two-layer filtering approach:
-  /// 1. Firestore filter: conservative (1 hour) to reduce network/document load
-  /// 2. Client-side filter: precise (staleThreshold = 4 min) for accurate freshness
+  /// Creates a driver count watcher for the given location.
+  /// This maintains persistent Firestore listeners and allows local refresh
+  /// without creating new database reads.
+  DriverCountWatcher createDriverCountWatcher(double lat, double lng) {
+    return DriverCountWatcher(
+      firestore: _firestore,
+      lat: lat,
+      lng: lng,
+      staleThreshold: staleThreshold,
+    );
+  }
+
+  /// Legacy method - creates new listeners each call (avoid if possible)
+  /// Use createDriverCountWatcher() for optimized watching with refresh.
+  @Deprecated('Use createDriverCountWatcher() for optimized watching')
   Stream<int> watchDriverCount(double lat, double lng) {
-    final cellIds = GeoCellService.computeAllCellIds(lat, lng);
-
-    // Conservative Firestore filter (1 hour) - reduces document count
-    final conservativeCutoff = Timestamp.fromDate(
-      DateTime.now().subtract(const Duration(hours: 1)),
-    );
-
-    print('👀 Watching driver count in ${cellIds.length} cells');
-
-    final streams = cellIds.map((cellId) {
-      return _firestore
-          .collection('cells')
-          .doc(cellId)
-          .collection('presence')
-          .where('role', isEqualTo: 'driver')
-          .where('lastSeen', isGreaterThanOrEqualTo: conservativeCutoff)
-          .snapshots()
-          .map((snapshot) {
-            // Precise client-side filter with FRESH cutoff (4 min)
-            final now = DateTime.now();
-            final preciseCutoff = now.subtract(staleThreshold);
-
-            final freshDrivers = snapshot.docs.where((doc) {
-              final data = doc.data();
-              final lastSeen = (data['lastSeen'] as Timestamp?)?.toDate();
-              if (lastSeen == null) return false;
-              return lastSeen.isAfter(preciseCutoff);
-            }).toList();
-
-            if (freshDrivers.isNotEmpty) {
-              print(
-                '✅ Found ${freshDrivers.length} fresh driver(s) in cell: $cellId',
-              );
-            }
-
-            return freshDrivers.length;
-          });
-    }).toList();
-
-    // Combine all streams and sum the counts
-    return _combineStreams(streams);
-  }
-
-  /// Combines multiple integer streams into a sum.
-  Stream<int> _combineStreams(List<Stream<int>> streams) {
-    if (streams.isEmpty) return Stream.value(0);
-    if (streams.length == 1) return streams.first;
-
-    final controller = StreamController<int>.broadcast();
-    final counts = List<int>.filled(streams.length, 0);
-    final subscriptions = <StreamSubscription<int>>[];
-
-    for (var i = 0; i < streams.length; i++) {
-      final index = i;
-      subscriptions.add(
-        streams[i].listen((count) {
-          counts[index] = count;
-          final total = counts.fold<int>(0, (sum, c) => sum + c);
-          controller.add(total);
-        }),
-      );
-    }
-
-    controller.onCancel = () {
-      for (final sub in subscriptions) {
-        sub.cancel();
-      }
-    };
-
-    return controller.stream;
-  }
-
-  /// Gets a real-time stream of active drivers in nearby cells.
-  /// Filters out drivers whose lastSeen is older than staleThreshold.
-  Stream<List<PresenceData>> watchNearbyDrivers(double lat, double lng) {
-    final cellIds = GeoCellService.computeAllCellIds(lat, lng);
-
-    // Conservative Firestore filter (1 hour) - reduces document count
-    final conservativeCutoff = Timestamp.fromDate(
-      DateTime.now().subtract(const Duration(hours: 1)),
-    );
-
-    final streams = cellIds.map((cellId) {
-      return _firestore
-          .collection('cells')
-          .doc(cellId)
-          .collection('presence')
-          .where('role', isEqualTo: 'driver')
-          .where('lastSeen', isGreaterThanOrEqualTo: conservativeCutoff)
-          .snapshots()
-          .map((snapshot) {
-            // Precise client-side filter with FRESH cutoff (4 min)
-            final now = DateTime.now();
-            final preciseCutoff = now.subtract(staleThreshold);
-
-            return snapshot.docs
-                .where((doc) {
-                  final data = doc.data();
-                  final lastSeen = (data['lastSeen'] as Timestamp?)?.toDate();
-                  if (lastSeen == null) return false;
-                  return lastSeen.isAfter(preciseCutoff);
-                })
-                .map((doc) => PresenceData.fromFirestore(doc))
-                .toList();
-          });
-    }).toList();
-
-    return _combineListStreams(streams);
-  }
-
-  /// Combines multiple list streams into a single flattened list.
-  Stream<List<PresenceData>> _combineListStreams(
-    List<Stream<List<PresenceData>>> streams,
-  ) {
-    if (streams.isEmpty) return Stream.value([]);
-    if (streams.length == 1) return streams.first;
-
-    final controller = StreamController<List<PresenceData>>.broadcast();
-    final lists = List<List<PresenceData>>.filled(streams.length, []);
-    final subscriptions = <StreamSubscription<List<PresenceData>>>[];
-
-    for (var i = 0; i < streams.length; i++) {
-      final index = i;
-      subscriptions.add(
-        streams[i].listen((list) {
-          lists[index] = list;
-          final combined = lists.expand((l) => l).toList();
-          controller.add(combined);
-        }),
-      );
-    }
-
-    controller.onCancel = () {
-      for (final sub in subscriptions) {
-        sub.cancel();
-      }
-    };
-
-    return controller.stream;
+    final watcher = createDriverCountWatcher(lat, lng);
+    return watcher.countStream;
   }
 
   /// Cleans up resources.
   void dispose() {
     stopHeartbeat();
     _presenceSubscription?.cancel();
+  }
+}
+
+/// Watches driver count with persistent Firestore listeners.
+/// Caches raw driver data locally and re-evaluates staleness on refresh.
+/// This avoids creating new Firestore reads on every refresh cycle.
+class DriverCountWatcher {
+  final FirebaseFirestore _firestore;
+  final double lat;
+  final double lng;
+  final Duration staleThreshold;
+
+  final _countController = StreamController<int>.broadcast();
+  final List<StreamSubscription> _subscriptions = [];
+
+  // Cache of raw driver data per cell (includes potentially stale drivers)
+  final Map<String, List<Map<String, dynamic>>> _cachedDriversPerCell = {};
+
+  bool _isDisposed = false;
+  bool _isInitialized = false;
+
+  DriverCountWatcher({
+    required FirebaseFirestore firestore,
+    required this.lat,
+    required this.lng,
+    required this.staleThreshold,
+  }) : _firestore = firestore {
+    _initialize();
+  }
+
+  /// Stream of driver counts (emits on Firestore changes AND on refresh)
+  Stream<int> get countStream => _countController.stream;
+
+  /// Current count of fresh drivers
+  int get currentCount => _calculateFreshCount();
+
+  void _initialize() {
+    if (_isInitialized) return;
+    _isInitialized = true;
+
+    final cellIds = GeoCellService.computeAllCellIds(lat, lng);
+
+    // Conservative Firestore filter (1 hour) - reduces document count on initial load
+    final conservativeCutoff = Timestamp.fromDate(
+      DateTime.now().subtract(const Duration(hours: 1)),
+    );
+
+    print(
+      '👀 Setting up persistent driver count listeners in ${cellIds.length} cells',
+    );
+
+    for (final cellId in cellIds) {
+      final subscription = _firestore
+          .collection('cells')
+          .doc(cellId)
+          .collection('presence')
+          .where('role', isEqualTo: 'driver')
+          .where('lastSeen', isGreaterThanOrEqualTo: conservativeCutoff)
+          .snapshots()
+          .listen(
+            (snapshot) {
+              // Cache raw driver data
+              _cachedDriversPerCell[cellId] = snapshot.docs
+                  .map((doc) => doc.data())
+                  .toList();
+
+              // Emit new count (filtered for freshness)
+              _emitFreshCount();
+            },
+            onError: (error) {
+              print('❌ Error watching drivers in cell $cellId: $error');
+            },
+          );
+
+      _subscriptions.add(subscription);
+    }
+  }
+
+  /// Calculates fresh driver count from cached data
+  int _calculateFreshCount() {
+    final now = DateTime.now();
+    final preciseCutoff = now.subtract(staleThreshold);
+    int total = 0;
+
+    for (final entry in _cachedDriversPerCell.entries) {
+      final freshCount = entry.value.where((data) {
+        final lastSeen = (data['lastSeen'] as Timestamp?)?.toDate();
+        if (lastSeen == null) return false;
+        return lastSeen.isAfter(preciseCutoff);
+      }).length;
+
+      if (freshCount > 0) {
+        print('✅ Cell ${entry.key}: $freshCount fresh driver(s)');
+      }
+
+      total += freshCount;
+    }
+
+    return total;
+  }
+
+  /// Emits the current fresh count to the stream
+  void _emitFreshCount() {
+    if (_isDisposed) return;
+    _countController.add(_calculateFreshCount());
+  }
+
+  /// Refreshes the driver count by re-evaluating staleness locally.
+  /// Does NOT create new Firestore reads - just re-filters cached data.
+  void refresh() {
+    if (_isDisposed) return;
+    print('🔄 Refreshing driver count (local re-evaluation)');
+    _emitFreshCount();
+  }
+
+  /// Disposes of all listeners and resources
+  void dispose() {
+    if (_isDisposed) return;
+    _isDisposed = true;
+
+    for (final sub in _subscriptions) {
+      sub.cancel();
+    }
+    _subscriptions.clear();
+    _cachedDriversPerCell.clear();
+    _countController.close();
+
+    print('🗑️ DriverCountWatcher disposed');
   }
 }
