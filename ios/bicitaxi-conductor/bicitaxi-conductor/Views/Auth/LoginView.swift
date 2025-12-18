@@ -94,6 +94,7 @@ struct LoginView: View {
             // Sign in with Apple
             SignInWithAppleButton(.signIn) { request in
                 request.requestedScopes = [.fullName, .email]
+                request.nonce = authManager.prepareAppleSignIn()
             } onCompletion: { result in
                 authManager.signInWithApple(result: result)
             }

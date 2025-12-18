@@ -358,13 +358,22 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   void _handleGoogleLogin() async {
+    print('🎯 [LoginScreen] _handleGoogleLogin called');
     setState(() => _isLoading = true);
     try {
+      print('🎯 [LoginScreen] Calling authRepository.signInWithGoogle()...');
       final user = await context.appState.authRepository.signInWithGoogle();
+      print('🎯 [LoginScreen] signInWithGoogle returned user: ${user?.uid}');
       if (user != null && mounted) {
+        print('🎯 [LoginScreen] Navigating to home...');
         _navigateToHome(context);
+      } else {
+        print('🎯 [LoginScreen] User is null or widget not mounted');
       }
-    } catch (e) {
+    } catch (e, stackTrace) {
+      print('🎯 [LoginScreen] ❌ ERROR in _handleGoogleLogin: $e');
+      print('🎯 [LoginScreen] ❌ Error type: ${e.runtimeType}');
+      print('🎯 [LoginScreen] ❌ StackTrace: $stackTrace');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Error en Google Sign In: ${e.toString()}')),

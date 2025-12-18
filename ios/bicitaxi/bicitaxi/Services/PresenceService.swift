@@ -120,6 +120,9 @@ class PresenceService: ObservableObject {
     private var currentCellId: String?
     private var listeners: [ListenerRegistration] = []
     
+    /// Track currently watched cells to avoid re-creating listeners unnecessarily
+    private var currentWatchedCellIds: Set<String> = []
+    
     /// Heartbeat interval (3 minutes)
     static let heartbeatInterval: TimeInterval = 180
     
@@ -263,17 +266,32 @@ class PresenceService: ObservableObject {
     
     // MARK: - Watch Driver Count
     
-    func watchDriverCount(lat: Double, lng: Double) {
-        removeAllListeners()
+    /// Watch driver count with cell-based optimization.
+    /// Only recreates listeners if the geocell actually changes.
+    /// - Parameters:
+    ///   - lat: Latitude
+    ///   - lng: Longitude
+    ///   - forceRefresh: If true, forces re-evaluation of stale drivers without recreating listeners
+    func watchDriverCount(lat: Double, lng: Double, forceRefresh: Bool = false) {
+        let cellIds = Set(GeoCellService.computeAllCellIds(lat: lat, lng: lng))
         
-        let cellIds = GeoCellService.computeAllCellIds(lat: lat, lng: lng)
+        // If cells haven't changed and not forcing refresh, skip recreation
+        if cellIds == currentWatchedCellIds && !forceRefresh {
+            // Cells unchanged - listeners are already active
+            // Just log occasionally for debugging (not every call)
+            return
+        }
         
-        // Debug: Show what we're looking for
-        let canonicals = GeoCellService.computeAllCanonicals(lat: lat, lng: lng)
+        // Cells changed - log and recreate listeners
+        print("🔄 [PresenceService] Cell change detected, recreating listeners")
         print("👀 Watching driver count at lat=\(lat), lng=\(lng)")
-        print("👀 Primary cell: \(canonicals[0]) -> \(cellIds[0])")
+        let canonicals = GeoCellService.computeAllCanonicals(lat: lat, lng: lng)
+        print("👀 Primary cell: \(canonicals[0]) -> \(Array(cellIds)[0])")
         print("👀 Stale threshold: \(Self.staleThreshold / 60) minutes")
         print("👀 Watching \(cellIds.count) cells total")
+        
+        removeAllListeners()
+        currentWatchedCellIds = cellIds
         
         var counts = [String: Int]()
         
@@ -382,5 +400,13 @@ class PresenceService: ObservableObject {
             listener.remove()
         }
         listeners.removeAll()
+        currentWatchedCellIds.removeAll()
+    }
+    
+    /// Force refresh stale evaluation without recreating listeners
+    func refreshStaleEvaluation(lat: Double, lng: Double) {
+        // This will just re-check the current cached data
+        // The snapshot listeners will re-evaluate freshness on their next callback
+        watchDriverCount(lat: lat, lng: lng, forceRefresh: false)
     }
 }

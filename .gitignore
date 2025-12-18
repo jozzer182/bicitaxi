@@ -125,6 +125,10 @@ firestore.rules
 storage.rules
 database.rules.json
 
+# iOS Native Info.plist (contains REVERSED_CLIENT_ID for Google Sign-In)
+ios/bicitaxi/bicitaxi/Info.plist
+ios/bicitaxi-conductor/bicitaxi-conductor/Info.plist
+
 # Firebase Emulator data
 .firebase/
 firebase-export-*/

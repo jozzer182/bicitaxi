@@ -47,8 +47,8 @@ class MockDataManager: ObservableObject {
     // MARK: - Initialization
     
     private init() {
-        // Load saved state, default to true (mock data enabled)
-        self.isMockDataEnabled = UserDefaults.standard.object(forKey: mockDataEnabledKey) as? Bool ?? true
+        // Load saved state, default to false (mock data disabled for production)
+        self.isMockDataEnabled = UserDefaults.standard.object(forKey: mockDataEnabledKey) as? Bool ?? false
     }
     
     // MARK: - Methods

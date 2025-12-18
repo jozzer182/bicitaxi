@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import '../theme/app_colors.dart';
 import '../services/presence_service.dart';
+import '../services/geo_cell_service.dart';
 import 'glass_container.dart';
 
 /// Overlay widget that shows the count of nearby drivers in real-time.
@@ -30,6 +31,9 @@ class _DriverCountOverlayState extends State<DriverCountOverlay> {
   int _driverCount = 0;
   bool _isLoading = true;
 
+  /// Track current watched cells to avoid unnecessary watcher recreation
+  Set<String> _currentWatchedCellIds = {};
+
   /// Refresh interval - re-evaluates stale drivers locally (no new reads)
   static const Duration _refreshInterval = Duration(seconds: 30);
 
@@ -52,15 +56,34 @@ class _DriverCountOverlayState extends State<DriverCountOverlay> {
   @override
   void didUpdateWidget(DriverCountOverlay oldWidget) {
     super.didUpdateWidget(oldWidget);
-    // If location changed significantly, recreate watcher with new cells
-    if ((oldWidget.lat - widget.lat).abs() > 0.001 ||
-        (oldWidget.lng - widget.lng).abs() > 0.001) {
+
+    // Only recreate watcher if geocell actually changed
+    final newCellIds = GeoCellService.computeAllCellIds(
+      widget.lat,
+      widget.lng,
+    ).toSet();
+
+    if (!_setEquals(newCellIds, _currentWatchedCellIds)) {
+      print('🔄 [Flutter] Cell change detected, recreating watcher');
       _disposeWatcher();
       _createWatcher();
     }
+    // If cells unchanged, the existing watcher continues - no new Firestore reads!
+  }
+
+  /// Helper to compare two sets
+  bool _setEquals(Set<String> a, Set<String> b) {
+    if (a.length != b.length) return false;
+    return a.containsAll(b);
   }
 
   void _createWatcher() {
+    // Track which cells we're watching
+    _currentWatchedCellIds = GeoCellService.computeAllCellIds(
+      widget.lat,
+      widget.lng,
+    ).toSet();
+
     _watcher = _presenceService.createDriverCountWatcher(
       widget.lat,
       widget.lng,

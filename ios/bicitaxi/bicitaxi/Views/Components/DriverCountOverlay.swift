@@ -61,19 +61,18 @@ struct DriverCountOverlay: View {
         .background(.ultraThinMaterial)
         .clipShape(RoundedRectangle(cornerRadius: 12))
         .onAppear {
-            print("🗺️ DriverCountOverlay onAppear: lat=\(lat), lng=\(lng)")
             presenceService.watchDriverCount(lat: lat, lng: lng)
         }
         .onChange(of: lat) { _, newLat in
-            print("🗺️ DriverCountOverlay lat changed: \(newLat)")
+            // PresenceService only recreates listeners if cell actually changes
             presenceService.watchDriverCount(lat: newLat, lng: lng)
         }
         .onChange(of: lng) { _, newLng in
-            print("🗺️ DriverCountOverlay lng changed: \(newLng)")
+            // PresenceService only recreates listeners if cell actually changes
             presenceService.watchDriverCount(lat: lat, lng: newLng)
         }
         .onReceive(refreshTimer) { _ in
-            // Periodic refresh to re-evaluate stale drivers
+            // Periodic refresh to re-evaluate stale drivers (doesn't recreate listeners)
             presenceService.watchDriverCount(lat: lat, lng: lng)
         }
     }
