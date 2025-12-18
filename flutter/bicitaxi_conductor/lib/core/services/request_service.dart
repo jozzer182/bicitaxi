@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'geo_cell_service.dart';
+import 'history_service.dart';
 
 /// Status of a ride request.
 enum RequestStatus { open, assigned, cancelled, completed }
@@ -173,6 +174,7 @@ class RideRequest {
 class RequestService {
   final FirebaseFirestore _firestore;
   final FirebaseAuth _auth;
+  final HistoryService _historyService = HistoryService();
 
   /// Request TTL (24 hours)
   static const Duration requestTtl = Duration(hours: 24);
@@ -279,6 +281,10 @@ class RequestService {
       print('⚠️ Could not fetch driver name: $e');
     }
 
+    // Get request data for history
+    final requestDoc = await _requestRef(cellId, requestId).get();
+    final requestData = requestDoc.data() as Map<String, dynamic>?;
+
     await _requestRef(cellId, requestId).update({
       'status': 'assigned',
       'assignedDriverUid': driverUid,
@@ -286,15 +292,58 @@ class RequestService {
       'updatedAt': FieldValue.serverTimestamp(),
     });
 
+    // Create driver's history entry
+    if (requestData != null) {
+      final clientUid = requestData['createdByUid'] as String? ?? '';
+      final clientName = requestData['clientName'] as String? ?? 'Pasajero';
+      final pickup = requestData['pickup'] as Map<String, dynamic>?;
+      final dropoff = requestData['dropoff'] as Map<String, dynamic>?;
+
+      await _historyService.createDriverHistoryEntry(
+        rideId: requestId,
+        clientUid: clientUid,
+        clientName: clientName,
+        driverUid: driverUid,
+        driverName: driverName,
+        pickupLat: (pickup?['lat'] ?? 0).toDouble(),
+        pickupLng: (pickup?['lng'] ?? 0).toDouble(),
+        pickupAddress: pickup?['address'] as String?,
+        dropoffLat: (dropoff?['lat'] as num?)?.toDouble(),
+        dropoffLng: (dropoff?['lng'] as num?)?.toDouble(),
+        dropoffAddress: dropoff?['address'] as String?,
+      );
+
+      // Also update client's history with driver info
+      await _historyService.updateHistoryStatus(
+        clientUid,
+        requestId,
+        'assigned',
+        assignedAt: DateTime.now(),
+        driverUid: driverUid,
+        driverName: driverName,
+      );
+    }
+
     print('🚴 Driver $driverName assigned to request: $requestId');
   }
 
   /// Completes a request.
   Future<void> completeRequest(String cellId, String requestId) async {
+    // Get request data for history
+    final requestDoc = await _requestRef(cellId, requestId).get();
+    final requestData = requestDoc.data() as Map<String, dynamic>?;
+
     await _requestRef(cellId, requestId).update({
       'status': 'completed',
       'updatedAt': FieldValue.serverTimestamp(),
     });
+
+    // Mark completed in history for both parties
+    if (requestData != null) {
+      final clientUid = requestData['createdByUid'] as String? ?? '';
+      final driverUid = requestData['assignedDriverUid'] as String?;
+      await _historyService.markRideCompleted(requestId, clientUid, driverUid);
+    }
 
     print('✅ Request completed: $requestId');
   }

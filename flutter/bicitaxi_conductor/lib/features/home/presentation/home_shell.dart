@@ -4,8 +4,7 @@ import '../../../core/theme/app_colors.dart';
 import '../../../core/widgets/responsive_layout.dart';
 import '../../../core/widgets/glass_container.dart';
 import 'driver_map_home_screen.dart';
-import '../../rides/presentation/driver_active_ride_screen.dart';
-import '../../rides/presentation/driver_earnings_screen.dart';
+import '../../rides/presentation/driver_history_screen.dart';
 import '../../profile/presentation/driver_profile_screen.dart';
 import 'persistent_map_widget.dart';
 
@@ -28,19 +27,14 @@ class _HomeShellState extends State<HomeShell> {
 
   final List<_NavDestination> _destinations = const [
     _NavDestination(
-      icon: Icons.home_outlined,
-      selectedIcon: Icons.home_rounded,
-      label: 'Inicio',
+      icon: Icons.map_outlined,
+      selectedIcon: Icons.map_rounded,
+      label: 'Mapa',
     ),
     _NavDestination(
-      icon: Icons.directions_bike_outlined,
-      selectedIcon: Icons.directions_bike_rounded,
-      label: 'Viaje',
-    ),
-    _NavDestination(
-      icon: Icons.attach_money_rounded,
-      selectedIcon: Icons.attach_money_rounded,
-      label: 'Ganancias',
+      icon: Icons.history_outlined,
+      selectedIcon: Icons.history_rounded,
+      label: 'Historial',
     ),
     _NavDestination(
       icon: Icons.person_outline_rounded,
@@ -55,12 +49,13 @@ class _HomeShellState extends State<HomeShell> {
 
   Widget _getOverlayScreen(int index) {
     // Return the screen content for non-map tabs
+    // Index 0 = Mapa (handled by DriverMapHomeScreen)
+    // Index 1 = Historial
+    // Index 2 = Perfil
     switch (index) {
       case 1:
-        return const DriverActiveRideScreen();
+        return const DriverHistoryScreen();
       case 2:
-        return const DriverEarningsScreen();
-      case 3:
         return const DriverProfileScreen();
       default:
         return const SizedBox.shrink();

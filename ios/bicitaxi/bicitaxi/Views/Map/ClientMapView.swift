@@ -933,19 +933,41 @@ struct ClientMapView: View {
     
     // MARK: - Heartbeat
     
-    /// Starts a periodic heartbeat timer for the active request
+    /// Starts a periodic timer to check if conductor is still active (locally, no DB writes)
+    /// Uses the snapshot listener to receive conductor updates, this just checks staleness
     private func startHeartbeat(cellId: String, requestId: String) {
         heartbeatTimer?.invalidate()
-        // Send heartbeat every 30 seconds
-        heartbeatTimer = Timer.scheduledTimer(withTimeInterval: 30, repeats: true) { [self] _ in
+        // Check every 30 seconds if conductor is still active (locally)
+        heartbeatTimer = Timer.scheduledTimer(withTimeInterval: 30, repeats: true) { _ in
             if trackingState == .searching || trackingState == .tracking {
-                Task {
-                    await requestService.updateHeartbeat(cellId: cellId, requestId: requestId)
-                }
+                checkConductorStaleness()
             } else {
                 heartbeatTimer?.invalidate()
                 heartbeatTimer = nil
             }
+        }
+    }
+    
+    /// Check if conductor has gone stale (no updates for 3 minutes)
+    private func checkConductorStaleness() {
+        guard let request = activeRequest else { return }
+        
+        let lastUpdate = request.updatedAt
+        let now = Date()
+        let staleDuration: TimeInterval = 180 // 3 minutes
+        
+        if now.timeIntervalSince(lastUpdate) > staleDuration {
+            // Conductor has not updated in 3 minutes - likely disconnected
+            print("⚠️ Conductor appears disconnected (no updates for 3+ minutes)")
+            heartbeatTimer?.invalidate()
+            heartbeatTimer = nil
+            
+            // Show notification and cancel request
+            // The view will update based on trackingState change
+            Task {
+                await requestService.cancelRequest(cellId: request.cellId, requestId: request.requestId)
+            }
+            resetTracking()
         }
     }
     

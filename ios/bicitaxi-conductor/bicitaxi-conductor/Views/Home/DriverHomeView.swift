@@ -125,8 +125,8 @@ struct DriverHomeView: View {
             // If request was cancelled or completed externally, show confirmation or clean up
             if let status = newStatus {
                 if status == .completed {
-                    // If we didn't confirm ourselves, the pasajero confirmed
-                    if !showPickupConfirmedAlert {
+                    // Only show if we haven't already shown from our own confirmation
+                    if !showPickupConfirmedAlert && confirmedBy.isEmpty {
                         confirmedBy = "pasajero"
                         showPickupConfirmedAlert = true
                     }
@@ -583,14 +583,18 @@ struct DriverHomeView: View {
     private func finishActiveRide(completed: Bool) {
         guard let request = activeFirebaseRequest ?? requestService.activeRequest else { return }
         
-        Task {
-            if completed {
+        if completed {
+            // Set confirmedBy BEFORE calling complete to prevent race condition with onChange
+            confirmedBy = "conductor"
+            
+            Task {
                 await requestService.completeRequest(cellId: request.cellId, requestId: request.requestId)
                 await MainActor.run {
-                    confirmedBy = "conductor"
                     showPickupConfirmedAlert = true
                 }
-            } else {
+            }
+        } else {
+            Task {
                 await requestService.cancelRequest(cellId: request.cellId, requestId: request.requestId)
                 await MainActor.run {
                     stopDriverLocationUpdates()

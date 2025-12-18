@@ -294,6 +294,20 @@ class RequestService: ObservableObject {
         
         do {
             try await requestRef(cellId: cellId, requestId: requestId).setData(request.toFirestore())
+            
+            // Save to client's history
+            await HistoryService.createClientHistory(
+                rideId: requestId,
+                clientUid: uid,
+                clientName: clientName,
+                pickupLat: pickupLat,
+                pickupLng: pickupLng,
+                pickupAddress: pickupAddress,
+                dropoffLat: dropoffLat,
+                dropoffLng: dropoffLng,
+                dropoffAddress: dropoffAddress
+            )
+            
             print("✅ Request created: \(requestId)")
             return request
         } catch {
@@ -305,11 +319,28 @@ class RequestService: ObservableObject {
     // MARK: - Cancel Request
     
     func cancelRequest(cellId: String, requestId: String) async {
+        guard let uid = currentUserId else { return }
+        
+        // Get driver uid if assigned
+        var driverUid: String?
+        do {
+            let requestDoc = try await requestRef(cellId: cellId, requestId: requestId).getDocument()
+            if let data = requestDoc.data() {
+                driverUid = data["assignedDriverUid"] as? String
+            }
+        } catch {
+            print("⚠️ Could not fetch request data: \(error)")
+        }
+        
         do {
             try await requestRef(cellId: cellId, requestId: requestId).updateData([
                 "status": "cancelled",
                 "updatedAt": FieldValue.serverTimestamp()
             ])
+            
+            // Update history for both parties
+            await HistoryService.markRideCancelled(rideId: requestId, clientUid: uid, driverUid: driverUid)
+            
             print("❌ Request cancelled: \(requestId)")
         } catch {
             print("❌ Failed to cancel request: \(error)")

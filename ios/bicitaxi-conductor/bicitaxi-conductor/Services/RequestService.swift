@@ -356,6 +356,36 @@ class RequestService: ObservableObject {
             print("⚠️ Could not fetch driver name: \(error)")
         }
         
+        // Get request data for history
+        var clientUid = ""
+        var clientName = "Pasajero"
+        var pickupLat: Double = 0
+        var pickupLng: Double = 0
+        var pickupAddress: String?
+        var dropoffLat: Double?
+        var dropoffLng: Double?
+        var dropoffAddress: String?
+        
+        do {
+            let requestDoc = try await requestRef(cellId: cellId, requestId: requestId).getDocument()
+            if let data = requestDoc.data() {
+                clientUid = data["createdByUid"] as? String ?? ""
+                clientName = data["clientName"] as? String ?? "Pasajero"
+                if let pickup = data["pickup"] as? [String: Any] {
+                    pickupLat = pickup["lat"] as? Double ?? 0
+                    pickupLng = pickup["lng"] as? Double ?? 0
+                    pickupAddress = pickup["address"] as? String
+                }
+                if let dropoff = data["dropoff"] as? [String: Any] {
+                    dropoffLat = dropoff["lat"] as? Double
+                    dropoffLng = dropoff["lng"] as? Double
+                    dropoffAddress = dropoff["address"] as? String
+                }
+            }
+        } catch {
+            print("⚠️ Could not fetch request data: \(error)")
+        }
+        
         do {
             try await requestRef(cellId: cellId, requestId: requestId).updateData([
                 "status": "assigned",
@@ -363,6 +393,22 @@ class RequestService: ObservableObject {
                 "driverName": driverName,
                 "updatedAt": FieldValue.serverTimestamp()
             ])
+            
+            // Create driver's history entry
+            await HistoryService.createDriverHistory(
+                rideId: requestId,
+                clientUid: clientUid,
+                clientName: clientName,
+                driverUid: driverUid,
+                driverName: driverName,
+                pickupLat: pickupLat,
+                pickupLng: pickupLng,
+                pickupAddress: pickupAddress,
+                dropoffLat: dropoffLat,
+                dropoffLng: dropoffLng,
+                dropoffAddress: dropoffAddress
+            )
+            
             print("🚴 Driver \(driverName) assigned to request: \(requestId)")
         } catch {
             print("❌ Failed to assign driver: \(error)")
@@ -372,11 +418,29 @@ class RequestService: ObservableObject {
     // MARK: - Complete Request
     
     func completeRequest(cellId: String, requestId: String) async {
+        // Get request data for history
+        var clientUid = ""
+        var driverUid: String?
+        
+        do {
+            let requestDoc = try await requestRef(cellId: cellId, requestId: requestId).getDocument()
+            if let data = requestDoc.data() {
+                clientUid = data["createdByUid"] as? String ?? ""
+                driverUid = data["assignedDriverUid"] as? String
+            }
+        } catch {
+            print("⚠️ Could not fetch request data: \(error)")
+        }
+        
         do {
             try await requestRef(cellId: cellId, requestId: requestId).updateData([
                 "status": "completed",
                 "updatedAt": FieldValue.serverTimestamp()
             ])
+            
+            // Mark completed in history for both parties
+            await HistoryService.markRideCompleted(rideId: requestId, clientUid: clientUid, driverUid: driverUid)
+            
             print("✅ Request completed: \(requestId)")
         } catch {
             print("❌ Failed to complete request: \(error)")

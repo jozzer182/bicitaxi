@@ -73,8 +73,8 @@ class _MapScreenState extends State<MapScreen> {
     }
   }
 
-  void _toggleOnlineStatus() {
-    context.rideController.toggleOnlineStatus();
+  Future<void> _toggleOnlineStatus() async {
+    await context.rideController.toggleOnlineStatus();
     final isOnline = context.rideController.isOnline;
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(

@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'geo_cell_service.dart';
+import 'history_service.dart';
 
 /// Status of a ride request.
 enum RequestStatus { open, assigned, cancelled, completed }
@@ -173,6 +174,7 @@ class RideRequest {
 class RequestService {
   final FirebaseFirestore _firestore;
   final FirebaseAuth _auth;
+  final HistoryService _historyService = HistoryService();
 
   /// Request TTL (24 hours)
   static const Duration requestTtl = Duration(hours: 24);
@@ -257,6 +259,19 @@ class RequestService {
 
     await _requestRef(cellId, requestId).set(request.toFirestore());
 
+    // Save to client's history
+    await _historyService.createClientHistoryEntry(
+      rideId: requestId,
+      clientUid: uid,
+      clientName: clientName,
+      pickupLat: pickupLat,
+      pickupLng: pickupLng,
+      pickupAddress: pickupAddress,
+      dropoffLat: dropoffLat,
+      dropoffLng: dropoffLng,
+      dropoffAddress: dropoffAddress,
+    );
+
     print('✅ Request created: $requestId');
     return request;
   }
@@ -266,10 +281,18 @@ class RequestService {
     final uid = currentUserId;
     if (uid == null) return;
 
+    // Get request to find driver if assigned
+    final doc = await _requestRef(cellId, requestId).get();
+    final data = doc.data() as Map<String, dynamic>?;
+    final driverUid = data?['assignedDriverUid'] as String?;
+
     await _requestRef(cellId, requestId).update({
       'status': 'cancelled',
       'updatedAt': FieldValue.serverTimestamp(),
     });
+
+    // Update history for both parties
+    await _historyService.markRideCancelled(requestId, uid, driverUid);
 
     print('❌ Request cancelled: $requestId');
   }

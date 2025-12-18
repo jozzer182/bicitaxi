@@ -10,7 +10,7 @@ import SwiftUI
 /// Represents the tabs in the Bici Taxi client app
 enum AppTab: Int, CaseIterable, Identifiable {
     case map = 0
-    case activeRide = 1
+    case history = 1
     case profile = 2
     
     var id: Int { rawValue }
@@ -19,7 +19,7 @@ enum AppTab: Int, CaseIterable, Identifiable {
     var title: String {
         switch self {
         case .map: return "Mapa"
-        case .activeRide: return "Viaje"
+        case .history: return "Historial"
         case .profile: return "Perfil"
         }
     }
@@ -28,7 +28,7 @@ enum AppTab: Int, CaseIterable, Identifiable {
     var systemImage: String {
         switch self {
         case .map: return "map.fill"
-        case .activeRide: return "bicycle"
+        case .history: return "clock.arrow.circlepath"
         case .profile: return "person.fill"
         }
     }
@@ -37,7 +37,7 @@ enum AppTab: Int, CaseIterable, Identifiable {
     var accessibilityLabel: String {
         switch self {
         case .map: return "Pestaña de mapa"
-        case .activeRide: return "Pestaña de viaje activo"
+        case .history: return "Pestaña de historial"
         case .profile: return "Pestaña de perfil"
         }
     }
@@ -46,7 +46,7 @@ enum AppTab: Int, CaseIterable, Identifiable {
     var accessibilityHint: String {
         switch self {
         case .map: return "Muestra el mapa para solicitar viajes"
-        case .activeRide: return "Muestra tu viaje actual"
+        case .history: return "Muestra tu historial de viajes"
         case .profile: return "Muestra tu perfil y configuración"
         }
     }

@@ -30,16 +30,9 @@ struct LiquidGlassTabShell: View {
                     .ignoresSafeArea(edges: .bottom)
             }
             
-            // Active Ride Tab
-            Tab("Viaje", systemImage: "bicycle", value: .activeRide) {
-                DriverActiveRideView(rideViewModel: rideViewModel, onComplete: {
-                    selectedTab = .map  // Return to map after ride
-                })
-            }
-            
-            // Earnings Tab
-            Tab("Ganancias", systemImage: "dollarsign.circle.fill", value: .earnings) {
-                EarningsView(rideViewModel: rideViewModel)
+            // History Tab
+            Tab("Historial", systemImage: "clock.arrow.circlepath", value: .history) {
+                DriverHistoryView()
             }
             
             // Profile Tab
@@ -48,14 +41,6 @@ struct LiquidGlassTabShell: View {
             }
         }
         .tabViewStyle(.tabBarOnly)  // Standard tab bar, no sidebar adaptation
-        .onChange(of: rideViewModel.activeRide) { _, newRide in
-            // Switch to Active Ride tab when a ride is accepted
-            if newRide != nil && selectedTab != .activeRide {
-                withAnimation {
-                    selectedTab = .activeRide
-                }
-            }
-        }
     }
 }
 

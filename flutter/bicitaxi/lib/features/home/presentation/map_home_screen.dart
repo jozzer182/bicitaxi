@@ -71,6 +71,7 @@ class _MapHomeScreenState extends State<MapHomeScreen>
   StreamSubscription<RideRequest?>? _requestSubscription;
   LatLng? _driverPosition;
   bool _arrivedNotified = false;
+  bool _pickupConfirmDialogShown = false; // Prevents double dialog
   Timer? _heartbeatTimer; // Heartbeat timer for active requests
 
   // Breathing animation controller
@@ -382,8 +383,11 @@ class _MapHomeScreenState extends State<MapHomeScreen>
           _trackingState = TrackingState.tracking;
           break;
         case RequestStatus.completed:
-          // Conductor confirmed pickup - show confirmation popup
-          _showPickupConfirmedDialog('conductor');
+          // Conductor confirmed pickup - show confirmation popup if not already shown
+          if (!_pickupConfirmDialogShown) {
+            _pickupConfirmDialogShown = true;
+            _showPickupConfirmedDialog('conductor');
+          }
           break;
         case RequestStatus.cancelled:
           _cancelTracking();
@@ -445,7 +449,8 @@ class _MapHomeScreenState extends State<MapHomeScreen>
         _activeRequest!.requestId,
       );
 
-      // Show confirmation dialog
+      // Show confirmation dialog - set flag first to prevent listener from showing
+      _pickupConfirmDialogShown = true;
       if (mounted) {
         _showPickupConfirmedDialog('pasajero');
       }
@@ -476,7 +481,7 @@ class _MapHomeScreenState extends State<MapHomeScreen>
           children: [
             Icon(Icons.check_circle, color: AppColors.success, size: 28),
             SizedBox(width: 12),
-            Text('¡Recogida Confirmada!'),
+            Flexible(child: Text('¡Recogida Confirmada!')),
           ],
         ),
         content: Text(
@@ -495,18 +500,51 @@ class _MapHomeScreenState extends State<MapHomeScreen>
     );
   }
 
-  /// Starts a periodic heartbeat timer for the active request
+  /// Starts a periodic timer to check if conductor is still active (locally, no DB writes)
+  /// Uses the snapshot listener to receive conductor updates, this just checks staleness
   void _startHeartbeat(String cellId, String requestId) {
     _heartbeatTimer?.cancel();
-    // Send heartbeat every 30 seconds
+    // Check every 30 seconds if conductor is still active (locally)
     _heartbeatTimer = Timer.periodic(const Duration(seconds: 30), (_) {
       if (_trackingState == TrackingState.searching ||
           _trackingState == TrackingState.tracking) {
-        _requestService.updateHeartbeat(cellId, requestId);
+        _checkConductorStaleness();
       } else {
         _heartbeatTimer?.cancel();
       }
     });
+  }
+
+  /// Check if conductor has gone stale (no updates for 3 minutes)
+  void _checkConductorStaleness() {
+    if (_activeRequest == null) return;
+
+    final lastUpdate = _activeRequest!.updatedAt;
+    final now = DateTime.now();
+    final staleDuration = const Duration(minutes: 3);
+
+    if (now.difference(lastUpdate) > staleDuration) {
+      // Conductor has not updated in 3 minutes - likely disconnected
+      print('⚠️ Conductor appears disconnected (no updates for 3+ minutes)');
+      _heartbeatTimer?.cancel();
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: const Text(
+              'El conductor parece haberse desconectado. Cancelando solicitud...',
+            ),
+            backgroundColor: AppColors.warning,
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+          ),
+        );
+        // Cancel the request since conductor is unresponsive
+        _cancelRequest();
+      }
+    }
   }
 
   /// Clean up tracking state
@@ -518,6 +556,7 @@ class _MapHomeScreenState extends State<MapHomeScreen>
       _activeRequest = null;
       _driverPosition = null;
       _arrivedNotified = false;
+      _pickupConfirmDialogShown = false;
     });
   }
 
@@ -530,6 +569,7 @@ class _MapHomeScreenState extends State<MapHomeScreen>
       _activeRequest = null;
       _driverPosition = null;
       _arrivedNotified = false;
+      _pickupConfirmDialogShown = false;
       _pickupPosition = null;
       _dropoffPosition = null;
     });

@@ -139,8 +139,8 @@ class _DriverMapHomeScreenState extends State<DriverMapHomeScreen> {
     }
   }
 
-  void _toggleOnlineStatus() {
-    context.rideController.toggleOnlineStatus();
+  Future<void> _toggleOnlineStatus() async {
+    await context.rideController.toggleOnlineStatus();
     final isOnline = context.rideController.isOnline;
 
     // Handle collapse timer - start timer for both online and offline states
@@ -1528,7 +1528,7 @@ class _DriverMapHomeScreenState extends State<DriverMapHomeScreen> {
           children: [
             Icon(Icons.check_circle, color: AppColors.success, size: 28),
             SizedBox(width: 12),
-            Text('¡Recogida Confirmada!'),
+            Flexible(child: Text('¡Recogida Confirmada!')),
           ],
         ),
         content: Text(

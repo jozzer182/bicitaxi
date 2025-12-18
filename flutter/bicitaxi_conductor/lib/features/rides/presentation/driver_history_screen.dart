@@ -5,16 +5,16 @@ import '../../../core/widgets/responsive_layout.dart';
 import '../../../core/widgets/glass_container.dart';
 import '../../../core/services/history_service.dart';
 
-/// History screen for the Bici Taxi client app.
+/// History screen for the Bici Taxi Conductor app.
 /// Shows list of past rides from Firebase history collection.
-class ClientHistoryScreen extends StatefulWidget {
-  const ClientHistoryScreen({super.key});
+class DriverHistoryScreen extends StatefulWidget {
+  const DriverHistoryScreen({super.key});
 
   @override
-  State<ClientHistoryScreen> createState() => _ClientHistoryScreenState();
+  State<DriverHistoryScreen> createState() => _DriverHistoryScreenState();
 }
 
-class _ClientHistoryScreenState extends State<ClientHistoryScreen> {
+class _DriverHistoryScreenState extends State<DriverHistoryScreen> {
   final HistoryService _historyService = HistoryService();
   List<RideHistoryEntry>? _rides;
   bool _isLoading = true;
@@ -56,7 +56,7 @@ class _ClientHistoryScreenState extends State<ClientHistoryScreen> {
   Widget build(BuildContext context) {
     return RefreshIndicator(
       onRefresh: _loadHistory,
-      color: AppColors.electricBlue,
+      color: AppColors.driverAccent,
       backgroundColor: AppColors.primary,
       child: SingleChildScrollView(
         physics: const AlwaysScrollableScrollPhysics(),
@@ -81,7 +81,7 @@ class _ClientHistoryScreenState extends State<ClientHistoryScreen> {
                 Text(
                   _isLoading
                       ? 'Cargando...'
-                      : '${_rides?.length ?? 0} viajes realizados',
+                      : '${_rides?.length ?? 0} viajes completados',
                   style: Theme.of(
                     context,
                   ).textTheme.bodyMedium?.copyWith(color: Colors.black54),
@@ -90,7 +90,7 @@ class _ClientHistoryScreenState extends State<ClientHistoryScreen> {
                 if (_isLoading)
                   const Center(
                     child: CircularProgressIndicator(
-                      color: AppColors.electricBlue,
+                      color: AppColors.driverAccent,
                     ),
                   )
                 else if (_rides == null || _rides!.isEmpty)
@@ -121,13 +121,13 @@ class _ClientHistoryScreenState extends State<ClientHistoryScreen> {
             width: 64,
             height: 64,
             decoration: BoxDecoration(
-              color: AppColors.steelBlue.withValues(alpha: 0.2),
+              color: AppColors.driverAccent.withValues(alpha: 0.2),
               borderRadius: BorderRadius.circular(16),
             ),
             child: Icon(
               Icons.history_rounded,
               size: 32,
-              color: AppColors.steelBlue,
+              color: AppColors.driverAccent,
             ),
           ),
           const SizedBox(height: 16),
@@ -140,7 +140,7 @@ class _ClientHistoryScreenState extends State<ClientHistoryScreen> {
           ),
           const SizedBox(height: 8),
           const Text(
-            'Cuando realices tu primer viaje, aparecerá aquí',
+            'Cuando completes viajes, aparecerán aquí',
             style: TextStyle(color: Colors.black54),
             textAlign: TextAlign.center,
           ),
@@ -174,7 +174,7 @@ class _ClientHistoryScreenState extends State<ClientHistoryScreen> {
                               ? AppColors.success
                               : isCancelled
                               ? AppColors.error
-                              : AppColors.warning)
+                              : AppColors.driverAccent)
                           .withValues(alpha: 0.15),
                   borderRadius: BorderRadius.circular(8),
                 ),
@@ -187,7 +187,7 @@ class _ClientHistoryScreenState extends State<ClientHistoryScreen> {
                         ? AppColors.success
                         : isCancelled
                         ? AppColors.error
-                        : AppColors.warning,
+                        : AppColors.driverAccent,
                   ),
                 ),
               ),
@@ -196,6 +196,43 @@ class _ClientHistoryScreenState extends State<ClientHistoryScreen> {
                 style: const TextStyle(
                   fontSize: 13,
                   color: AppColors.textTertiary,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          // Client info
+          Row(
+            children: [
+              CircleAvatar(
+                radius: 16,
+                backgroundColor: AppColors.driverAccent.withValues(alpha: 0.2),
+                child: const Icon(
+                  Icons.person_rounded,
+                  size: 18,
+                  color: AppColors.driverAccent,
+                ),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      ride.clientName,
+                      style: const TextStyle(
+                        fontWeight: FontWeight.w600,
+                        fontSize: 15,
+                      ),
+                    ),
+                    Text(
+                      'Pasajero',
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: AppColors.textSecondary,
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ],
@@ -250,49 +287,38 @@ class _ClientHistoryScreenState extends State<ClientHistoryScreen> {
             ],
           ),
           const Divider(color: AppColors.surfaceMedium, height: 32),
-          // Bottom row with driver info
+          // Bottom row with time
           Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Row(
-                children: [
-                  const Icon(
-                    Icons.access_time_rounded,
-                    size: 16,
-                    color: AppColors.textTertiary,
-                  ),
-                  const SizedBox(width: 4),
-                  Text(
-                    _formatTime(ride.createdAt),
-                    style: const TextStyle(
-                      color: AppColors.textSecondary,
-                      fontSize: 13,
-                    ),
-                  ),
-                ],
+              const Icon(
+                Icons.access_time_rounded,
+                size: 16,
+                color: AppColors.textTertiary,
               ),
-              if (ride.driverName != null)
-                Row(
-                  children: [
-                    CircleAvatar(
-                      radius: 12,
-                      backgroundColor: AppColors.surfaceMedium,
-                      child: const Icon(
-                        Icons.person_rounded,
-                        size: 14,
-                        color: AppColors.textSecondary,
-                      ),
-                    ),
-                    const SizedBox(width: 6),
-                    Text(
-                      ride.driverName!,
-                      style: const TextStyle(
-                        color: AppColors.textSecondary,
-                        fontSize: 12,
-                      ),
-                    ),
-                  ],
+              const SizedBox(width: 4),
+              Text(
+                _formatTime(ride.createdAt),
+                style: const TextStyle(
+                  color: AppColors.textSecondary,
+                  fontSize: 13,
                 ),
+              ),
+              if (ride.completedAt != null) ...[
+                const SizedBox(width: 16),
+                const Icon(
+                  Icons.check_circle_rounded,
+                  size: 16,
+                  color: AppColors.success,
+                ),
+                const SizedBox(width: 4),
+                Text(
+                  'Completado ${_formatTime(ride.completedAt!)}',
+                  style: const TextStyle(
+                    color: AppColors.success,
+                    fontSize: 13,
+                  ),
+                ),
+              ],
             ],
           ),
         ],

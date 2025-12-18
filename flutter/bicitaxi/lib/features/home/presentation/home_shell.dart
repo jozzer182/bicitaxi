@@ -4,7 +4,6 @@ import '../../../core/theme/app_colors.dart';
 import '../../../core/widgets/responsive_layout.dart';
 import '../../../core/widgets/glass_container.dart';
 import 'map_home_screen.dart';
-import '../../rides/presentation/client_active_ride_screen.dart';
 import '../../rides/presentation/client_history_screen.dart';
 import '../../profile/presentation/client_profile_screen.dart';
 import 'persistent_map_widget.dart';
@@ -28,14 +27,9 @@ class _HomeShellState extends State<HomeShell> {
 
   final List<_NavDestination> _destinations = const [
     _NavDestination(
-      icon: Icons.home_outlined,
-      selectedIcon: Icons.home_rounded,
-      label: 'Inicio',
-    ),
-    _NavDestination(
-      icon: Icons.directions_bike_outlined,
-      selectedIcon: Icons.directions_bike_rounded,
-      label: 'Viaje',
+      icon: Icons.map_outlined,
+      selectedIcon: Icons.map_rounded,
+      label: 'Mapa',
     ),
     _NavDestination(
       icon: Icons.history_outlined,
@@ -55,12 +49,13 @@ class _HomeShellState extends State<HomeShell> {
 
   Widget _getOverlayScreen(int index) {
     // Return the screen content for non-map tabs
+    // Index 0 = Mapa (handled by MapHomeScreen)
+    // Index 1 = Historial
+    // Index 2 = Perfil
     switch (index) {
       case 1:
-        return const ClientActiveRideScreen();
-      case 2:
         return const ClientHistoryScreen();
-      case 3:
+      case 2:
         return const ClientProfileScreen();
       default:
         return const SizedBox.shrink();
