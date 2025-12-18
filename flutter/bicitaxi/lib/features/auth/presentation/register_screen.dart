@@ -226,25 +226,27 @@ class _RegisterScreenState extends State<RegisterScreen> {
               borderRadius: 16,
               color: AppColors.brightBlue,
               onTap: _isLoading ? null : _handleRegister,
-              child: Padding(
-                padding: const EdgeInsets.symmetric(vertical: 4),
-                child: _isLoading
-                    ? const SizedBox(
-                        height: 24,
-                        width: 24,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                          color: Colors.white,
+              child: Center(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 4),
+                  child: _isLoading
+                      ? const SizedBox(
+                          height: 24,
+                          width: 24,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: Colors.white,
+                          ),
+                        )
+                      : const Text(
+                          'Registrarse',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.black87,
+                          ),
                         ),
-                      )
-                    : const Text(
-                        'Registrarse',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
-                          color: Colors.black87,
-                        ),
-                      ),
+                ),
               ),
             ),
             const SizedBox(height: 24),

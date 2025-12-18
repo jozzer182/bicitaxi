@@ -173,25 +173,27 @@ class _LoginScreenState extends State<LoginScreen> {
               borderRadius: 16,
               color: AppColors.brightBlue,
               onTap: _isLoading ? null : _handleLogin,
-              child: Padding(
-                padding: const EdgeInsets.symmetric(vertical: 4),
-                child: _isLoading
-                    ? const SizedBox(
-                        height: 24,
-                        width: 24,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                          color: Colors.white,
+              child: Center(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 4),
+                  child: _isLoading
+                      ? const SizedBox(
+                          height: 24,
+                          width: 24,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: Colors.white,
+                          ),
+                        )
+                      : const Text(
+                          'Iniciar sesión',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.black87,
+                          ),
                         ),
-                      )
-                    : const Text(
-                        'Iniciar sesión',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
-                          color: Colors.black87,
-                        ),
-                      ),
+                ),
               ),
             ),
             const SizedBox(height: 16),
@@ -243,30 +245,6 @@ class _LoginScreenState extends State<LoginScreen> {
               onPressed: _isLoading ? () {} : _handleGoogleLogin,
               icon: _buildGoogleIcon(),
               label: 'Continuar con Google',
-            ),
-            const SizedBox(height: 16),
-
-            // Apple Sign In Button
-            _AuthButton(
-              onPressed: _isLoading ? () {} : _handleAppleLogin,
-              icon: const Icon(
-                Icons.apple_rounded,
-                size: 24,
-                color: Colors.black87,
-              ),
-              label: 'Continuar con Apple',
-            ),
-            const SizedBox(height: 16),
-
-            // Guest Button
-            _AuthButton(
-              onPressed: _isLoading ? () {} : _handleGuestLogin,
-              icon: const Icon(
-                Icons.person_outline,
-                size: 24,
-                color: Colors.black87,
-              ),
-              label: 'Continuar como invitado',
             ),
             const SizedBox(height: 24),
 
@@ -390,45 +368,6 @@ class _LoginScreenState extends State<LoginScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Error en Google Sign In: ${e.toString()}')),
-        );
-      }
-    } finally {
-      if (mounted) {
-        setState(() => _isLoading = false);
-      }
-    }
-  }
-
-  void _handleAppleLogin() async {
-    setState(() => _isLoading = true);
-    try {
-      await context.appState.authRepository.signInWithApple();
-      // If success
-      if (mounted) _navigateToHome(context);
-    } catch (e) {
-       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Apple Sign In no implementado: ${e.toString()}')),
-        );
-      }
-    } finally {
-      if (mounted) {
-        setState(() => _isLoading = false);
-      }
-    }
-  }
-
-  void _handleGuestLogin() async {
-    setState(() => _isLoading = true);
-    try {
-      await context.appState.authRepository.signInAnonymously();
-      if (mounted) {
-        _navigateToHome(context);
-      }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error al entrar como invitado: ${e.toString()}')),
         );
       }
     } finally {

@@ -173,25 +173,27 @@ class _LoginScreenState extends State<LoginScreen> {
               borderRadius: 16,
               color: AppColors.driverAccent,
               onTap: _isLoading ? null : _handleLogin,
-              child: Padding(
-                padding: const EdgeInsets.symmetric(vertical: 4),
-                child: _isLoading
-                    ? const SizedBox(
-                        height: 24,
-                        width: 24,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                          color: Colors.white,
+              child: Center(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 4),
+                  child: _isLoading
+                      ? const SizedBox(
+                          height: 24,
+                          width: 24,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: Colors.white,
+                          ),
+                        )
+                      : const Text(
+                          'Iniciar sesión',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.black87,
+                          ),
                         ),
-                      )
-                    : const Text(
-                        'Iniciar sesión',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
-                          color: Colors.black87,
-                        ),
-                      ),
+                ),
               ),
             ),
             const SizedBox(height: 16),
@@ -243,30 +245,6 @@ class _LoginScreenState extends State<LoginScreen> {
               onPressed: _isLoading ? () {} : _handleGoogleLogin,
               icon: _buildGoogleIcon(),
               label: 'Continuar con Google',
-            ),
-            const SizedBox(height: 16),
-
-            // Apple Sign In Button
-            _AuthButton(
-              onPressed: _isLoading ? () {} : _handleAppleLogin,
-              icon: const Icon(
-                Icons.apple_rounded,
-                size: 24,
-                color: Colors.black87,
-              ),
-              label: 'Continuar con Apple',
-            ),
-            const SizedBox(height: 16),
-
-            // Guest Button
-            _AuthButton(
-              onPressed: _isLoading ? () {} : _handleGuestLogin,
-              icon: const Icon(
-                Icons.person_outline,
-                size: 24,
-                color: Colors.black87,
-              ),
-              label: 'Continuar como invitado',
             ),
             const SizedBox(height: 24),
 
@@ -399,46 +377,6 @@ class _LoginScreenState extends State<LoginScreen> {
     }
   }
 
-  void _handleAppleLogin() async {
-    setState(() => _isLoading = true);
-    try {
-      await context.appState.authRepository.signInWithApple();
-       if (mounted) _navigateToHome(context);
-    } catch (e) {
-       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Apple Sign In no implementado: ${e.toString()}')),
-        );
-      }
-    } finally {
-      if (mounted) {
-        setState(() => _isLoading = false);
-      }
-    }
-  }
-
-  void _handleGuestLogin() async {
-    setState(() => _isLoading = true);
-    try {
-      // Allow Guest Login for Driver for testing, but typically drivers need account
-      // For now, we allow it.
-      await context.appState.authRepository.signInAnonymously();
-      if (mounted) {
-        _navigateToHome(context);
-      }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error al entrar como invitado: ${e.toString()}')),
-        );
-      }
-    } finally {
-      if (mounted) {
-        setState(() => _isLoading = false);
-      }
-    }
-  }
-
   void _navigateToHome(BuildContext context) {
     Navigator.pushReplacementNamed(context, AppRoutes.homeShell);
   }
@@ -461,26 +399,25 @@ class _AuthButton extends StatelessWidget {
     return LiquidButton(
       borderRadius: 16,
       onTap: onPressed,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 4),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            icon,
-            const SizedBox(width: 12),
-            Flexible(
-              child: Text(
+      child: Center(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 4),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              icon,
+              const SizedBox(width: 12),
+              Text(
                 label,
                 style: const TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.w500,
                   color: Colors.black87,
                 ),
-                overflow: TextOverflow.ellipsis,
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

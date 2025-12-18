@@ -61,11 +61,6 @@ struct LoginView: View {
             registerLink
             
             Spacer()
-            
-            // Continue as Guest
-            guestButton
-            
-            Spacer()
                 .frame(height: 16)
         }
         .padding(.horizontal, 24)
@@ -236,18 +231,6 @@ struct LoginView: View {
         .font(.subheadline)
     }
     
-    // MARK: - Guest Button
-    
-    private var guestButton: some View {
-        Button(action: {
-            authManager.continueAsGuest()
-        }) {
-            Text("Continuar como invitado")
-                .font(.subheadline)
-                .foregroundColor(grayBlue)
-                .underline()
-        }
-    }
 }
 
 #Preview {
