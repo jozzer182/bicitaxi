@@ -32,8 +32,16 @@ This monorepo contains four distinct applications organized by platform and role
 Both platforms implement our custom **Liquid Glass** design system:
 -   **Light Mode Only**: A bright, clean aesthetic using white and translucent layers.
 -   **Glassmorphism**: High-quality blur effects (`BackdropFilter` in Flutter, `UltraThinMaterial` in SwiftUI) for cards and overlays.
+-   **GLSL Refraction Shader** (Android/Flutter): Custom fragment shader that creates realistic lens-like distortion, showing the map background through glass panels with:
+    - Real-time refraction and distortion
+    - Subtle wave animations
+    - Fresnel edge glow (brighter at edges like real glass)
+    - Dynamic widget position detection
 -   **Typography**: Modern, bold headings with readable body text.
 -   **Animations**: Fluid transitions and interactive elements.
+
+> 📖 **Implementation Details**: See [flutter/bicitaxi/LIQUID_GLASS.md](flutter/bicitaxi/LIQUID_GLASS.md) for the full shader implementation guide.
+
 
 ### � Core Functionality
 -   **Authentication**: Complete flow (Login, Sign Up, Forgot Password, Edit Profile).

@@ -34,7 +34,19 @@ lib/
 └── main.dart
 ```
 
+## 🪟 Liquid Glass Effect
+
+This app features a custom **iOS 26-style liquid glass** refraction effect using GLSL fragment shaders. The glass panels show the background content (map) through a realistic lens distortion with:
+
+- Real-time refraction and distortion
+- Subtle wave animations
+- Fresnel edge glow
+- Dynamic position detection
+
+> 📖 **Want to learn more?** See [LIQUID_GLASS.md](LIQUID_GLASS.md) for implementation details, code examples, and troubleshooting.
+
 ## 🛠️ Tech Stack
+
 
 | Package                  | Purpose                             |
 | ------------------------ | ----------------------------------- |
