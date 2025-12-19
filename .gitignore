@@ -243,3 +243,6 @@ debugconsole.txt
 agent_memory.json
 *.mp4
 *.trace
+
+# Firebase Hosting Config
+public/config.js
