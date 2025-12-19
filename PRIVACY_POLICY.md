@@ -177,7 +177,7 @@ Tienes los siguientes derechos sobre tus datos:
 
 ### 7.5 Cómo Ejercer tus Derechos
 Para ejercer cualquiera de estos derechos, contáctanos a:
-- **Correo electrónico**: [tu-email-de-contacto]
+- **Correo electrónico**: zarabandadev@gmail.com
 
 ---
 
@@ -241,7 +241,7 @@ Te recomendamos revisar esta política periódicamente.
 
 Si tienes preguntas, comentarios o solicitudes relacionadas con esta Política de Privacidad o el manejo de tus datos, puedes contactarnos:
 
-- **Correo electrónico**: [tu-email-de-contacto]
+- **Correo electrónico**: zarabandadev@gmail.com
 - **Desarrollador**: José L. Zarabanda
 
 ---
