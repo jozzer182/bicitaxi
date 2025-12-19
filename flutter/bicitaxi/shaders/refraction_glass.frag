@@ -24,7 +24,7 @@ void main() {
     
     // Convert to UV in the full background texture
     // Note: Flutter Y=0 is top, but texture Y=0 is bottom, so we flip Y
-    vec2 bgUV = vec2(screenPos.x / uScreenSize.x, 1.0 - (screenPos.y / uScreenSize.y));
+    vec2 bgUV = vec2(screenPos.x / uScreenSize.x, (screenPos.y / uScreenSize.y));
     
     // Distance from center for lens-like effects (local to widget)
     vec2 center = vec2(0.5);
@@ -35,9 +35,20 @@ void main() {
     float angle = atan(fromCenter.y, fromCenter.x);
     float wave = sin(angle * 4.0 + uTime * 0.8) * 0.008;
     
-    // Lens distortion offset (in background UV space)
+    // Lens distortion offset calculation
     float lensStrength = smoothstep(0.0, 0.5, dist) * uRefraction;
-    vec2 refractOffset = fromCenter * (lensStrength + wave) * (uSize / uScreenSize);
+    
+    // Scale the offset to background UV space
+    // Important: We need to flip the Y component because:
+    // - fromCenter.y positive = pointing down in Flutter coordinates
+    // - bgUV.y increases upward (after our Y-flip)
+    // - So a positive fromCenter.y should decrease bgUV.y (move DOWN in texture)
+    // The original code was wrong - it added fromCenter.y which moved UP in texture
+    //vec2 refractOffset = fromCenter * (lensStrength + wave) * (uSize / uScreenSize);
+    vec2 refractOffset = vec2(
+       fromCenter.x * (lensStrength + wave) * (uSize.x / uScreenSize.x),
+        -fromCenter.y * (lensStrength + wave) * (uSize.y / uScreenSize.y)
+    );
     
     // Sample background with displacement
     vec2 sampledUV = bgUV + refractOffset;
@@ -60,3 +71,4 @@ void main() {
     // Slight transparency
     fragColor = vec4(finalColor, 0.95);
 }
+

@@ -1,4 +1,3 @@
-
 import 'package:firebase_auth/firebase_auth.dart' as firebase_auth;
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:google_sign_in/google_sign_in.dart' as gsi;
@@ -10,8 +9,8 @@ class FirebaseAuthenticationRepository implements AuthenticationRepository {
   FirebaseAuthenticationRepository({
     firebase_auth.FirebaseAuth? firebaseAuth,
     FirebaseFirestore? firestore,
-  })  : _firebaseAuth = firebaseAuth ?? firebase_auth.FirebaseAuth.instance,
-        _firestore = firestore ?? FirebaseFirestore.instance;
+  }) : _firebaseAuth = firebaseAuth ?? firebase_auth.FirebaseAuth.instance,
+       _firestore = firestore ?? FirebaseFirestore.instance;
 
   final firebase_auth.FirebaseAuth _firebaseAuth;
   final FirebaseFirestore _firestore;
@@ -23,7 +22,10 @@ class FirebaseAuthenticationRepository implements AuthenticationRepository {
   firebase_auth.User? get currentUser => _firebaseAuth.currentUser;
 
   @override
-  Future<firebase_auth.User?> signInWithEmailAndPassword(String email, String password) async {
+  Future<firebase_auth.User?> signInWithEmailAndPassword(
+    String email,
+    String password,
+  ) async {
     try {
       final credential = await _firebaseAuth.signInWithEmailAndPassword(
         email: email,
@@ -47,28 +49,27 @@ class FirebaseAuthenticationRepository implements AuthenticationRepository {
         email: email,
         password: password,
       );
-      
+
       final user = credential.user;
       if (user != null) {
         // Update display name in Firebase Auth
         await user.updateDisplayName(name);
-        
+
         // Create user document in Firestore
         // Using 'users' collection to store profile data
         // For drivers, we might want to store 'isDriver': true or in a separate collection.
-        // But for consistency with UserBasic, storing in 'users' is fine for now, 
+        // But for consistency with UserBasic, storing in 'users' is fine for now,
         // maybe add a 'role' field or separate 'drivers' collection later.
         // The Canonical Data Model says User has `role` (passenger/driver).
         // UserBasic doesn't have role. I'll stick to UserBasic for now.
-        final userBasic = UserBasic(
-          id: user.uid,
-          name: name,
-          phone: '', 
-        );
+        final userBasic = UserBasic(id: user.uid, name: name, phone: '');
 
-        await _firestore.collection('users').doc(user.uid).set(userBasic.toFirestore());
+        await _firestore
+            .collection('users')
+            .doc(user.uid)
+            .set(userBasic.toFirestore());
       }
-      
+
       return user;
     } catch (e) {
       rethrow;
@@ -91,48 +92,86 @@ class FirebaseAuthenticationRepository implements AuthenticationRepository {
 
   @override
   Future<firebase_auth.User?> signInWithGoogle() async {
+    print('🔐 [GoogleSignIn] Starting Google Sign-In flow...');
     try {
       final gsi.GoogleSignIn googleSignIn = gsi.GoogleSignIn();
-      final gsi.GoogleSignInAccount? googleUser = await googleSignIn.signIn();
-      if (googleUser == null) return null; // User cancelled
+      print('🔐 [GoogleSignIn] GoogleSignIn instance created');
 
-      final gsi.GoogleSignInAuthentication googleAuth = await googleUser.authentication;
-      final firebase_auth.AuthCredential credential = firebase_auth.GoogleAuthProvider.credential(
-        accessToken: googleAuth.accessToken,
-        idToken: googleAuth.idToken,
+      print('🔐 [GoogleSignIn] Calling googleSignIn.signIn()...');
+      final gsi.GoogleSignInAccount? googleUser = await googleSignIn.signIn();
+
+      if (googleUser == null) {
+        print('🔐 [GoogleSignIn] User cancelled sign-in (googleUser is null)');
+        return null;
+      }
+      print('🔐 [GoogleSignIn] Google account selected: ${googleUser.email}');
+
+      print('🔐 [GoogleSignIn] Getting authentication tokens...');
+      final gsi.GoogleSignInAuthentication googleAuth =
+          await googleUser.authentication;
+      print(
+        '🔐 [GoogleSignIn] Got tokens - accessToken: ${googleAuth.accessToken != null ? "present" : "null"}, idToken: ${googleAuth.idToken != null ? "present" : "null"}',
       );
 
-      final userCredential = await _firebaseAuth.signInWithCredential(credential);
+      print('🔐 [GoogleSignIn] Creating Firebase credential...');
+      final firebase_auth.AuthCredential credential =
+          firebase_auth.GoogleAuthProvider.credential(
+            accessToken: googleAuth.accessToken,
+            idToken: googleAuth.idToken,
+          );
+      print('🔐 [GoogleSignIn] Firebase credential created');
+
+      print('🔐 [GoogleSignIn] Signing in to Firebase with credential...');
+      final userCredential = await _firebaseAuth.signInWithCredential(
+        credential,
+      );
       final user = userCredential.user;
-      
+      print('🔐 [GoogleSignIn] Firebase sign-in successful! UID: ${user?.uid}');
+
       if (user != null) {
-         // Create user doc if not exists
-         final userDoc = await _firestore.collection('users').doc(user.uid).get();
-         if (!userDoc.exists) {
-            final userBasic = UserBasic(
-              id: user.uid,
-              name: user.displayName ?? 'Conductor',
-              phone: user.phoneNumber ?? '',
-            );
-            await _firestore.collection('users').doc(user.uid).set(userBasic.toFirestore());
-         }
+        print(
+          '🔐 [GoogleSignIn] Checking if user document exists in Firestore...',
+        );
+        final userDoc = await _firestore
+            .collection('users')
+            .doc(user.uid)
+            .get();
+        if (!userDoc.exists) {
+          print('🔐 [GoogleSignIn] Creating new user document in Firestore...');
+          final userBasic = UserBasic(
+            id: user.uid,
+            name: user.displayName ?? 'Conductor',
+            phone: user.phoneNumber ?? '',
+          );
+          await _firestore
+              .collection('users')
+              .doc(user.uid)
+              .set(userBasic.toFirestore());
+          print('🔐 [GoogleSignIn] User document created successfully');
+        } else {
+          print('🔐 [GoogleSignIn] User document already exists');
+        }
       }
+
+      print('🔐 [GoogleSignIn] Google Sign-In completed successfully!');
       return user;
-    } catch (e) {
+    } catch (e, stackTrace) {
+      print('❌ [GoogleSignIn] ERROR: $e');
+      print('❌ [GoogleSignIn] Stack trace: $stackTrace');
       rethrow;
     }
   }
 
   @override
   Future<firebase_auth.User?> signInWithApple() async {
-     throw UnimplementedError('Apple Sign In implementation pending imports'); 
+    throw UnimplementedError('Apple Sign In implementation pending imports');
   }
 
   @override
   Future<firebase_auth.User?> signInAnonymously() async {
     try {
-       final credential = await _firebaseAuth.signInAnonymously();
-       return credential.user;
+      final credential = await _firebaseAuth.signInAnonymously();
+      return credential.user;
     } catch (e) {
       rethrow;
     }

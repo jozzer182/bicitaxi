@@ -10,13 +10,31 @@ import 'core/services/demo_mode_service.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
-
 void main() async {
+  print('🚀 [Conductor] main() starting...');
   WidgetsFlutterBinding.ensureInitialized();
+  print('🚀 [Conductor] WidgetsFlutterBinding initialized');
+
   await Firebase.initializeApp();
+  print('🚀 [Conductor] Firebase initialized');
+  print('🚀 [Conductor] Firebase app name: ${Firebase.app().name}');
+  print(
+    '🚀 [Conductor] Firebase options project: ${Firebase.app().options.projectId}',
+  );
 
   // Initialize demo mode service
   await DemoModeService().init();
+  print('🚀 [Conductor] DemoModeService initialized');
+
+  // Check current auth state
+  final currentUser = FirebaseAuth.instance.currentUser;
+  print(
+    '🚀 [Conductor] Current user: ${currentUser?.uid ?? "null (not logged in)"}',
+  );
+  if (currentUser != null) {
+    print('🚀 [Conductor] User email: ${currentUser.email}');
+    print('🚀 [Conductor] User displayName: ${currentUser.displayName}');
+  }
 
   // Set system UI overlay style for light theme
   SystemChrome.setSystemUIOverlayStyle(
@@ -36,7 +54,9 @@ void main() async {
     DeviceOrientation.landscapeRight,
   ]);
 
+  print('🚀 [Conductor] Calling runApp()...');
   runApp(const BiciTaxiConductorApp());
+  print('🚀 [Conductor] runApp() completed');
 }
 
 /// Main application widget for Bici Taxi Conductor app.
@@ -59,8 +79,8 @@ class BiciTaxiConductorApp extends StatelessWidget {
           title: 'Bici Taxi Conductor',
           debugShowCheckedModeBanner: false,
           theme: AppTheme.lightTheme,
-          initialRoute: FirebaseAuth.instance.currentUser != null 
-              ? AppRoutes.homeShell 
+          initialRoute: FirebaseAuth.instance.currentUser != null
+              ? AppRoutes.homeShell
               : AppRoutes.login,
 
           onGenerateRoute: AppRouter.onGenerateRoute,

@@ -24,7 +24,7 @@ void main() {
     
     // Convert to UV in the full background texture
     // Note: Flutter Y=0 is top, but texture Y=0 is bottom, so we flip Y
-    vec2 bgUV = vec2(screenPos.x / uScreenSize.x, 1.0 - (screenPos.y / uScreenSize.y));
+    vec2 bgUV = vec2(screenPos.x / uScreenSize.x, (screenPos.y / uScreenSize.y));
     
     // Distance from center for lens-like effects (local to widget)
     vec2 center = vec2(0.5);
