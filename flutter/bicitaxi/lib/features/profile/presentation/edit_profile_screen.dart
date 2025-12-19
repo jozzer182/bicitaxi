@@ -18,13 +18,24 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   final _formKey = GlobalKey<FormState>();
   late final TextEditingController _nameController;
   late final TextEditingController _emailController;
+  bool _isInitialized = false;
 
   @override
   void initState() {
     super.initState();
-    final user = context.appState.authRepository.currentUser;
-    _nameController = TextEditingController(text: user?.displayName ?? '');
-    _emailController = TextEditingController(text: user?.email ?? '');
+    _nameController = TextEditingController();
+    _emailController = TextEditingController();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (!_isInitialized) {
+      _isInitialized = true;
+      final user = context.appState.authRepository.currentUser;
+      _nameController.text = user?.displayName ?? '';
+      _emailController.text = user?.email ?? '';
+    }
   }
 
   bool _isLoading = false;
@@ -44,32 +55,33 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       context.appState.authRepository
           .updateProfile(name: _nameController.text.trim())
           .then((_) {
-        if (!mounted) return;
-        setState(() => _isLoading = false);
+            if (!mounted) return;
+            setState(() => _isLoading = false);
 
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: const Text('Perfil actualizado correctamente'),
-            backgroundColor: AppColors.success,
-            behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
-            ),
-          ),
-        );
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: const Text('Perfil actualizado correctamente'),
+                backgroundColor: AppColors.success,
+                behavior: SnackBarBehavior.floating,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+            );
 
-        Navigator.pop(context);
-      }).catchError((error) {
-        if (!mounted) return;
-        setState(() => _isLoading = false);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Error al actualizar: $error'),
-            backgroundColor: AppColors.error,
-            behavior: SnackBarBehavior.floating,
-          ),
-        );
-      });
+            Navigator.pop(context);
+          })
+          .catchError((error) {
+            if (!mounted) return;
+            setState(() => _isLoading = false);
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text('Error al actualizar: $error'),
+                backgroundColor: AppColors.error,
+                behavior: SnackBarBehavior.floating,
+              ),
+            );
+          });
     }
   }
 
@@ -374,36 +386,38 @@ class _ChangePasswordDialogState extends State<_ChangePasswordDialog> {
       context.appState.authRepository
           .updatePassword(_newPasswordController.text)
           .then((_) {
-        if (!mounted) return;
-        setState(() => _isLoading = false);
-        Navigator.pop(context);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: const Text('Contraseña actualizada correctamente'),
-            backgroundColor: AppColors.success,
-            behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
-            ),
-          ),
-        );
-      }).catchError((error) {
-        if (!mounted) return;
-        setState(() => _isLoading = false);
-        
-        String errorMessage = 'Error al cambiar contraseña';
-        if (error.toString().contains('requires-recent-login')) {
-          errorMessage = 'Por seguridad, inicia sesión nuevamente para cambiar tu contraseña';
-        }
+            if (!mounted) return;
+            setState(() => _isLoading = false);
+            Navigator.pop(context);
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: const Text('Contraseña actualizada correctamente'),
+                backgroundColor: AppColors.success,
+                behavior: SnackBarBehavior.floating,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+            );
+          })
+          .catchError((error) {
+            if (!mounted) return;
+            setState(() => _isLoading = false);
 
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(errorMessage),
-            backgroundColor: AppColors.error,
-            behavior: SnackBarBehavior.floating,
-          ),
-        );
-      });
+            String errorMessage = 'Error al cambiar contraseña';
+            if (error.toString().contains('requires-recent-login')) {
+              errorMessage =
+                  'Por seguridad, inicia sesión nuevamente para cambiar tu contraseña';
+            }
+
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(errorMessage),
+                backgroundColor: AppColors.error,
+                behavior: SnackBarBehavior.floating,
+              ),
+            );
+          });
     }
   }
 
