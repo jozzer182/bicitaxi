@@ -130,14 +130,24 @@
 
 </div>
 
-### 🎬 Video Demo
+### 🎬 Video Demos
 
 <div align="center">
 
-<video width="300" controls autoplay muted loop>
-  <source src="media/video client.mp4" type="video/mp4">
-  Your browser does not support the video tag.
-</video>
+<table>
+  <tr>
+    <td align="center">
+      <img src="media/demo_client.gif" alt="Bici Taxi Client Demo" width="280"/>
+      <br>
+      <b>🧑‍💼 Client App</b>
+    </td>
+    <td align="center">
+      <img src="media/demo_conductor.gif" alt="Bici Taxi Conductor Demo" width="280"/>
+      <br>
+      <b>🚴 Conductor App</b>
+    </td>
+  </tr>
+</table>
 
 </div>
 
