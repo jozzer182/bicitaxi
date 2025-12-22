@@ -25,7 +25,54 @@
 
 </div>
 
-## 📱 App Previews
+## � Download
+
+<div align="center">
+
+<table>
+  <tr>
+    <th></th>
+    <th>🧑‍💼 Client App</th>
+    <th>🚴 Driver App</th>
+  </tr>
+  <tr>
+    <td><img src="https://img.shields.io/badge/App_Store-0D96F6?style=for-the-badge&logo=app-store&logoColor=white" alt="App Store"/></td>
+    <td>
+      <a href="https://apps.apple.com/gb/app/bicitaxi/id6756788985">
+        <img src="https://img.shields.io/badge/Download-Bici_Taxi-000000?style=for-the-badge&logo=apple&logoColor=white" alt="Download Client"/>
+      </a>
+    </td>
+    <td>
+      <a href="https://apps.apple.com/gb/app/bicitaxi-conductor/id6756788839">
+        <img src="https://img.shields.io/badge/Download-Conductor-000000?style=for-the-badge&logo=apple&logoColor=white" alt="Download Conductor"/>
+      </a>
+    </td>
+  </tr>
+  <tr>
+    <td><img src="https://img.shields.io/badge/Google_Play-414141?style=for-the-badge&logo=google-play&logoColor=white" alt="Google Play"/></td>
+    <td colspan="2">
+      <img src="https://img.shields.io/badge/Coming_Soon-📱-yellow?style=for-the-badge" alt="Coming Soon"/>
+    </td>
+  </tr>
+</table>
+
+<br>
+
+<a href="https://apps.apple.com/gb/app/bicitaxi/id6756788985">
+  <img src="https://developer.apple.com/assets/elements/badges/download-on-the-app-store.svg" alt="Download on the App Store" height="50"/>
+</a>
+&nbsp;&nbsp;&nbsp;
+<a href="https://apps.apple.com/gb/app/bicitaxi-conductor/id6756788839">
+  <img src="https://developer.apple.com/assets/elements/badges/download-on-the-app-store.svg" alt="Download on the App Store" height="50"/>
+</a>
+
+<sub>🧑‍💼 Client &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 🚴 Conductor</sub>
+
+</div>
+
+---
+
+## �📱 App Previews
 
 <div align="center">
 
@@ -377,8 +424,8 @@ bicitaxi/
 
 <br>
 
-**Made with ❤️ by the Bici Taxi Team**
+**Made with ❤️ by Jose Zarabanda**
 
-<sub>© 2024 Bici Taxi. All rights reserved.</sub>
+<sub>© 2025 Bici Taxi. All rights reserved.</sub>
 
 </div>
