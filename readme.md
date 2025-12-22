@@ -130,6 +130,30 @@
 
 </div>
 
+### 🎬 Video Demo
+
+<div align="center">
+
+https://github.com/user-attachments/assets/video-client.mp4
+
+<!-- Alternative: Direct link if above doesn't render -->
+<a href="media/video%20client.mp4">
+  <img src="https://img.shields.io/badge/▶️_Watch_Demo-Client_App-blue?style=for-the-badge" alt="Watch Demo"/>
+</a>
+
+<details>
+<summary><b>📹 Can't see the video? Click here</b></summary>
+
+<br>
+
+The video may not render directly on GitHub. You can:
+- **[Download the video](media/video%20client.mp4)** to watch locally
+- Clone the repo and open `media/video client.mp4`
+
+</details>
+
+</div>
+
 ---
 
 ## 🏛️ Architecture
