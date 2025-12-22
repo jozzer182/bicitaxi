@@ -1,153 +1,370 @@
-# Bici Taxi – Hybrid Monorepo (Android & iOS)
+<div align="center">
 
-Bici Taxi is a modern, ride-hailing experience tailored for bike taxis.
-This repository follows a **Hybrid Architecture** to leverage the best of both worlds:
+<!-- Logo Principal -->
+<img src="ios/bicitaxi/bicitaxi/Assets.xcassets/Logo.imageset/logo.png" alt="Bici Taxi Logo" width="180" height="180" style="border-radius: 40px;">
 
--   **Android**: Built with **Flutter** for rapid development and consistency across the fragmented Android ecosystem.
--   **iOS**: Built with **Native SwiftUI** to maximize performance, animations, and integration with Apply system design (iOS 18+).
+# 🚲 Bici Taxi
 
-Both platforms share the same **Liquid Glass** design language—a clean, white, light-themed aesthetic with translucent glass cards, blurred backgrounds, and high-readability typography.
+### *Ride-hailing reinvented for bike taxis*
 
----
+[![Platform](https://img.shields.io/badge/Platform-Android%20%7C%20iOS-blue?style=for-the-badge&logo=android&logoColor=white)](/)
+[![Flutter](https://img.shields.io/badge/Flutter-3.27+-02569B?style=for-the-badge&logo=flutter&logoColor=white)](https://flutter.dev)
+[![SwiftUI](https://img.shields.io/badge/SwiftUI-iOS%2018+-FA7343?style=for-the-badge&logo=swift&logoColor=white)](https://developer.apple.com/xcode/swiftui/)
+[![Firebase](https://img.shields.io/badge/Firebase-Backend-FFCA28?style=for-the-badge&logo=firebase&logoColor=black)](https://firebase.google.com)
+[![License](https://img.shields.io/badge/License-Private-red?style=for-the-badge)](/)
 
-## 🏛️ Project Architecture
+<br>
 
-This monorepo contains four distinct applications organized by platform and role:
-
-| Platform | Tech Stack | Client App (Rider) | Driver App (Conductor) |
-| :--- | :--- | :--- | :--- |
-| **Android** | **Flutter** | `bicitaxi/flutter/bicitaxi` | `bicitaxi/flutter/bicitaxi_conductor` |
-| **iOS** | **Native SwiftUI** | `bicitaxi/ios/BiciTaxi` | `bicitaxi/ios/BiciTaxiConductor` |
-
-### Backend
--   **Firebase Auth**: Secure authentication (Email/Password, Google).
--   **Cloud Firestore**: Real-time database for user profiles, ride requests, and chat.
--   **Firebase Storage**: (Planned) User avatars and documents.
+<p>
+  <strong>🌐 Hybrid Architecture</strong> · 
+  <strong>🎨 Liquid Glass Design</strong> · 
+  <strong>⚡ Real-time Matching</strong>
+</p>
 
 ---
 
-## ✨ Key Features
+</div>
 
-### 🌌 Liquid Glass UI (Light Theme)
-Both platforms implement our custom **Liquid Glass** design system:
--   **Light Mode Only**: A bright, clean aesthetic using white and translucent layers.
--   **Glassmorphism**: High-quality blur effects (`BackdropFilter` in Flutter, `UltraThinMaterial` in SwiftUI) for cards and overlays.
--   **GLSL Refraction Shader** (Android/Flutter): Custom fragment shader that creates realistic lens-like distortion, showing the map background through glass panels with:
-    - Real-time refraction and distortion
-    - Subtle wave animations
-    - Fresnel edge glow (brighter at edges like real glass)
-    - Dynamic widget position detection
--   **Typography**: Modern, bold headings with readable body text.
--   **Animations**: Fluid transitions and interactive elements.
+## 📱 App Previews
 
-> 📖 **Implementation Details**: See [flutter/bicitaxi/LIQUID_GLASS.md](flutter/bicitaxi/LIQUID_GLASS.md) for the full shader implementation guide.
+<div align="center">
 
+### 🧑‍💼 Client App (Rider)
 
-### � Core Functionality
--   **Authentication**: Complete flow (Login, Sign Up, Forgot Password, Edit Profile).
--   **Maps & Location**:
-    -   **Android**: OpenStreetMap via `flutter_map`.
-    -   **iOS**: Native Apple Maps via `MapKit`.
--   **Ride Logic**:
-    -   **Client**: Select pickup/dropoff, request ride, view driver status.
-    -   **Driver**: Receive requests, accept/reject, navigation, ride completion.
--   **Profile Management**:
-    -   Real-time name updates.
-    -   Secure password changes.
-    -   Account management (Logout, Delete Account).
+<table>
+  <tr>
+    <td align="center"><img src="media/android/portair/A.png" width="150"/></td>
+    <td align="center"><img src="media/android/portair/B.png" width="150"/></td>
+    <td align="center"><img src="media/android/portair/C.png" width="150"/></td>
+    <td align="center"><img src="media/android/portair/D.png" width="150"/></td>
+    <td align="center"><img src="media/android/portair/E.png" width="150"/></td>
+  </tr>
+  <tr>
+    <td align="center"><sub>Splash</sub></td>
+    <td align="center"><sub>Login</sub></td>
+    <td align="center"><sub>Map View</sub></td>
+    <td align="center"><sub>Request Ride</sub></td>
+    <td align="center"><sub>In Progress</sub></td>
+  </tr>
+</table>
+
+### 🚴 Driver App (Conductor)
+
+<table>
+  <tr>
+    <td align="center"><img src="media/android/portair/A_.png" width="150"/></td>
+    <td align="center"><img src="media/android/portair/B_.png" width="150"/></td>
+    <td align="center"><img src="media/android/portair/C_.png" width="150"/></td>
+    <td align="center"><img src="media/android/portair/D_.png" width="150"/></td>
+    <td align="center"><img src="media/android/portair/E_.png" width="150"/></td>
+  </tr>
+  <tr>
+    <td align="center"><sub>Splash</sub></td>
+    <td align="center"><sub>Login</sub></td>
+    <td align="center"><sub>Waiting</sub></td>
+    <td align="center"><sub>New Request</sub></td>
+    <td align="center"><sub>Navigation</sub></td>
+  </tr>
+</table>
+
+</div>
 
 ---
 
-## 🛠️ Technical Implementation
+## 🏛️ Architecture
 
-### Android (Flutter)
--   **State Management**: `Provider` / `ChangeNotifier` (AppState).
--   **Architecture**: Repository Pattern (`AuthRepository`, `RideRepository`).
--   **Dependencies**:
-    -   `firebase_auth`, `cloud_firestore` (Backend).
-    -   `google_sign_in` (Social Auth).
-    -   `flutter_map` (Maps).
-    -   `liquid_glass_ui` (Custom UI package).
+This monorepo follows a **Hybrid Architecture** leveraging the best of both worlds:
 
-### iOS (Native)
--   **Framework**: SwiftUI + Combine.
--   **Architecture**: MVVM (Model-View-ViewModel).
--   **Dependencies**:
-    -   `FirebaseAuth`, `FirebaseFirestore` (Swift Package Manager).
-    -   `MapKit` (Native Maps).
--   **Design**: Custom ViewModifiers for "Glass" effects and "Liquid Buttons".
+| | Android | iOS |
+|:---:|:---:|:---:|
+| **Tech Stack** | <img src="https://img.shields.io/badge/Flutter-02569B?style=flat&logo=flutter&logoColor=white" alt="Flutter"/> | <img src="https://img.shields.io/badge/SwiftUI-FA7343?style=flat&logo=swift&logoColor=white" alt="SwiftUI"/> |
+| **Why?** | Rapid dev & ecosystem consistency | Native performance & Apple HIG |
+| **Client App** | `flutter/bicitaxi` | `ios/bicitaxi` |
+| **Driver App** | `flutter/bicitaxi_conductor` | `ios/bicitaxi-conductor` |
+
+<details>
+<summary><b>🔥 Why Hybrid?</b></summary>
+
+<br>
+
+- **Android (Flutter)**: Over 24,000 device models means Flutter's "write once" approach saves countless hours of QA and fragmentation headaches.
+  
+- **iOS (Native SwiftUI)**: Apple users expect buttery-smooth 120Hz animations, deep system integrations, and pixel-perfect adherence to Human Interface Guidelines. Native delivers.
+
+- **Shared Backend**: Both platforms connect to the same Firebase backend, ensuring data consistency and real-time sync.
+
+</details>
+
+---
+
+## ✨ Design System: Liquid Glass
+
+<div align="center">
+
+> *"A bright, clean aesthetic where content floats on translucent glass panels"*
+
+</div>
+
+Both platforms implement our custom **Liquid Glass** design language:
+
+| Feature | Description |
+|:---|:---|
+| 🌅 **Light Mode Only** | Bright whites, soft grays, high contrast text |
+| 🪟 **Glassmorphism** | `BackdropFilter` (Flutter) / `UltraThinMaterial` (SwiftUI) |
+| 🔮 **GLSL Shader** | Real-time refraction with Fresnel edge glow |
+| ✍️ **Typography** | Modern, bold headings (`SF Pro`, `Roboto`) |
+| 🎬 **Animations** | Fluid 60fps transitions & micro-interactions |
+
+<details>
+<summary><b>📖 Shader Implementation Details</b></summary>
+
+<br>
+
+The Flutter version uses a custom GLSL fragment shader that creates:
+
+- **Real-time refraction and distortion** of the map background
+- **Subtle wave animations** for an organic feel  
+- **Fresnel edge glow** (brighter at edges like real glass)
+- **Dynamic widget position detection** for responsive effects
+
+📄 Full guide: [`flutter/bicitaxi/LIQUID_GLASS.md`](flutter/bicitaxi/LIQUID_GLASS.md)
+
+</details>
+
+---
+
+## 🎯 Core Features
+
+<table>
+  <tr>
+    <td width="50%">
+      <h3>🧑‍💼 Client (Rider)</h3>
+      <ul>
+        <li>🔐 Authentication (Email, Google)</li>
+        <li>🗺️ Interactive map with real-time drivers</li>
+        <li>📍 Select pickup & dropoff locations</li>
+        <li>🚗 Request rides & track status</li>
+        <li>👤 Profile management</li>
+      </ul>
+    </td>
+    <td width="50%">
+      <h3>🚴 Driver (Conductor)</h3>
+      <ul>
+        <li>🔐 Secure driver authentication</li>
+        <li>📡 Real-time presence broadcasting</li>
+        <li>🔔 Incoming ride notifications</li>
+        <li>✅ Accept/Reject requests</li>
+        <li>🧭 Turn-by-turn navigation</li>
+      </ul>
+    </td>
+  </tr>
+</table>
+
+---
+
+## 🛠️ Tech Stack
+
+<div align="center">
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                        FRONTEND                             │
+├─────────────────────────┬───────────────────────────────────┤
+│        ANDROID          │              iOS                  │
+│  ┌───────────────────┐  │  ┌───────────────────────────┐   │
+│  │  Flutter 3.27+    │  │  │  SwiftUI + Combine        │   │
+│  │  Provider/Bloc    │  │  │  MVVM Architecture        │   │
+│  │  flutter_map      │  │  │  MapKit                   │   │
+│  │  liquid_glass_ui  │  │  │  Custom Glass Modifiers   │   │
+│  └───────────────────┘  │  └───────────────────────────┘   │
+├─────────────────────────┴───────────────────────────────────┤
+│                        BACKEND                              │
+│  ┌───────────────────────────────────────────────────────┐  │
+│  │  🔥 Firebase                                          │  │
+│  │     ├── Auth (Email/Google)                           │  │
+│  │     ├── Cloud Firestore (Real-time DB)                │  │
+│  │     ├── Cloud Functions (Serverless)                  │  │
+│  │     └── Hosting (Account deletion page)               │  │
+│  └───────────────────────────────────────────────────────┘  │
+└─────────────────────────────────────────────────────────────┘
+```
+
+</div>
+
+### Dependencies
+
+<details>
+<summary><b>🤖 Android (Flutter)</b></summary>
+
+```yaml
+dependencies:
+  firebase_auth: ^5.x
+  cloud_firestore: ^5.x
+  google_sign_in: ^6.x
+  flutter_map: ^7.x
+  geolocator: ^13.x
+  provider: ^6.x
+```
+
+</details>
+
+<details>
+<summary><b>🍎 iOS (Native)</b></summary>
+
+```swift
+// Swift Package Manager
+dependencies: [
+    .package(url: "firebase-ios-sdk", from: "11.0.0"),
+]
+
+// Frameworks
+import SwiftUI
+import MapKit
+import Combine
+```
+
+</details>
 
 ---
 
 ## 🚀 Getting Started
 
 ### Prerequisites
--   **Flutter SDK**: 3.27+ (for Android).
--   **Xcode**: 16+ (for iOS).
--   **CocoaPods**: (If required for specific Flutter plugins).
--   **Google Services**:
-    -   `google-services.json` (Android) placed in `android/app`.
-    -   `GoogleService-Info.plist` (iOS) placed in `ios/Runner` (Flutter) and root of Native iOS projects.
 
-### 🤖 Running Android (Flutter)
+| Tool | Version | Purpose |
+|:---|:---|:---|
+| Flutter SDK | 3.27+ | Android development |
+| Xcode | 16+ | iOS development |
+| CocoaPods | Latest | iOS dependencies |
+| Firebase CLI | Latest | Backend deployment |
 
-1.  **Client App**:
-    ```bash
-    cd flutter/bicitaxi
-    flutter pub get
-    flutter run
-    ```
+### Firebase Setup
 
-2.  **Driver App**:
-    ```bash
-    cd flutter/bicitaxi_conductor
-    flutter pub get
-    flutter run
-    ```
+1. Create a Firebase project at [console.firebase.google.com](https://console.firebase.google.com)
+2. Enable **Authentication** (Email/Password + Google)
+3. Create **Firestore Database**
+4. Download config files:
+   - `google-services.json` → `flutter/bicitaxi/android/app/`
+   - `GoogleService-Info.plist` → iOS project roots
 
-### 🍎 Running iOS (Native)
+### 🤖 Running Android
 
-1.  Open the workspace or project in Xcode:
-    -   `ios/BiciTaxi.xcodeproj` (Client)
-    -   `ios/BiciTaxiConductor.xcodeproj` (Driver)
-2.  Select your target simulator or device.
-3.  Hit **Run (Cmd+R)**.
+```bash
+# Client App
+cd flutter/bicitaxi
+flutter pub get && flutter run
 
----
+# Driver App  
+cd flutter/bicitaxi_conductor
+flutter pub get && flutter run
+```
 
-## 📂 Directory Structure
+### 🍎 Running iOS
 
-```text
-.
-├── flutter/                        # ANDROID (Flutter Projects)
-│   ├── bicitaxi/                   # 🟢 Client App
-│   │   ├── lib/
-│   │   │   ├── features/           # Auth, Profile, Rides, Map
-│   │   │   ├── core/               # Theme, Repositories, Widgets
-│   │   └── ...
-│   └── bicitaxi_conductor/         # 🔵 Driver App
-│       ├── lib/
-│       └── ...
-│
-├── ios/                            # iOS (Native Projects)
-│   ├── BiciTaxi/                   # 🟢 Client App (SwiftUI)
-│   │   ├── App/
-│   │   ├── Core/
-│   │   ├── Features/
-│   │   └── ...
-│   └── BiciTaxiConductor/          # 🔵 Driver App (SwiftUI)
-│       └── ...
-│
-└── README.md
+```bash
+# Open in Xcode
+open ios/bicitaxi/bicitaxi.xcodeproj      # Client
+open ios/bicitaxi-conductor/bicitaxi-conductor.xcodeproj  # Driver
+
+# Then: Select device → Cmd+R
 ```
 
 ---
 
-### 📝 Roadmap / Pending
--   [ ] **Real-time Ride Matching**: Connect Firestore streams to map logic.
--   [ ] **Push Notifications**: FCM integration for ride alerts.
--   [ ] **Chat**: Implement real-time chat using Firestore subcollections.
+## 📂 Project Structure
+
+```
+bicitaxi/
+│
+├── 📁 flutter/                      # ANDROID APPS
+│   ├── 📱 bicitaxi/                 # 🟢 Client App
+│   │   ├── lib/
+│   │   │   ├── features/            # Auth, Profile, Rides, Map
+│   │   │   ├── core/                # Theme, Repos, Widgets
+│   │   │   └── services/            # Firebase, Location
+│   │   └── LIQUID_GLASS.md          # Shader documentation
+│   │
+│   └── 📱 bicitaxi_conductor/       # 🔵 Driver App
+│       └── lib/
+│           ├── features/            # Driver-specific flows
+│           └── services/            # Presence, Requests
+│
+├── 📁 ios/                          # iOS APPS (Native SwiftUI)
+│   ├── 📱 bicitaxi/                 # 🟢 Client App
+│   │   ├── App/                     # Entry point
+│   │   ├── Core/                    # Glass modifiers, Theme
+│   │   └── Features/                # Auth, Map, Rides
+│   │
+│   └── 📱 bicitaxi-conductor/       # 🔵 Driver App
+│       └── ...
+│
+├── 📁 media/                        # Store assets & videos
+│   ├── android/                     # Play Store screenshots
+│   └── ios/                         # App Store screenshots
+│
+├── 📁 public/                       # Firebase Hosting
+│   └── delete-account.html          # Account deletion page
+│
+├── 📄 firestore.rules               # Security rules
+├── 📄 firestore.indexes.json        # Composite indexes
+└── 📄 README.md                     # You are here! 👋
+```
 
 ---
 
-**Developed with ❤️ by the Bici Taxi Team.**
+## 🔐 Security & Privacy
+
+- 🔒 **Firestore Security Rules**: Role-based access control
+- 🔐 **Authentication**: Secure Firebase Auth with Google OAuth
+- 📍 **Location**: Only shared while actively using the app
+- 🗑️ **GDPR Compliance**: Account deletion available via web portal
+
+📄 [Privacy Policy](PRIVACY_POLICY.md)
+
+---
+
+## 📝 Roadmap
+
+- [x] Core authentication flow
+- [x] Real-time map with driver presence  
+- [x] Ride request & matching system
+- [x] Geo-Cell optimization for scalability
+- [ ] 💬 In-app chat (Firestore subcollections)
+- [ ] 🔔 Push notifications (FCM)
+- [ ] ⭐ Rating system
+- [ ] 💳 Payment integration
+
+---
+
+## 📸 Store Banners
+
+<div align="center">
+
+### Android (Google Play)
+
+<img src="media/android/banner43_client.png" width="400" alt="Client Banner"/>
+<img src="media/android/banner43_conductor.png" width="400" alt="Conductor Banner"/>
+
+</div>
+
+---
+
+<div align="center">
+
+## 📄 Additional Documentation
+
+| Document | Description |
+|:---|:---|
+| [🌊 Liquid Glass Guide](flutter/bicitaxi/LIQUID_GLASS.md) | Shader implementation details |
+| [🌐 Geo Cells System](GEO_CELLS_README.md) | Location-based matching architecture |
+| [🔒 Privacy Policy](PRIVACY_POLICY.md) | Data handling & user rights |
+
+---
+
+<br>
+
+**Made with ❤️ by the Bici Taxi Team**
+
+<sub>© 2024 Bici Taxi. All rights reserved.</sub>
+
+</div>
