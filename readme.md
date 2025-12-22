@@ -25,7 +25,7 @@
 
 </div>
 
-## � Download
+## ⬇️ Download
 
 <div align="center">
 
@@ -72,7 +72,7 @@
 
 ---
 
-## �📱 App Previews
+## 📱 App Previews
 
 <div align="center">
 
