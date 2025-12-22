@@ -43,13 +43,6 @@
     <td align="center"><img src="media/android/portair/E.png" width="130"/></td>
   </tr>
   <tr>
-    <td align="center"><sub>Splash</sub></td>
-    <td align="center"><sub>Login</sub></td>
-    <td align="center"><sub>Map View</sub></td>
-    <td align="center"><sub>Request Ride</sub></td>
-    <td align="center"><sub>In Progress</sub></td>
-  </tr>
-  <tr>
     <th colspan="5">🚴 Driver App</th>
   </tr>
   <tr>
@@ -58,13 +51,6 @@
     <td align="center"><img src="media/android/portair/C_.png" width="130"/></td>
     <td align="center"><img src="media/android/portair/D_.png" width="130"/></td>
     <td align="center"><img src="media/android/portair/E_.png" width="130"/></td>
-  </tr>
-  <tr>
-    <td align="center"><sub>Splash</sub></td>
-    <td align="center"><sub>Login</sub></td>
-    <td align="center"><sub>Waiting</sub></td>
-    <td align="center"><sub>New Request</sub></td>
-    <td align="center"><sub>Navigation</sub></td>
   </tr>
 </table>
 
@@ -84,13 +70,6 @@
     <td align="center"><img src="media/ios/portair/E.png" width="130"/></td>
   </tr>
   <tr>
-    <td align="center"><sub>Splash</sub></td>
-    <td align="center"><sub>Login</sub></td>
-    <td align="center"><sub>Map View</sub></td>
-    <td align="center"><sub>Request Ride</sub></td>
-    <td align="center"><sub>In Progress</sub></td>
-  </tr>
-  <tr>
     <th colspan="5">🚴 Driver App</th>
   </tr>
   <tr>
@@ -99,13 +78,6 @@
     <td align="center"><img src="media/ios/portair/C_.png" width="130"/></td>
     <td align="center"><img src="media/ios/portair/D_.png" width="130"/></td>
     <td align="center"><img src="media/ios/portair/E_.png" width="130"/></td>
-  </tr>
-  <tr>
-    <td align="center"><sub>Splash</sub></td>
-    <td align="center"><sub>Login</sub></td>
-    <td align="center"><sub>Waiting</sub></td>
-    <td align="center"><sub>New Request</sub></td>
-    <td align="center"><sub>Navigation</sub></td>
   </tr>
 </table>
 
