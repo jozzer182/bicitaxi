@@ -83,21 +83,21 @@
     <th colspan="5">🧑‍💼 Client App</th>
   </tr>
   <tr>
-    <td align="center"><img src="media/android/portair/A.png" width="130"/></td>
-    <td align="center"><img src="media/android/portair/B.png" width="130"/></td>
-    <td align="center"><img src="media/android/portair/C.png" width="130"/></td>
-    <td align="center"><img src="media/android/portair/D.png" width="130"/></td>
-    <td align="center"><img src="media/android/portair/E.png" width="130"/></td>
+    <td align="center"><img src="media/android/readme/A.png" width="130"/></td>
+    <td align="center"><img src="media/android/readme/B.png" width="130"/></td>
+    <td align="center"><img src="media/android/readme/C.png" width="130"/></td>
+    <td align="center"><img src="media/android/readme/D.png" width="130"/></td>
+    <td align="center"><img src="media/android/readme/E.png" width="130"/></td>
   </tr>
   <tr>
     <th colspan="5">🚴 Driver App</th>
   </tr>
   <tr>
-    <td align="center"><img src="media/android/portair/A_.png" width="130"/></td>
-    <td align="center"><img src="media/android/portair/B_.png" width="130"/></td>
-    <td align="center"><img src="media/android/portair/C_.png" width="130"/></td>
-    <td align="center"><img src="media/android/portair/D_.png" width="130"/></td>
-    <td align="center"><img src="media/android/portair/E_.png" width="130"/></td>
+    <td align="center"><img src="media/android/readme/A_.png" width="130"/></td>
+    <td align="center"><img src="media/android/readme/B_.png" width="130"/></td>
+    <td align="center"><img src="media/android/readme/C_.png" width="130"/></td>
+    <td align="center"><img src="media/android/readme/D_.png" width="130"/></td>
+    <td align="center"><img src="media/android/readme/E_.png" width="130"/></td>
   </tr>
 </table>
 
@@ -110,21 +110,21 @@
     <th colspan="5">🧑‍💼 Client App</th>
   </tr>
   <tr>
-    <td align="center"><img src="media/ios/portair/A.png" width="130"/></td>
-    <td align="center"><img src="media/ios/portair/B.png" width="130"/></td>
-    <td align="center"><img src="media/ios/portair/C.png" width="130"/></td>
-    <td align="center"><img src="media/ios/portair/D.png" width="130"/></td>
-    <td align="center"><img src="media/ios/portair/E.png" width="130"/></td>
+    <td align="center"><img src="media/ios/readme/A.png" width="130"/></td>
+    <td align="center"><img src="media/ios/readme/B.png" width="130"/></td>
+    <td align="center"><img src="media/ios/readme/C.png" width="130"/></td>
+    <td align="center"><img src="media/ios/readme/D.png" width="130"/></td>
+    <td align="center"><img src="media/ios/readme/E.png" width="130"/></td>
   </tr>
   <tr>
     <th colspan="5">🚴 Driver App</th>
   </tr>
   <tr>
-    <td align="center"><img src="media/ios/portair/A_.png" width="130"/></td>
-    <td align="center"><img src="media/ios/portair/B_.png" width="130"/></td>
-    <td align="center"><img src="media/ios/portair/C_.png" width="130"/></td>
-    <td align="center"><img src="media/ios/portair/D_.png" width="130"/></td>
-    <td align="center"><img src="media/ios/portair/E_.png" width="130"/></td>
+    <td align="center"><img src="media/ios/readme/A_.png" width="130"/></td>
+    <td align="center"><img src="media/ios/readme/B_.png" width="130"/></td>
+    <td align="center"><img src="media/ios/readme/C_.png" width="130"/></td>
+    <td align="center"><img src="media/ios/readme/D_.png" width="130"/></td>
+    <td align="center"><img src="media/ios/readme/E_.png" width="130"/></td>
   </tr>
 </table>
 
